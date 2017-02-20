@@ -1,0 +1,5 @@
+#ignore the binaries
+psychic-lana.depend
+psychic-lana.layout
+obj/
+bin/

@@ -1,0 +1,10 @@
+﻿; Listing the players for a game of RoboPoker
+; Must have at least 2 players and at most 12 players
+; Each player must implement an up-to-date version of the IRoboPoker interface
+;
+; The format is:
+; <Player Name>\t<Assembly Path>\t<Type Name>
+CallingPlayer	RoboPoker.dll	RoboPoker.SamplePlayers.CallingPlayer
+FoldingPlayer	RoboPoker.dll	RoboPoker.SamplePlayers.FoldingPlayer
+RaisingPlayer	RoboPoker.dll	RoboPoker.SamplePlayers.RaisingPlayer
+RandomPlayer	RoboPoker.dll	RoboPoker.SamplePlayers.RandomPlayer

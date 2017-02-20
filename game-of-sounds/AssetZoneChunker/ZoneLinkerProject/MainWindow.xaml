@@ -1,0 +1,13 @@
+﻿<Window x:Class="ZoneLinkerProject.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="810" Width="942">
+    <Grid>
+        <Canvas Name="canvas" Height="800" Width="932" MouseDown="canvas_MouseDown">
+            <Image Name="map" Source="PugetSoundBackground.jpg" Height="800" Width="932" />
+            <Button Content="Save" Height="44" Canvas.Left="20" Canvas.Top="725" Width="68" Click="Button_Click"/>
+        </Canvas>
+
+        <TextBox Name="DebugTextbox" Height="26" Canvas.Left="287" TextWrapping="Wrap" Text="Welcome to the UI graph editor! Wooooo! Yay coding!" Canvas.Top="764" Width="474" Margin="227,753,233,0"/>
+    </Grid>
+</Window>

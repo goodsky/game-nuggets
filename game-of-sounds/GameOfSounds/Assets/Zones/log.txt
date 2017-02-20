@@ -1,0 +1,311 @@
+Found zone: InputZones\Ballard-73.png
+	Ballard - 73
+	minx: 281 maxX: 630 minY: 289 maxY: 684
+	centerX: 430 centerY: 436
+Found zone: InputZones\Bear Creek-10.png
+	Bear_Creek - 10
+	minx: 2880 maxX: 3143 minY: 271 maxY: 759
+	centerX: 3001 centerY: 407
+Found zone: InputZones\Beaux Arts Village-28.png
+	Beaux_Arts_Village - 28
+	minx: 1878 maxX: 2106 minY: 1154 maxY: 1551
+	centerX: 1951 centerY: 1339
+Found zone: InputZones\Beaver Lake-15.png
+	Beaver_Lake - 15
+	minx: 3463 maxX: 3729 minY: 1257 maxY: 1775
+	centerX: 3607 centerY: 1598
+Found zone: InputZones\Bellevue-25.png
+	Bellevue - 25
+	minx: 1965 maxX: 2423 minY: 1000 maxY: 1363
+	centerX: 2182 centerY: 1165
+Found zone: InputZones\Blue Ridge-75.png
+	Blue_Ridge - 75
+	minx: 314 maxX: 700 minY: 0 maxY: 288
+	centerX: 536 centerY: 153
+Found zone: InputZones\Boeing Field-51.png
+	Boeing_Field - 51
+	minx: 1043 maxX: 1374 minY: 1900 maxY: 2461
+	centerX: 1223 centerY: 2064
+Found zone: InputZones\Boulevard Park-43.png
+	Boulevard_Park - 43
+	minx: 391 maxX: 898 minY: 2417 maxY: 2666
+	centerX: 636 centerY: 2510
+Found zone: InputZones\Briarcliff-69.png
+	Briarcliff - 69
+	minx: 192 maxX: 573 minY: 609 maxY: 1003
+	centerX: 396 centerY: 802
+Found zone: InputZones\Bridle Trails-4.png
+	Bridle_Trails - 4
+	minx: 2029 maxX: 2371 minY: 771 maxY: 1002
+	centerX: 2199 centerY: 886
+Found zone: InputZones\Bryn Mawr-49.png
+	Bryn_Mawr - 49
+	minx: 1432 maxX: 1881 minY: 2267 maxY: 2612
+	centerX: 1609 centerY: 2513
+Found zone: InputZones\Burien-42.png
+	Burien - 42
+	minx: 545 maxX: 824 minY: 2600 maxY: 3136
+	centerX: 727 centerY: 2770
+Found zone: InputZones\Capital Hill-63.png
+	Capital_Hill - 63
+	minx: 803 maxX: 1210 minY: 1035 maxY: 1242
+	centerX: 1013 centerY: 1114
+Found zone: InputZones\Cedar Grove-36.png
+	Cedar_Grove - 36
+	minx: 2774 maxX: 3497 minY: 2627 maxY: 3199
+	centerX: 3139 centerY: 2899
+Found zone: InputZones\Columbia-50.png
+	Columbia - 50
+	minx: 1221 maxX: 1619 minY: 1805 maxY: 2464
+	centerX: 1405 centerY: 1962
+Found zone: InputZones\Couger Mountain-20.png
+	Couger_Mountain - 20
+	minx: 2579 maxX: 3167 minY: 1885 maxY: 2586
+	centerX: 2902 centerY: 2185
+Found zone: InputZones\Crossroads-2.png
+	Crossroads - 2
+	minx: 2371 maxX: 2927 minY: 712 maxY: 1006
+	centerX: 2570 centerY: 890
+Found zone: InputZones\Downtown Seattle-61.png
+	Downtown_Seattle - 61
+	minx: 808 maxX: 1132 minY: 1203 maxY: 1520
+	centerX: 987 centerY: 1332
+Found zone: InputZones\Duwamish-52.png
+	Duwamish - 52
+	minx: 1049 maxX: 1287 minY: 2169 maxY: 2469
+	centerX: 1174 centerY: 2308
+Found zone: InputZones\East Mercer Island-55.png
+	East_Mercer_Island - 55
+	minx: 1737 maxX: 1999 minY: 1446 maxY: 1938
+	centerX: 1876 centerY: 1677
+Found zone: InputZones\East Renton Highlands-35.png
+	East_Renton_Highlands - 35
+	minx: 2211 maxX: 3170 minY: 2374 maxY: 2894
+	centerX: 2499 centerY: 2524
+Found zone: InputZones\East Sammamish-23.png
+	East_Sammamish - 23
+	minx: 2621 maxX: 2932 minY: 961 maxY: 1377
+	centerX: 2753 centerY: 1174
+Found zone: InputZones\Eastgate-22.png
+	Eastgate - 22
+	minx: 2241 maxX: 2755 minY: 1363 maxY: 1649
+	centerX: 2455 centerY: 1510
+Found zone: InputZones\Education Hill-6.png
+	Education_Hill - 6
+	minx: 2466 maxX: 3398 minY: 0 maxY: 286
+	centerX: 2756 centerY: 96
+Found zone: InputZones\Fauntleroy-45.png
+	Fauntleroy - 45
+	minx: 351 maxX: 592 minY: 1874 maxY: 2444
+	centerX: 443 centerY: 2158
+Found zone: InputZones\Fremont-72.png
+	Fremont - 72
+	minx: 628 maxX: 948 minY: 412 maxY: 830
+	centerX: 744 centerY: 592
+Found zone: InputZones\Georgetown-53.png
+	Georgetown - 53
+	minx: 852 maxX: 1179 minY: 1888 maxY: 2210
+	centerX: 1011 centerY: 2032
+Found zone: InputZones\Green Lake-74.png
+	Green_Lake - 74
+	minx: 627 maxX: 1629 minY: 143 maxY: 788
+	centerX: 1185 centerY: 349
+Found zone: InputZones\Harbor Island-59.png
+	Harbor_Island - 59
+	minx: 702 maxX: 805 minY: 1503 maxY: 1755
+	centerX: 753 centerY: 1610
+Found zone: InputZones\High Point-46.png
+	High_Point - 46
+	minx: 471 maxX: 881 minY: 1797 maxY: 2424
+	centerX: 650 centerY: 2056
+Found zone: InputZones\Highline-47.png
+	Highline - 47
+	minx: 751 maxX: 1138 minY: 2087 maxY: 2441
+	centerX: 904 centerY: 2312
+Found zone: InputZones\I 90 Interchange-29.png
+	I_90_Interchange - 29
+	minx: 1975 maxX: 2117 minY: 1481 maxY: 1628
+	centerX: 2042 centerY: 1573
+Found zone: InputZones\Industrial District-58.png
+	Industrial_District - 58
+	minx: 805 maxX: 1278 minY: 1514 maxY: 1942
+	centerX: 987 centerY: 1693
+Found zone: InputZones\Issaquah Highlands-18.png
+	Issaquah_Highlands - 18
+	minx: 3274 maxX: 3729 minY: 1774 maxY: 2442
+	centerX: 3525 centerY: 2023
+Found zone: InputZones\Issaquah-19.png
+	Issaquah - 19
+	minx: 3111 maxX: 3729 minY: 2013 maxY: 2712
+	centerX: 3337 centerY: 2414
+Found zone: InputZones\Juanita-5.png
+	Juanita - 5
+	minx: 1553 maxX: 2515 minY: 0 maxY: 311
+	centerX: 2083 centerY: 93
+Found zone: InputZones\Kennydale-34.png
+	Kennydale - 34
+	minx: 1884 maxX: 2236 minY: 2280 maxY: 2616
+	centerX: 2089 centerY: 2389
+Found zone: InputZones\Kirkland-3.png
+	Kirkland - 3
+	minx: 1868 maxX: 2372 minY: 238 maxY: 785
+	centerX: 2118 centerY: 520
+Found zone: InputZones\Lake City-75.png
+	Lake_City - 75
+	minx: 700 maxX: 1401 minY: 0 maxY: 189
+	centerX: 951 centerY: 77
+Found zone: InputZones\Lake Heights-32.png
+	Lake_Heights - 32
+	minx: 2032 maxX: 2302 minY: 1604 maxY: 2010
+	centerX: 2166 centerY: 1808
+Found zone: InputZones\Lawton Park-70.png
+	Lawton_Park - 70
+	minx: 53 maxX: 433 minY: 512 maxY: 711
+	centerX: 256 centerY: 619
+Found zone: InputZones\Madison-65.png
+	Madison - 65
+	minx: 1209 maxX: 1379 minY: 827 maxY: 1071
+	centerX: 1290 centerY: 929
+Found zone: InputZones\Madrona-60.png
+	Madrona - 60
+	minx: 1085 maxX: 1350 minY: 1062 maxY: 1573
+	centerX: 1209 centerY: 1292
+Found zone: InputZones\Marymoor-9.png
+	Marymoor - 9
+	minx: 2588 maxX: 2888 minY: 441 maxY: 734
+	centerX: 2761 centerY: 600
+Found zone: InputZones\May Creek-33.png
+	May_Creek - 33
+	minx: 1967 maxX: 2253 minY: 2007 maxY: 2289
+	centerX: 2111 centerY: 2097
+Found zone: InputZones\Medina-27.png
+	Medina - 27
+	minx: 1657 maxX: 2024 minY: 1042 maxY: 1283
+	centerX: 1802 centerY: 1116
+Found zone: InputZones\Mercer Slough-30.png
+	Mercer_Slough - 30
+	minx: 2083 maxX: 2313 minY: 1363 maxY: 1629
+	centerX: 2158 centerY: 1469
+Found zone: InputZones\Microsoft-1.png
+	Microsoft - 1
+	minx: 2373 maxX: 2694 minY: 238 maxY: 791
+	centerX: 2485 centerY: 648
+Found zone: InputZones\Mirrormont-37.png
+	Mirrormont - 37
+	minx: 3099 maxX: 3729 minY: 2601 maxY: 3199
+	centerX: 3423 centerY: 3120
+Found zone: InputZones\Montelake-66.png
+	Montelake - 66
+	minx: 1021 maxX: 1212 minY: 809 maxY: 1059
+	centerX: 1134 centerY: 931
+Found zone: InputZones\Montreux-21.png
+	Montreux - 21
+	minx: 2594 maxX: 3003 minY: 1646 maxY: 1914
+	centerX: 2747 centerY: 1794
+Found zone: InputZones\Mt Baker-57.png
+	Mt_Baker - 57
+	minx: 1161 maxX: 1461 minY: 1534 maxY: 1844
+	centerX: 1241 centerY: 1715
+Found zone: InputZones\Newcastle-31.png
+	Newcastle - 31
+	minx: 2212 maxX: 2718 minY: 1619 maxY: 2380
+	centerX: 2425 centerY: 2012
+Found zone: InputZones\North Issaquah-17.png
+	North_Issaquah - 17
+	minx: 3281 maxX: 3614 minY: 1774 maxY: 2010
+	centerX: 3354 centerY: 1849
+Found zone: InputZones\Pine Lake-14.png
+	Pine_Lake - 14
+	minx: 2929 maxX: 3468 minY: 1264 maxY: 1774
+	centerX: 3155 centerY: 1444
+Found zone: InputZones\Portage Bay-67.png
+	Portage_Bay - 67
+	minx: 902 maxX: 1048 minY: 762 maxY: 1059
+	centerX: 982 centerY: 853
+Found zone: InputZones\Queen Anne-68.png
+	Queen_Anne - 68
+	minx: 525 maxX: 855 minY: 681 maxY: 1102
+	centerX: 681 centerY: 915
+Found zone: InputZones\Redmond Downtown-8.png
+	Redmond_Downtown - 8
+	minx: 2521 maxX: 2922 minY: 245 maxY: 564
+	centerX: 2712 centerY: 355
+Found zone: InputZones\Renton-38.png
+	Renton - 38
+	minx: 1609 maxX: 2841 minY: 2606 maxY: 3199
+	centerX: 2268 centerY: 2885
+Found zone: InputZones\Riverton Heights-41.png
+	Riverton_Heights - 41
+	minx: 743 maxX: 1242 minY: 2596 maxY: 3004
+	centerX: 1006 centerY: 2814
+Found zone: InputZones\Sammamish Commons-13.png
+	Sammamish_Commons - 13
+	minx: 3040 maxX: 3575 minY: 1121 maxY: 1301
+	centerX: 3351 centerY: 1218
+Found zone: InputZones\Sammamish Park-16.png
+	Sammamish_Park - 16
+	minx: 2961 maxX: 3287 minY: 1774 maxY: 2012
+	centerX: 3144 centerY: 1959
+Found zone: InputZones\Sammamish-11.png
+	Sammamish - 11
+	minx: 2933 maxX: 3583 minY: 446 maxY: 1183
+	centerX: 3257 centerY: 862
+Found zone: InputZones\SeaTac-39.png
+	SeaTac - 39
+	minx: 498 maxX: 2140 minY: 2942 maxY: 3199
+	centerX: 1215 centerY: 3125
+Found zone: InputZones\Seattle Center-64.png
+	Seattle_Center - 64
+	minx: 671 maxX: 864 minY: 1024 maxY: 1199
+	centerX: 764 centerY: 1085
+Found zone: InputZones\Seattle Oceanfront-62.png
+	Seattle_Oceanfront - 62
+	minx: 636 maxX: 918 minY: 1075 maxY: 1521
+	centerX: 817 centerY: 1250
+Found zone: InputZones\Skyway-44.png
+	Skyway - 44
+	minx: 866 maxX: 1569 minY: 2428 maxY: 2671
+	centerX: 1190 centerY: 2560
+Found zone: InputZones\Soaring Eage-12.png
+	Soaring_Eage - 12
+	minx: 3575 maxX: 3729 minY: 705 maxY: 1265
+	centerX: 3663 centerY: 959
+Found zone: InputZones\South Mercer Island-54.png
+	South_Mercer_Island - 54
+	minx: 1647 maxX: 1929 minY: 1916 maxY: 2301
+	centerX: 1804 centerY: 2061
+Found zone: InputZones\Tukwila-40.png
+	Tukwila - 40
+	minx: 1241 maxX: 1757 minY: 2570 maxY: 2948
+	centerX: 1427 centerY: 2792
+Found zone: InputZones\Union Hill-7.png
+	Union_Hill - 7
+	minx: 3112 maxX: 3729 minY: 0 maxY: 734
+	centerX: 3392 centerY: 352
+Found zone: InputZones\University District-71.png
+	University_District - 71
+	minx: 881 maxX: 1249 minY: 456 maxY: 796
+	centerX: 1067 centerY: 583
+Found zone: InputZones\West Lake Hills-24.png
+	West_Lake_Hills - 24
+	minx: 2322 maxX: 2773 minY: 1000 maxY: 1370
+	centerX: 2521 centerY: 1174
+Found zone: InputZones\West Mercer Island-56.png
+	West_Mercer_Island - 56
+	minx: 1561 maxX: 1836 minY: 1439 maxY: 1918
+	centerX: 1695 centerY: 1626
+Found zone: InputZones\West Seattle-48.png
+	West_Seattle - 48
+	minx: 193 maxX: 765 minY: 1443 maxY: 1903
+	centerX: 463 centerY: 1684
+Found zone: InputZones\Yarrow Point-26.png
+	Yarrow_Point - 26
+	minx: 1653 maxX: 2038 minY: 734 maxY: 1054
+	centerX: 1830 centerY: 959
+SKIPPING: InputZones\_Background.png
+SKIPPING: InputZones\_Black Layer.png
+SKIPPING: InputZones\_Bridges.png
+SKIPPING: InputZones\_Land Outline.png
+SKIPPING: InputZones\_Zone Lines V1.png
+SKIPPING: InputZones\_Zone Titles V1.png
+Chunking Complete. Completed 76 Zones.
