@@ -97,7 +97,10 @@ namespace GridTerrain
         // World Unit minimum for the terrain height.
         private readonly float MinTerrainHeight;
 
+        // Unit's terrain data
         private TerrainData _terrainData;
+
+        // My grid data mapped to integers
         private int[,] _gridData;
 
         /// <summary>
@@ -110,6 +113,7 @@ namespace GridTerrain
             args.ValidateTerrain(terrain);
 
             _terrainData = terrain.terrainData;
+            _gridData = new int[_terrainData.heightmapWidth, _terrainData.heightmapHeight];
 
             GridSize = args.GridSize;
             HalfGridSize = GridSize / 2.0f;
@@ -131,7 +135,7 @@ namespace GridTerrain
 
             // Adjust the actual y-position to match underground grid count 
             parent.transform.position = new Vector3(position.x, MinTerrainHeight, position.z);
-            Flatten(UndergroundGridCount);
+            Flatten(UndergroundGridCount); // this initializes the _gridData
 
             if (Debug.isDebugBuild)
             {
@@ -147,48 +151,89 @@ namespace GridTerrain
             }
         }
 
-        public float GetHeightmapHeight(int x, int z)
+        /// <summary>
+        /// Gets the world height of a square.
+        /// NOTE: This averages the 4 points to get the 'center'. It isn't totally accurate.
+        /// </summary>
+        /// <param name="x">Grid x position</param>
+        /// <param name="z">Grid y position</param>
+        /// <returns>The world y position of the grid square</returns>
+        public float GetWorldHeight(int x, int z)
         {
             var selectedHeights = _terrainData.GetHeights(x, z, 2, 2);
 
             // average of 4 points in the square snapped to a grid height
             // note: added a small number to  avoid inprecision caused by truncation
-            return (selectedHeights[0, 0] + selectedHeights[0, 1] + selectedHeights[1, 0] + selectedHeights[1, 1]) / 4.0f + 0.0001f;
+            return ConvertHeightmapToWorld((selectedHeights[0, 0] + selectedHeights[0, 1] + selectedHeights[1, 0] + selectedHeights[1, 1]) / 4.0f + ep);
         }
 
-        public int GetGridHeight(int x, int z)
+        /// <summary>
+        /// Gets the grid height of a point.
+        /// </summary>
+        /// <param name="x">Point x position</param>
+        /// <param name="z">Point z position</param>
+        /// <returns>The grid y position of the grid square</returns>
+        public int GetPointHeight(int x, int z)
         {
-            return ConvertHeightmaptoGridHeight(GetHeightmapHeight(x, z));
+            return _gridData[x, z];
         }
 
-        public float GetWorldHeight(int x, int z)
-        {
-            return ConvertGridHeightToWorld(GetGridHeight(x, z));
-        }
-
+        /// <summary>
+        /// Set a square to a grid height.
+        /// </summary>
+        /// <param name="x">Grid x position</param>
+        /// <param name="z">Grid z position</param>
+        /// <param name="gridHeight">Grid y height</param>
         public void SetHeight(int x, int z, int gridHeight)
         {
             if (x < 0 || x > GridCountX || z < 0 || z > GridCountZ)
-                throw new ArgumentOutOfRangeException(string.Format("Attempted to set a height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, GridCountX, GridCountZ));
+                throw new ArgumentOutOfRangeException(string.Format("Attempted to set a square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, GridCountX, GridCountZ));
 
             var heights = new float[2, 2];
             heights[0, 0] = heights[0, 1] = heights[1, 0] = heights[1, 1] = ConvertGridHeightToHeightmap(gridHeight);
+            _gridData[x, z] = _gridData[x, z + 1] = _gridData[x + 1, z] = _gridData[x + 1, z + 1] = gridHeight;
             _terrainData.SetHeights(x, z, heights);
         }
 
+        /// <summary>
+        /// Set an area of points to a grid height
+        /// </summary>
+        /// <param name="xBase">Starting x point</param>
+        /// <param name="zBase">Starting z point</param>
+        /// <param name="heights">Grid heights to set</param>
+        private void SetPointHeights(int xBase, int zBase, int[,] heights)
+        {
+            var xLength = heights.GetLength(0);
+            var zLength = heights.GetLength(1);
+
+            var heightmapHeights = new float[xLength, zLength];
+            for (int i = 0; i < xLength; ++i)
+            {
+                for (int j = 0; j < zLength; ++j)
+                {
+                    _gridData[xBase + i, zBase + j] = heights[i, j];
+                    heightmapHeights[i, j] = ConvertGridHeightToHeightmap(heights[i, j]);
+                }
+            }
+
+            _terrainData.SetHeights(xBase, zBase, heightmapHeights);
+        }
+
+        /// <summary>
+        /// Flatten the entire terrain to a certain height
+        /// </summary>
+        /// <param name="gridHeight">Grid y height</param>
         public void Flatten(int gridHeight = 0)
         {
             var width = _terrainData.heightmapWidth;
             var height = _terrainData.heightmapHeight;
 
-            var heightmapHeight = ConvertGridHeightToHeightmap(gridHeight);
-
-            float[,] resetHeights = new float[width, height];
+            var resetHeights = new int[width, height];
             for (int i = 0; i < width; ++i)
                 for (int j = 0; j < height; ++j)
-                    resetHeights[i, j] = heightmapHeight;
+                    resetHeights[i, j] = gridHeight;
 
-            _terrainData.SetHeights(0, 0, resetHeights);
+            SetPointHeights(0, 0, resetHeights);
         }
 
         #region Conversions
@@ -221,10 +266,15 @@ namespace GridTerrain
             return grid * GridHeightSize + MinTerrainHeight;
         }
 
-        public int ConvertHeightmaptoGridHeight(float heightmap)
+        public int ConvertHeightmapToGridHeight(float heightmap)
         {
             // this round assumes heightmaps are all close to snapped values
             return Mathf.RoundToInt(heightmap / HeightmapStepSize);
+        }
+
+        public float ConvertHeightmapToWorld(float heightmap)
+        {
+            return ConvertGridHeightToWorld(ConvertHeightmapToGridHeight(heightmap));
         }
 
         public float ConvertGridHeightToHeightmap(int gridHeight)

@@ -14,6 +14,7 @@ namespace GridTerrain
         private GameObject _cursor;
 
         private GridTerrainData _terrain;
+        private SafeTerrainEditor _editor;
         private TerrainCollider _collider;
 
         // Editing State  -----------
@@ -36,6 +37,8 @@ namespace GridTerrain
                     GridHeightSize = 4.0f,
                     UndergroundGridCount = 4
                 });
+
+            _editor = new SafeTerrainEditor(_terrain);
 
             _collider = GetComponent<TerrainCollider>();
 
@@ -81,7 +84,7 @@ namespace GridTerrain
             {
                 var newGridSelection = _terrain.ConvertWorldToGrid(hit.point);
 
-                if (newGridSelection.x != _gridSelection.x || newGridSelection.y != _gridSelection.y)
+                if (newGridSelection != _gridSelection)
                 {
                     if (!_cursor.activeSelf)
                         _cursor.SetActive(true);
@@ -116,12 +119,7 @@ namespace GridTerrain
             {
                 _mouseDragHeightChange = newHeightChange;
 
-                var gridHeight = _gridSelection.y + _mouseDragHeightChange;
-                if (gridHeight < 0)
-                    gridHeight = 0;
-
-                if (gridHeight >= _terrain.GridCountY)
-                    gridHeight = _terrain.GridCountY;
+                var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.GridCountY);
 
                 _terrain.SetHeight(_gridSelection.x, _gridSelection.z, gridHeight);
 

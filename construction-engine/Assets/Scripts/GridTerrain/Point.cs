@@ -16,7 +16,6 @@ namespace GridTerrain
             this._y = y;
 
             Assert.IsTrue(x >= 0 && x < (1 << 10) && y >= 0 && y < (1 << 10));
-
         }
 
         public override string ToString()
