@@ -68,7 +68,8 @@ namespace GridTerrain
     /// </summary>
     public class GridTerrainData
     {
-        private const float ep = 0.0001f;
+        // This is trying to counteract floating point errors. No guarantees though.
+        private const float ep = 0.001f;
 
         // World Unit size of each grid square.
         private readonly float GridSize;

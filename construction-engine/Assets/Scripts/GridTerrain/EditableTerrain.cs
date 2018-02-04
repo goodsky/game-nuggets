@@ -89,6 +89,8 @@ namespace GridTerrain
                     if (!_cursor.activeSelf)
                         _cursor.SetActive(true);
 
+                    Debug.Log("Placed Cursor! World: " + hit.point.ToString() + " Grid: " + newGridSelection.ToString());
+
                     _gridSelection = newGridSelection;
                     _cursor.transform.position = _terrain.ConvertGridCenterToWorld(newGridSelection);
                 }
