@@ -77,6 +77,17 @@ namespace GridTerrain
                 return;
             }
 
+            // Debug Print Data
+            if (_cursor.activeSelf && Input.GetMouseButtonDown(1))
+            {
+                Debug.Log(string.Format("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
+                    _gridSelection,
+                    _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
+                    _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
+                    _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
+                    _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1)));
+            }
+
             var mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
@@ -88,8 +99,6 @@ namespace GridTerrain
                 {
                     if (!_cursor.activeSelf)
                         _cursor.SetActive(true);
-
-                    Debug.Log("Placed Cursor! World: " + hit.point.ToString() + " Grid: " + newGridSelection.ToString());
 
                     _gridSelection = newGridSelection;
                     _cursor.transform.position = _terrain.ConvertGridCenterToWorld(newGridSelection);
@@ -123,13 +132,16 @@ namespace GridTerrain
 
                 var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.GridCountY);
 
-                _terrain.SetHeight(_gridSelection.x, _gridSelection.z, gridHeight);
+                // _terrain.SetHeight(_gridSelection.x, _gridSelection.z, gridHeight);
 
-                _cursor.transform.position = _terrain.ConvertGridCenterToWorld(
-                    new Point3(
-                        _gridSelection.x,
-                        gridHeight,
-                        _gridSelection.z));
+                if (_editor.SafeSetHeight(_gridSelection.x, _gridSelection.z, gridHeight))
+                {
+                    _cursor.transform.position = _terrain.ConvertGridCenterToWorld(
+                        new Point3(
+                            _gridSelection.x,
+                            gridHeight,
+                            _gridSelection.z));
+                }
             }
         }
 

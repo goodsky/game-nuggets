@@ -181,6 +181,7 @@ namespace GridTerrain
 
         /// <summary>
         /// Set a square to a grid height.
+        /// Note: this is an unsafe set!
         /// </summary>
         /// <param name="x">Grid x position</param>
         /// <param name="z">Grid z position</param>
@@ -202,18 +203,19 @@ namespace GridTerrain
         /// <param name="xBase">Starting x point</param>
         /// <param name="zBase">Starting z point</param>
         /// <param name="heights">Grid heights to set</param>
-        private void SetPointHeights(int xBase, int zBase, int[,] heights)
+        public void SetPointHeights(int xBase, int zBase, int[,] heights)
         {
             var xLength = heights.GetLength(0);
             var zLength = heights.GetLength(1);
 
-            var heightmapHeights = new float[xLength, zLength];
+            // NB: unity flips the X/Z axis for their SetHeights
+            var heightmapHeights = new float[zLength, xLength];
             for (int i = 0; i < xLength; ++i)
             {
                 for (int j = 0; j < zLength; ++j)
                 {
                     _gridData[xBase + i, zBase + j] = heights[i, j];
-                    heightmapHeights[i, j] = ConvertGridHeightToHeightmap(heights[i, j]);
+                    heightmapHeights[j, i] = ConvertGridHeightToHeightmap(heights[i, j]);
                 }
             }
 
