@@ -5,17 +5,21 @@ public class PanningCamera : MonoBehaviour
     public float Speed = 0.75f;
     public float ScreenEdge = 50.0f;
 
+    private float _sqrSpeed;
+
     private Transform _pos;
     private Vector3 _right;
     private Vector3 _forward;
 
 	void Start ()
     {
+        _sqrSpeed = Speed * Speed;
+
         _pos = this.transform;
         var yRotation = _pos.rotation.eulerAngles.y;
 
-        _forward = new Vector3(Mathf.Cos(Mathf.Deg2Rad * yRotation), 0.0f, Mathf.Sin(Mathf.Deg2Rad * yRotation));
-        _right = new Vector3(Mathf.Cos(Mathf.Deg2Rad * (yRotation - 90.0f)), 0.0f, Mathf.Sin(Mathf.Deg2Rad * (yRotation - 90.0f)));
+        _forward = new Vector3(Mathf.Cos(Mathf.Deg2Rad * (-yRotation + 90.0f)), 0.0f, Mathf.Sin(Mathf.Deg2Rad * (-yRotation + 90.0f)));
+        _right = new Vector3(Mathf.Cos(Mathf.Deg2Rad * (-yRotation)), 0.0f, Mathf.Sin(Mathf.Deg2Rad * (-yRotation)));
 	}
 
 	void Update ()
@@ -40,6 +44,15 @@ public class PanningCamera : MonoBehaviour
 
             if (Input.mousePosition.y >= Screen.height - ScreenEdge)
                 vz += Speed;
+        }
+
+        // Normalize speed
+        var mag = vx * vx + vz * vz;
+        if (mag > _sqrSpeed)
+        {
+            var f = Mathf.Sqrt(_sqrSpeed / mag);
+            vx = vx * f;
+            vz = vz * f;
         }
 
         _pos.position += vx * _right;
