@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace UI
 {
@@ -35,8 +36,10 @@ namespace UI
         /// </summary>
         public float ScrollSpeed = 2.5f;
 
+        private bool _mouseOver;
         private float _maskWidth;
         private RectTransform _contentRect;
+        private EventTrigger _eventTrigger;
 
         void Start()
         {
@@ -65,16 +68,49 @@ namespace UI
 
                 _contentRect.anchoredPosition = new Vector2(padding / 2.0f, _contentRect.anchoredPosition.y);
             }
+
+            // Event Trigger used to track mouse in and mouse out
+            _eventTrigger = gameObject.AddComponent<EventTrigger>();
+
+            {
+                var pointerEnter = new EventTrigger.Entry() { eventID = EventTriggerType.PointerEnter };
+                pointerEnter.callback.AddListener(_ => { _mouseOver = true; });
+                _eventTrigger.triggers.Add(pointerEnter);
+            }
+
+            {
+                var pointerExit = new EventTrigger.Entry() { eventID = EventTriggerType.PointerExit };
+                pointerExit.callback.AddListener(_ => { _mouseOver = false; });
+                _eventTrigger.triggers.Add(pointerExit);
+            }
         }
 
-        private void ScrollLeft()
+        void Update()
+        {
+            if (_mouseOver)
+            {
+                var wheelScroll = Input.GetAxis("Mouse ScrollWheel");
+
+                if (wheelScroll < -1e-3)
+                {
+                    ScrollRight(ScrollSpeed * 4.0f);
+                }
+
+                if (wheelScroll > 1e-3)
+                {
+                    ScrollLeft(ScrollSpeed * 4.0f);
+                }
+            }
+        }
+
+        private void ScrollRight(float speed)
         {
             float xPos = _contentRect.anchoredPosition.x;
             float rightEdge = xPos + _contentRect.rect.width;
 
             if (rightEdge > _maskWidth)
             {
-                _contentRect.anchoredPosition = new Vector2(xPos - ScrollSpeed, _contentRect.anchoredPosition.y);
+                _contentRect.anchoredPosition = new Vector2(xPos - speed, _contentRect.anchoredPosition.y);
             }
             else
             {
@@ -84,16 +120,26 @@ namespace UI
 
         private void ScrollRight()
         {
+            ScrollRight(ScrollSpeed);
+        }
+
+        private void ScrollLeft(float speed)
+        {
             float xPos = _contentRect.anchoredPosition.x;
 
             if (xPos < 0.0f)
             {
-                _contentRect.anchoredPosition = new Vector2(xPos + ScrollSpeed, _contentRect.anchoredPosition.y);
+                _contentRect.anchoredPosition = new Vector2(xPos + speed, _contentRect.anchoredPosition.y);
             }
             else
             {
                 _contentRect.anchoredPosition = new Vector2(0.0f, _contentRect.anchoredPosition.y);
             }
+        }
+
+        private void ScrollLeft()
+        {
+            ScrollLeft(ScrollSpeed);
         }
     }
 }
