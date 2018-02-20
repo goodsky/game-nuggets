@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
 {
+    /// <summary>
+    /// In charge of placing the tooltip around on the screen.
+    /// </summary>
     public static class TooltipManager
     {
         private static GameObject Tooltip;
@@ -24,6 +23,8 @@ namespace UI
 
             var rectComponent = Tooltip.GetComponent<RectTransform>();
             rectComponent.anchoredPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y - 20);
+
+            Tooltip.transform.SetAsLastSibling();
 
             Tooltip.SetActive(true);
         }

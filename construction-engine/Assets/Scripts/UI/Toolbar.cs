@@ -23,8 +23,12 @@ namespace UI
         protected GameObject _subMenu;
         protected GameObject _subMenuButtons;
 
+        private GameObject _window;
+        private GameObject _windowContent;
+
         private GameObject _mainMenuPip;
         private GameObject _subMenuPip;
+        
 
         void Start()
         {
@@ -35,6 +39,13 @@ namespace UI
             image.sprite = MainMenuBackground;
 
             _subMenu = ToolbarFactory.InstantiateSubMenu(gameObject, SubMenuBackground);
+            _window = ToolbarFactory.InstantiateWindow(_subMenu.transform,
+                new WindowArgs()
+                {
+                    Name = "Window",
+                    PosX = 0,
+                    BackgroundImage = PageBackground
+                });
 
             _mainMenuPip = ToolbarFactory.InstantiatePip(gameObject, MainMenuPip);
             _subMenuPip = ToolbarFactory.InstantiatePip(_subMenu, SubMenuPip);
@@ -80,13 +91,33 @@ namespace UI
             _mainMenuPip.SetActive(false);
         }
 
+        public void PopUpWindow(GameObject windowContent)
+        {
+            // windowContent.SetActive(true);
+            _window.SetActive(true);
+
+            _windowContent = windowContent;
+
+            var selected = Selectable.SelectionManager.Selected;
+            if (selected != null)
+            {
+                _subMenuPip.transform.SetParent(selected.gameObject.transform, false);
+                _subMenuPip.transform.SetAsFirstSibling();
+                _subMenuPip.SetActive(true);
+            }
+        }
+
+        public void PopDownWindow()
+        {
+            _window.SetActive(false);
+            // _windowContent.SetActive(false);
+            _subMenuPip.SetActive(false);
+        }
+
         /// <summary>
         /// Called once during startup to create all the menus.
         /// </summary>
-        protected virtual void PopulateMenus()
-        {
-            // IMPLEMENT ME! :)
-        }
+        protected virtual void PopulateMenus() { /* IMPLEMENT ME! :) */ }
 
         #region Helpful Templates
         protected ButtonGroupArgs MainMenuGroup(ButtonArgs[] buttons)

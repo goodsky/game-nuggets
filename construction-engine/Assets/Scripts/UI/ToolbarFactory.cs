@@ -43,8 +43,17 @@ namespace UI
         public ButtonArgs[] Buttons;
     }
 
+    public class WindowArgs
+    {
+        public string Name = "default";
+        public float PosX;
+
+        public Sprite BackgroundImage;
+    }
+
     /// <summary>
-    /// Class with factory methods to generate UI components
+    /// Class with factory methods to generate UI components.
+    /// A testiment to how uncomfortable I am with using editor tools and prefabs.
     /// </summary>
     public static class ToolbarFactory
     {
@@ -149,6 +158,34 @@ namespace UI
             textText.color = Color.black;
 
             return tooltip;
+        }
+
+        /// <summary>
+        /// Instantiates the small UI divider between buttons.
+        /// It's entirely for looking pretty.
+        /// </summary>
+        /// <param name="parent">The parent for the divider.</param>
+        /// <param name="xPos">X Position for the divider.</param>
+        /// <returns></returns>
+        public static GameObject InstantiateDivider(Transform parent, float xPos)
+        {
+            var divider = new GameObject("Divider");
+            divider.transform.SetParent(parent, false);
+
+            var rectSprite = Resources.Load<Sprite>("toolbar-divider");
+
+            var rect = divider.AddComponent<RectTransform>();
+            rect.pivot = new Vector2(0, 0.5f);
+            rect.anchorMin = new Vector2(0, 0.5f);
+            rect.anchorMax = new Vector2(0, 0.5f);
+            rect.sizeDelta = new Vector2(rectSprite.rect.width, rectSprite.rect.height);
+            rect.anchoredPosition = new Vector2(xPos, 0);
+
+            var rectImage = divider.AddComponent<Image>();
+            rectImage.sprite = rectSprite;
+            rectImage.raycastTarget = false;
+
+            return divider;
         }
 
         /// <summary>
@@ -299,12 +336,45 @@ namespace UI
                 InstantiateButton(content.transform, button);
             }
 
+            for (int i = 1; i < args.Buttons.Length; ++i)
+            {
+                // Little extra UI prettyness with the dividers
+                InstantiateDivider(content.transform, i * ButtonWidth - 1);
+            }
+
             var script = buttonGroup.AddComponent<ButtonGroup>();
             script.ScrollButtonLeft = leftArrow;
             script.ScrollButtonRight = rightArrow;
             script.Content = content;
 
             return buttonGroup;
+        }
+
+        /// <summary>
+        /// Instantiates a window to show content in.
+        /// </summary>
+        /// <param name="parent">The UI parent.</param>
+        /// <param name="args">The window arguments.</param>
+        /// <returns>The window.</returns>
+        public static GameObject InstantiateWindow(Transform parent, WindowArgs args)
+        {
+            var window = new GameObject(args.Name);
+            window.transform.SetParent(parent, false);
+
+            var parentRect = parent.gameObject.GetComponent<RectTransform>();
+            var windowRect = window.AddComponent<RectTransform>();
+            windowRect.pivot = new Vector2(0.5f, 0);
+            windowRect.anchorMin = new Vector2(0.5f, 0);
+            windowRect.anchorMax = new Vector2(0.5f, 0);
+            windowRect.sizeDelta = new Vector2(500, 350);
+            windowRect.anchoredPosition = new Vector2(args.PosX, parentRect.rect.height);
+
+            var windowImage = window.AddComponent<Image>();
+            windowImage.sprite = args.BackgroundImage;
+
+            window.SetActive(false);
+
+            return window;
         }
     }
 }
