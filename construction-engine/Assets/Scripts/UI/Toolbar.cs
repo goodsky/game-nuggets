@@ -4,25 +4,41 @@ using UnityEngine.UI;
 
 namespace UI
 {
+    /// <summary>
+    /// The base class for the UI Toolbar.
+    /// Can be extended to create a specific style of toolbar.
+    /// </summary>
     public class Toolbar : MonoBehaviour
     {
-        private static readonly float ButtonGroupMargins = 175.0f;
+        protected static readonly float ButtonGroupMargins = 175.0f;
 
         public Sprite MainMenuBackground;
-        public Sprite MainMenuHover;
+        public Sprite MainMenuSelected;
+        public Sprite MainMenuPip;
         public Sprite SubMenuBackground;
-        public Sprite SubMenuHover;
+        public Sprite SubMenuSelected;
+        public Sprite SubMenuPip;
         public Sprite PageBackground;
 
-        private GameObject _subMenu;
-        private GameObject _subMenuButtons;
+        protected GameObject _subMenu;
+        protected GameObject _subMenuButtons;
+
+        private GameObject _mainMenuPip;
+        private GameObject _subMenuPip;
 
         void Start()
         {
+            var canvas = gameObject.GetComponentInParent<Canvas>();
+            TooltipManager.Initialize(canvas.gameObject.transform);
+
             var image = gameObject.AddComponent<Image>();
             image.sprite = MainMenuBackground;
 
             _subMenu = ToolbarFactory.InstantiateSubMenu(gameObject, SubMenuBackground);
+
+            _mainMenuPip = ToolbarFactory.InstantiatePip(gameObject, MainMenuPip);
+            _subMenuPip = ToolbarFactory.InstantiatePip(_subMenu, SubMenuPip);
+
             PopulateMenus();
         }
 
@@ -34,130 +50,74 @@ namespace UI
             }
         }
 
-        public void PopUpMenu(GameObject buttonGroup)
+        /// <summary>
+        /// Pop up a sub-menu.
+        /// </summary>
+        /// <param name="buttonGroup">The button group to populate with the sub-menu.</param>
+        public void PopUpSubMenu(GameObject buttonGroup)
         {
-            var buttonsRect = buttonGroup.GetComponent<RectTransform>();
-            if (buttonsRect == null)
-                throw new InvalidOperationException("Attempted to Pop Up Menu with an invalid UI element.");
-
             buttonGroup.SetActive(true);
             _subMenu.SetActive(true);
 
             _subMenuButtons = buttonGroup;
+
+            var selected = Selectable.SelectionManager.Selected;
+            if (selected != null)
+            {
+                _mainMenuPip.transform.SetParent(selected.gameObject.transform, false);
+                _mainMenuPip.transform.SetAsFirstSibling();
+                _mainMenuPip.SetActive(true);
+            }
         }
 
-        public void PopDownMenu()
+        /// <summary>
+        /// Pop down the sub-menu and its button group.
+        /// </summary>
+        public void PopDownSubMenu()
         {
             _subMenu.SetActive(false);
             _subMenuButtons.SetActive(false);
+            _mainMenuPip.SetActive(false);
         }
 
-        private void PopulateMenus()
+        /// <summary>
+        /// Called once during startup to create all the menus.
+        /// </summary>
+        protected virtual void PopulateMenus()
         {
-            var mainMenuRect = GetComponent<RectTransform>();
-            var subMenuRect = _subMenu.GetComponent<RectTransform>();
-
-            var homeSubMenu = ToolbarFactory.InstantiateButtonGroup(
-                "HomeSubMenu",
-                _subMenu.transform,
-                new ButtonGroupArgs()
-                {
-                    Height = subMenuRect.rect.height,
-                    PosY = 0,
-                    Left = ButtonGroupMargins,
-                    Right = ButtonGroupMargins,
-                    ButtonsDefaultImage = SubMenuBackground,
-                    ButtonsMouseOverImage = SubMenuHover,
-                    ButtonsSelectedImage = PageBackground,
-                    Buttons = new ButtonArgs[]
-                    {
-                        new ButtonArgs() { Name = "SubMenuHome", IconImage = Resources.Load<Sprite>("toolbar-icon-test1") },
-                        new ButtonArgs() { Name = "SubMenuHome", IconImage = Resources.Load<Sprite>("toolbar-icon-test1") },
-                        new ButtonArgs() { Name = "SubMenuHome", IconImage = Resources.Load<Sprite>("toolbar-icon-test1") },
-                        new ButtonArgs() { Name = "SubMenuHome", IconImage = Resources.Load<Sprite>("toolbar-icon-test1") },
-                        new ButtonArgs() { Name = "SubMenuHome", IconImage = Resources.Load<Sprite>("toolbar-icon-test1") },
-                    }
-                });
-
-            var circleSubMenu = ToolbarFactory.InstantiateButtonGroup(
-                "CircleSubMenu",
-                _subMenu.transform,
-                new ButtonGroupArgs()
-                {
-                    Height = subMenuRect.rect.height,
-                    PosY = 0,
-                    Left = ButtonGroupMargins,
-                    Right = ButtonGroupMargins,
-                    ButtonsDefaultImage = SubMenuBackground,
-                    ButtonsMouseOverImage = SubMenuHover,
-                    ButtonsSelectedImage = PageBackground,
-                    Buttons = new ButtonArgs[]
-                    {
-                        new ButtonArgs() { Name = "SubMenuCircle", IconImage = Resources.Load<Sprite>("toolbar-icon-test2") },
-                        new ButtonArgs() { Name = "SubMenuCircle", IconImage = Resources.Load<Sprite>("toolbar-icon-test2") },
-                        new ButtonArgs() { Name = "SubMenuCircle", IconImage = Resources.Load<Sprite>("toolbar-icon-test2") },
-                    }
-                });
-
-            var diamondSubMenu = ToolbarFactory.InstantiateButtonGroup(
-                "DiamondSubMenu",
-                _subMenu.transform,
-                new ButtonGroupArgs()
-                {
-                    Height = subMenuRect.rect.height,
-                    PosY = 0,
-                    Left = ButtonGroupMargins,
-                    Right = ButtonGroupMargins,
-                    ButtonsDefaultImage = SubMenuBackground,
-                    ButtonsMouseOverImage = SubMenuHover,
-                    ButtonsSelectedImage = PageBackground,
-                    Buttons = new ButtonArgs[]
-                    {
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                        new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
-                    }
-                });
-
-            homeSubMenu.SetActive(false);
-            circleSubMenu.SetActive(false);
-            diamondSubMenu.SetActive(false);
-
-            var homeSubMenuButtons = homeSubMenu.GetComponentsInChildren<Button>();
-            var circleSubMenuButtons = circleSubMenu.GetComponentsInChildren<Button>();
-            var diamondSubMenuButtons = diamondSubMenu.GetComponentsInChildren<Button>();
-
-            ToolbarFactory.InstantiateButtonGroup(
-                "MainMenu",
-                gameObject.transform,
-                new ButtonGroupArgs()
-                {
-                    Height = mainMenuRect.rect.height,
-                    PosY = 0,
-                    Left = ButtonGroupMargins,
-                    Right = ButtonGroupMargins,
-                    ButtonsDefaultImage = MainMenuBackground,
-                    ButtonsMouseOverImage = MainMenuHover,
-                    ButtonsSelectedImage = SubMenuBackground,
-                    Buttons = new ButtonArgs[]
-                    {
-                        new ButtonArgs() { Name = "Home", Children = homeSubMenuButtons, IconImage = Resources.Load<Sprite>("toolbar-icon-test1"), OnSelect = () => PopUpMenu(homeSubMenu), OnDeselect = () => PopDownMenu() },
-                        new ButtonArgs() { Name = "Circle", Children = circleSubMenuButtons, IconImage = Resources.Load<Sprite>("toolbar-icon-test2"), OnSelect = () => PopUpMenu(circleSubMenu), OnDeselect = () => PopDownMenu() },
-                        new ButtonArgs() { Name = "Diamond", Children = diamondSubMenuButtons, IconImage = Resources.Load<Sprite>("toolbar-icon-test3"), OnSelect = () => PopUpMenu(diamondSubMenu), OnDeselect = () => PopDownMenu() },
-                    }
-                });
-
+            // IMPLEMENT ME! :)
         }
+
+        #region Helpful Templates
+        protected ButtonGroupArgs MainMenuGroup(ButtonArgs[] buttons)
+        {
+            return new ButtonGroupArgs()
+            {
+                Height = GetComponent<RectTransform>().rect.height,
+                PosY = 0,
+                Left = ButtonGroupMargins,
+                Right = ButtonGroupMargins,
+                ButtonsDefaultImage = MainMenuBackground,
+                ButtonsMouseOverImage = SubMenuBackground,
+                ButtonsSelectedImage = MainMenuSelected,
+                Buttons = buttons
+            };
+        }
+
+        protected ButtonGroupArgs SubMenuGroup(ButtonArgs[] buttons)
+        {
+            return new ButtonGroupArgs()
+                {
+                    Height = _subMenu.GetComponent<RectTransform>().rect.height,
+                    PosY = 0,
+                    Left = ButtonGroupMargins,
+                    Right = ButtonGroupMargins,
+                    ButtonsDefaultImage = SubMenuBackground,
+                    ButtonsMouseOverImage = PageBackground,
+                    ButtonsSelectedImage = SubMenuSelected,
+                    Buttons = buttons
+                };
+        }
+        #endregion
     }
 }

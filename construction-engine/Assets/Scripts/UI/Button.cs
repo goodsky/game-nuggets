@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UI
@@ -30,7 +31,14 @@ namespace UI
         /// <summary>Action to invoke each step the mouse is down on it.</summary>
         public Action OnMouseDown;
 
+        /// <summary>Tooltip message to display over this button when hovered over.</summary>
+        public string Tooltip;
+
+        /// <summary>Delay in seconds before the tooltip will pop up.</summary>
+        public float TooltipDelay = 1.0f;
+
         private Image _image;
+        private float _tooltipCount;
 
         protected override void Start()
         {
@@ -43,6 +51,16 @@ namespace UI
 
         protected void Update()
         {
+            if (IsMouseOver && !string.IsNullOrEmpty(Tooltip))
+            {
+                _tooltipCount += Time.deltaTime;
+
+                if (_tooltipCount > TooltipDelay)
+                {
+                    TooltipManager.PopUp(Tooltip);
+                }
+            }
+
             if (IsMouseDown && OnMouseDown != null)
             {
                 OnMouseDown();
@@ -69,6 +87,20 @@ namespace UI
             base.InternalDeselect();
         }
 
+        public override void MouseOver(BaseEventData eventData)
+        {
+            _tooltipCount = 0.0f;
+
+            base.MouseOver(eventData);
+        }
+
+        public override void MouseOut(BaseEventData eventData)
+        {
+            TooltipManager.PopDown();
+
+            base.MouseOut(eventData);
+        }
+
         public override void PostEvent()
         {
             if (IsEnabled)
@@ -81,15 +113,24 @@ namespace UI
 
                 if (IsSelected || IsMouseDown)
                 {
-                    _image.sprite = SelectedImage;
+                    if (_image != null)
+                    {
+                        _image.sprite = SelectedImage;
+                    }
                 }
                 else if (IsMouseOver)
                 {
-                    _image.sprite = MouseOverImage;
+                    if (_image != null)
+                    {
+                        _image.sprite = MouseOverImage;
+                    }
                 }
                 else
                 {
-                    _image.sprite = DefaultImage;
+                    if (_image != null)
+                    {
+                        _image.sprite = DefaultImage;
+                    }
                 }
             }
             else

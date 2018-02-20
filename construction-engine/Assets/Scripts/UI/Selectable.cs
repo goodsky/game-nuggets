@@ -176,6 +176,12 @@ namespace UI
 
         public virtual void Click(BaseEventData eventData)
         {
+            var pointerEventData = eventData as PointerEventData;
+            if (pointerEventData == null || pointerEventData.button != PointerEventData.InputButton.Left)
+            {
+                return;
+            }
+
             if (IsEnabled && Toggleable)
             {
                 SelectionManager.UpdateSelection(this);
@@ -206,6 +212,12 @@ namespace UI
 
         public virtual void MouseDown(BaseEventData eventData)
         {
+            var pointerEventData = eventData as PointerEventData;
+            if (pointerEventData == null || pointerEventData.button != PointerEventData.InputButton.Left)
+            {
+                return;
+            }
+
             if (IsEnabled)
             {
                 IsMouseDown = true;
@@ -216,6 +228,12 @@ namespace UI
 
         public virtual void MouseUp(BaseEventData eventData)
         {
+            var pointerEventData = eventData as PointerEventData;
+            if (pointerEventData == null || pointerEventData.button != PointerEventData.InputButton.Left)
+            {
+                return;
+            }
+
             IsMouseDown = false;
 
             PostEvent();

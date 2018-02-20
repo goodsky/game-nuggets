@@ -33,7 +33,7 @@ namespace UI
         /// <summary>
         /// The speed to scroll.
         /// </summary>
-        public float ScrollSpeed = 2.5f;
+        public float ScrollSpeed = 3.0f;
 
         private bool _mouseOver;
         private float _maskWidth;

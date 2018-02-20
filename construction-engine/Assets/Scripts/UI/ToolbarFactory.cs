@@ -9,6 +9,7 @@ namespace UI
     {
         // These properties must always be set
         public string Name = "default";
+        public string Tooltip = null;
         public bool Toggleable = true;
         public Sprite IconImage = null; // can be null
         public Action OnSelect = null; // can be null
@@ -79,6 +80,78 @@ namespace UI
         }
 
         /// <summary>
+        /// Instantiates a the small UI 'pip' that is used entirely for looking pretty.
+        /// Stop and smell the roses sometimes.
+        /// </summary>
+        /// <param name="parent">The parent of the pip.</param>
+        /// <param name="image">The pip image.</param>
+        /// <returns></returns>
+        public static GameObject InstantiatePip(GameObject parent, Sprite image)
+        {
+            var pip = new GameObject("Pip");
+            pip.transform.SetParent(parent.transform, false);
+
+            var pipRect = pip.AddComponent<RectTransform>();
+            pipRect.pivot = new Vector2(0.5f, 1);
+            pipRect.anchorMin = new Vector2(0.5f, 1);
+            pipRect.anchorMax = new Vector2(0.5f, 1);
+            pipRect.sizeDelta = new Vector2(image.rect.width, image.rect.height);
+            pipRect.anchoredPosition = new Vector2(0, 0);
+
+            var pipImage = pip.AddComponent<Image>();
+            pipImage.sprite = image;
+            pipImage.raycastTarget = false;
+
+            pip.SetActive(false);
+
+            return pip;
+        }
+
+        /// <summary>
+        /// Instantiates a tooltip textbox.
+        /// It pops up over buttons to lend helpful pointers.
+        /// </summary>
+        /// <param name="parent">The tooltip parent.</param>
+        /// <returns></returns>
+        public static GameObject InstantiateTooltip(Transform parent)
+        {
+            var tooltip = new GameObject("Tooltip");
+            tooltip.transform.SetParent(parent.transform, false);
+
+            var tooltipRect = tooltip.AddComponent<RectTransform>();
+            tooltipRect.pivot = new Vector2(0, 1);
+            tooltipRect.anchorMin = new Vector2(0, 1);
+            tooltipRect.anchorMax = new Vector2(1, 0);
+
+            var tooltipImage = tooltip.AddComponent<Image>();
+            tooltipImage.color = Color.grey;
+            tooltipImage.raycastTarget = false;
+
+            var tooltipLayout = tooltip.AddComponent<HorizontalLayoutGroup>();
+            tooltipLayout.padding = new RectOffset(5, 5, 5, 5);
+            tooltipLayout.childForceExpandWidth = tooltipLayout.childForceExpandHeight = false;
+            tooltipLayout.childControlWidth = tooltipLayout.childControlHeight = true;
+
+            var tooltipSizeFitter = tooltip.AddComponent<ContentSizeFitter>();
+            tooltipSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            tooltipSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var text = new GameObject("Text");
+            text.transform.SetParent(tooltip.transform, false);
+
+            var textRect = text.AddComponent<RectTransform>();
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+
+            var textText = text.AddComponent<Text>();
+            textText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            textText.verticalOverflow = VerticalWrapMode.Truncate;
+            textText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            textText.color = Color.black;
+
+            return tooltip;
+        }
+
+        /// <summary>
         /// Instantiates a button.
         /// </summary>
         /// <param name="name">The name of the button.</param>
@@ -104,6 +177,7 @@ namespace UI
             script.SelectedImage = args.SelectedImage;
             script.OnSelect = args.OnSelect;
             script.OnDeselect = args.OnDeselect;
+            script.Tooltip = args.Tooltip;
 
             foreach (var child in args.Children ?? new Button[0])
             {

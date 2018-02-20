@@ -2,7 +2,13 @@
 
 public class PanningCamera : MonoBehaviour
 {
-    public float Speed = 0.75f;
+    /// <summary>Speed of movement via keyboards.</summary>
+    public float KeyboardSpeed = 0.75f;
+
+    /// <summary>Speed of movement via mouse dragging.</summary>
+    public float MouseSpeedModifier = 0.5f;
+
+    /// <summary>Size of the band against the edge of the screen for movement.</summary>
     public float ScreenEdge = 50.0f;
 
     private float _sqrSpeed;
@@ -11,9 +17,10 @@ public class PanningCamera : MonoBehaviour
     private Vector3 _right;
     private Vector3 _forward;
 
+
 	void Start ()
     {
-        _sqrSpeed = Speed * Speed;
+        _sqrSpeed = KeyboardSpeed * KeyboardSpeed;
 
         _pos = this.transform;
         var yRotation = _pos.rotation.eulerAngles.y;
@@ -24,8 +31,8 @@ public class PanningCamera : MonoBehaviour
 
 	void Update ()
     {
-        float vx = Input.GetAxis("Horizontal") * Speed;
-        float vz = Input.GetAxis("Vertical") * Speed;
+        float vx = Input.GetAxis("Horizontal") * KeyboardSpeed;
+        float vz = Input.GetAxis("Vertical") * KeyboardSpeed;
 
         // Only pan with camera if the mouse is inside the screen
         if (Input.mousePosition.x > 0.0f - ScreenEdge &&
@@ -34,16 +41,16 @@ public class PanningCamera : MonoBehaviour
             Input.mousePosition.y < Screen.height + ScreenEdge)
         {
             if (Input.mousePosition.x <= 0.0f + ScreenEdge)
-                vx -= Speed;
+                vx -= KeyboardSpeed;
 
             if (Input.mousePosition.y <= 0.0f + ScreenEdge)
-                vz -= Speed;
+                vz -= KeyboardSpeed;
 
             if (Input.mousePosition.x >= Screen.width - ScreenEdge)
-                vx += Speed;
+                vx += KeyboardSpeed;
 
             if (Input.mousePosition.y >= Screen.height - ScreenEdge)
-                vz += Speed;
+                vz += KeyboardSpeed;
         }
 
         // Normalize speed
@@ -53,6 +60,13 @@ public class PanningCamera : MonoBehaviour
             var f = Mathf.Sqrt(_sqrSpeed / mag);
             vx = vx * f;
             vz = vz * f;
+        }
+
+        // Add on mouse movement
+        if (Input.GetKey(KeyCode.Mouse1))
+        {
+            vx -= Input.GetAxis("Mouse X") * MouseSpeedModifier;
+            vz -= Input.GetAxis("Mouse Y") * MouseSpeedModifier;
         }
 
         _pos.position += vx * _right;
