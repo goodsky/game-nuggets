@@ -8,10 +8,12 @@ namespace UI
     public class ButtonArgs
     {
         // These properties must always be set
-        public string Name;
+        public string Name = "default";
         public bool Toggleable = true;
-        public Sprite IconImage; // can be null
-        public Action OnSelect; // can be null
+        public Sprite IconImage = null; // can be null
+        public Action OnSelect = null; // can be null
+        public Action OnDeselect = null; // can be null
+        public Button[] Children = null;
 
         // These properties will be set by a ButtonGroup
         public Vector2 Position;
@@ -40,6 +42,9 @@ namespace UI
         public ButtonArgs[] Buttons;
     }
 
+    /// <summary>
+    /// Class with factory methods to generate UI components
+    /// </summary>
     public static class ToolbarFactory
     {
         private readonly static float ButtonWidth = 75.0f;
@@ -98,6 +103,12 @@ namespace UI
             script.MouseOverImage = args.MouseOverImage;
             script.SelectedImage = args.SelectedImage;
             script.OnSelect = args.OnSelect;
+            script.OnDeselect = args.OnDeselect;
+
+            foreach (var child in args.Children ?? new Button[0])
+            {
+                child.SelectionParent = script;
+            }
 
             if (args.IconImage != null)
             {
@@ -143,8 +154,7 @@ namespace UI
                 new ButtonArgs()
                 {
                     Name = "LeftButton",
-                    Toggleable = false,
-                    Position = new Vector2(0, 0),
+                    Toggleable = false,                    Position = new Vector2(0, 0),
                     Size = new Vector2(ButtonWidth, ButtonHeight),
                     Pivot = new Vector2(1, 0.5f),
                     AnchorMax = new Vector2(0, 0.5f), // 

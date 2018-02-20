@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UI
 {
-    public class Button : MonoBehaviour
+    /// <summary>
+    /// Extends the custom selection framework to have events and images on a button.
+    /// </summary>
+    public class Button : Selectable
     {
-        public static HashSet<Button> AllButtons;
-
         /// <summary>The default background image.</summary>
         public Sprite DefaultImage;
         
@@ -22,134 +21,37 @@ namespace UI
         /// <summary>(optional) Icon Image.</summary>
         public Image IconImage;
 
-        /// <summary>Whether the button remains selected after a click.</summary>
-        public bool Toggleable;
-
         /// <summary>Action to invoke when the button is selected (one per click).</summary>
         public Action OnSelect;
+
+        /// <summary>Action to invoke when the button is deselected.</summary>
+        public Action OnDeselect;
 
         /// <summary>Action to invoke each step the mouse is down on it.</summary>
         public Action OnMouseDown;
 
-        private bool _enabled;
-        private bool _mouseOver;
-        private bool _mouseDown;
-        private bool _selected;
-
         private Image _image;
-        private EventTrigger _eventTrigger;
 
-        void Start()
+        protected override void Start()
         {
-            _enabled = true;
+            base.Start();
+
             _image = gameObject.AddComponent<Image>();
-            _eventTrigger = gameObject.AddComponent<EventTrigger>();
 
-            {
-                var pointerEnter = new EventTrigger.Entry() { eventID = EventTriggerType.PointerEnter };
-                pointerEnter.callback.AddListener(_ => { MouseOver(); UpdateImage(); });
-                _eventTrigger.triggers.Add(pointerEnter);
-            }
-
-            {
-                var pointerExit = new EventTrigger.Entry() { eventID = EventTriggerType.PointerExit };
-                pointerExit.callback.AddListener(_ => { MouseOut(); UpdateImage(); });
-                _eventTrigger.triggers.Add(pointerExit);
-            }
-
-            {
-                var pointerDown = new EventTrigger.Entry() { eventID = EventTriggerType.PointerDown };
-                pointerDown.callback.AddListener(_ => { MouseDown(); UpdateImage(); });
-                _eventTrigger.triggers.Add(pointerDown);
-            }
-
-            {
-                var pointerUp = new EventTrigger.Entry() { eventID = EventTriggerType.PointerUp };
-                pointerUp.callback.AddListener(_ => { MouseUp(); UpdateImage(); });
-                _eventTrigger.triggers.Add(pointerUp);
-            }
-
-            {
-                var click = new EventTrigger.Entry() { eventID = EventTriggerType.PointerClick };
-                click.callback.AddListener(_ => { Click(); });
-                _eventTrigger.triggers.Add(click);
-            }
-
-            {
-                var select = new EventTrigger.Entry() { eventID = EventTriggerType.Select };
-                select.callback.AddListener(_ => { Selected(); UpdateImage(); });
-                _eventTrigger.triggers.Add(select);
-            }
-
-            {
-                var deselect = new EventTrigger.Entry() { eventID = EventTriggerType.Deselect };
-                deselect.callback.AddListener(_ => { Deselect(); UpdateImage(); });
-                _eventTrigger.triggers.Add(deselect);
-            }
-
-            UpdateImage();
+            PostEvent();
         }
 
-        void Update()
+        protected void Update()
         {
-            if (_mouseDown && OnMouseDown != null)
+            if (IsMouseDown && OnMouseDown != null)
             {
                 OnMouseDown();
             }
         }
 
-        public void Click()
+        protected override void InternalSelect()
         {
-            if (_enabled)
-            {
-                if (Toggleable)
-                {
-                    EventSystem.current.SetSelectedGameObject(gameObject);
-                }
-                else
-                {
-                    if (OnSelect != null)
-                    {
-                        OnSelect();
-                    }
-                }
-            }
-        }
-
-        public void Enable()
-        {
-            _enabled = true;
-        }
-
-        public void Disable()
-        {
-            _enabled = false;
-        }
-
-        public void MouseOver()
-        {
-            _mouseOver = true;
-        }
-
-        public void MouseOut()
-        {
-            _mouseOver = false;
-            _mouseDown = false;
-        }
-
-        public void MouseDown()
-        {
-            _mouseDown = true;
-        }
-
-        public void MouseUp()
-        {
-            _mouseDown = false;
-        }
-
-        public void Selected()
-        {
-            _selected = true;
+            base.InternalSelect();
 
             if (OnSelect != null)
             {
@@ -157,14 +59,19 @@ namespace UI
             }
         }
 
-        public void Deselect()
+        protected override void InternalDeselect()
         {
-            _selected = false;
+            if (OnDeselect != null)
+            {
+                OnDeselect();
+            }
+
+            base.InternalDeselect();
         }
 
-        public void UpdateImage()
+        public override void PostEvent()
         {
-            if (_enabled)
+            if (IsEnabled)
             {
                 if (IconImage != null)
                 {
@@ -172,11 +79,11 @@ namespace UI
                     IconImage.color = Color.white;
                 }
 
-                if (_selected || _mouseDown)
+                if (IsSelected || IsMouseDown)
                 {
                     _image.sprite = SelectedImage;
                 }
-                else if (_mouseOver)
+                else if (IsMouseOver)
                 {
                     _image.sprite = MouseOverImage;
                 }

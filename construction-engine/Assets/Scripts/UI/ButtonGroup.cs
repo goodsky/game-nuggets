@@ -5,8 +5,7 @@ namespace UI
 {
     /// <summary>
     /// UI Element to order and scroll a group of buttons.
-    /// Contains stylistic flairs for my design. 
-    /// Could be split into 'functionality' and 'flair' subclasses.
+    /// Contains stylistic flairs for my menu design.
     /// </summary>
     public class ButtonGroup : MonoBehaviour
     {
@@ -38,6 +37,7 @@ namespace UI
 
         private bool _mouseOver;
         private float _maskWidth;
+        private bool _scrollEnabled;
         private RectTransform _contentRect;
         private EventTrigger _eventTrigger;
 
@@ -56,13 +56,13 @@ namespace UI
 
             if (padding < 0.0)
             {
-                // scrolling enabled
+                _scrollEnabled = true;
                 this.ScrollButtonLeft.SetActive(true);
                 this.ScrollButtonRight.SetActive(true);
             }
             else
             {
-                // scrolling disabled
+                _scrollEnabled = false;
                 this.ScrollButtonLeft.SetActive(false);
                 this.ScrollButtonRight.SetActive(false);
 
@@ -105,12 +105,21 @@ namespace UI
 
         private void ScrollRight(float speed)
         {
+            if (!_scrollEnabled)
+                return;
+
             float xPos = _contentRect.anchoredPosition.x;
             float rightEdge = xPos + _contentRect.rect.width;
 
             if (rightEdge > _maskWidth)
             {
                 _contentRect.anchoredPosition = new Vector2(xPos - speed, _contentRect.anchoredPosition.y);
+
+                var button = Content.GetComponentInChildren<Button>();
+                if (button != null && Selectable.SelectionManager.Selected != button.SelectionParent)
+                {
+                    Selectable.SelectionManager.UpdateSelection(button.SelectionParent);
+                }
             }
             else
             {
@@ -125,11 +134,20 @@ namespace UI
 
         private void ScrollLeft(float speed)
         {
+            if (!_scrollEnabled)
+                return;
+
             float xPos = _contentRect.anchoredPosition.x;
 
             if (xPos < 0.0f)
             {
                 _contentRect.anchoredPosition = new Vector2(xPos + speed, _contentRect.anchoredPosition.y);
+
+                var button = Content.GetComponentInChildren<Button>();
+                if (button != null && Selectable.SelectionManager.Selected != button.SelectionParent)
+                {
+                    Selectable.SelectionManager.UpdateSelection(button.SelectionParent);
+                }
             }
             else
             {
