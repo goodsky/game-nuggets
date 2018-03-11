@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
 
 namespace GridTerrain
 {
@@ -129,6 +126,10 @@ namespace GridTerrain
             return true;
         }
 
+        /// <summary>
+        /// Write all heights to the Console.
+        /// </summary>
+        /// <param name="heights"></param>
         public static void DumpHeights(int[,] heights)
         {
             for (int j = 0; j < heights.GetLength(1); ++j)

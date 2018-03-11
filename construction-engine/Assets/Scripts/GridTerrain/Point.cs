@@ -3,6 +3,10 @@ using UnityEngine.Assertions;
 
 namespace GridTerrain
 {
+    /// <summary>
+    /// 2D Point that has a safe HashCode.
+    /// Valid for values up to 2^10.
+    /// </summary>
     public struct Point2 : IEquatable<Point2>
     {
         private readonly int _x, _y;
@@ -49,6 +53,10 @@ namespace GridTerrain
         }
     }
 
+    /// <summary>
+    /// 3D Point that has a safe HashCode.
+    /// Valid for values up to 2^10.
+    /// </summary>
     public struct Point3 : IEquatable<Point3>
     {
         public static Point3 Null = new Point3(null);

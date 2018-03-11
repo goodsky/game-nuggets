@@ -25,7 +25,10 @@ namespace GridTerrain
         float _mouseDragStartY;
         int _mouseDragHeightChange;
 
-        void Start()
+        /// <summary>
+        /// Unity Start method
+        /// </summary>
+        protected void Start()
         {
             var terrainComponent = GetComponent<Terrain>();
 
@@ -49,9 +52,9 @@ namespace GridTerrain
         }
 
         /// <summary>
-        /// Game Loop.
+        /// Unity Update method
         /// </summary>
-        void Update()
+        protected void Update()
         {
             if (_state == EditingStates.Selecting)
             {
@@ -131,8 +134,6 @@ namespace GridTerrain
                 _mouseDragHeightChange = newHeightChange;
 
                 var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.GridCountY);
-
-                // _terrain.SetHeight(_gridSelection.x, _gridSelection.z, gridHeight);
 
                 if (_editor.SafeSetHeight(_gridSelection.x, _gridSelection.z, gridHeight))
                 {

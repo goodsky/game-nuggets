@@ -41,7 +41,10 @@ namespace UI
         private RectTransform _contentRect;
         private EventTrigger _eventTrigger;
 
-        void Start()
+        /// <summary>
+        /// Unity Start method
+        /// </summary>
+        protected void Start()
         {
             // this.SelectionPip.SetActive(false);
 
@@ -85,7 +88,10 @@ namespace UI
             }
         }
 
-        void Update()
+        /// <summary>
+        /// Unity Update method
+        /// </summary>
+        protected void Update()
         {
             if (_mouseOver)
             {
@@ -103,6 +109,10 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// Scroll the buttons to the right.
+        /// </summary>
+        /// <param name="speed">Speed to scroll right.</param>
         private void ScrollRight(float speed)
         {
             if (!_scrollEnabled)
@@ -115,6 +125,8 @@ namespace UI
             {
                 _contentRect.anchoredPosition = new Vector2(xPos - speed, _contentRect.anchoredPosition.y);
 
+                // When you start scrolling, set the focus to the parent of the scroll bar buttons.
+                // This will be the button that popped up the scroll bar.
                 var button = Content.GetComponentInChildren<Button>();
                 if (button != null && Selectable.SelectionManager.Selected != button.SelectionParent)
                 {
@@ -127,11 +139,18 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// Scroll the buttons to the right at the default speed.
+        /// </summary>
         private void ScrollRight()
         {
             ScrollRight(ScrollSpeed);
         }
 
+        /// <summary>
+        /// Scroll the buttons to the left.
+        /// </summary>
+        /// <param name="speed">Speed to scroll left.</param>
         private void ScrollLeft(float speed)
         {
             if (!_scrollEnabled)
@@ -143,6 +162,8 @@ namespace UI
             {
                 _contentRect.anchoredPosition = new Vector2(xPos + speed, _contentRect.anchoredPosition.y);
 
+                // When you start scrolling, set the focus to the parent of the scroll bar buttons.
+                // This will be the button that popped up the scroll bar.
                 var button = Content.GetComponentInChildren<Button>();
                 if (button != null && Selectable.SelectionManager.Selected != button.SelectionParent)
                 {
@@ -155,6 +176,9 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// Scroll left at the default speed.
+        /// </summary>
         private void ScrollLeft()
         {
             ScrollLeft(ScrollSpeed);

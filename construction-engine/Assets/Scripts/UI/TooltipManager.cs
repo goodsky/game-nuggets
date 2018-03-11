@@ -16,6 +16,10 @@ namespace UI
             Tooltip.SetActive(false);
         }
 
+        /// <summary>
+        /// Pop up the tooltip at the mouse's location.
+        /// </summary>
+        /// <param name="text">Text to display.</param>
         public static void PopUp(string text)
         {
             var textComponent = Tooltip.GetComponentInChildren<Text>();
@@ -29,6 +33,9 @@ namespace UI
             Tooltip.SetActive(true);
         }
 
+        /// <summary>
+        /// Clear the tooltip.
+        /// </summary>
         public static void PopDown()
         {
             Tooltip.SetActive(false);

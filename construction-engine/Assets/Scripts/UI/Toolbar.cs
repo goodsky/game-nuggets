@@ -28,7 +28,6 @@ namespace UI
 
         private GameObject _mainMenuPip;
         private GameObject _subMenuPip;
-        
 
         void Start()
         {
@@ -119,7 +118,7 @@ namespace UI
         /// </summary>
         protected virtual void PopulateMenus() { /* IMPLEMENT ME! :) */ }
 
-        #region Helpful Templates
+        #region Helpful Factory Templates
         protected ButtonGroupArgs MainMenuGroup(ButtonArgs[] buttons)
         {
             return new ButtonGroupArgs()

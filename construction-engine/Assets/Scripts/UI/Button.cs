@@ -40,17 +40,24 @@ namespace UI
         private Image _image;
         private float _tooltipCount;
 
+        /// <summary>
+        /// Unity Start method.
+        /// </summary>
         protected override void Start()
         {
             base.Start();
 
             _image = gameObject.AddComponent<Image>();
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// Unity Update method.
+        /// </summary>
         protected void Update()
         {
+            // Tooltip Popup
             if (IsMouseOver && !string.IsNullOrEmpty(Tooltip))
             {
                 _tooltipCount += Time.deltaTime;
@@ -61,12 +68,16 @@ namespace UI
                 }
             }
 
+            // Call the MouseDown event each step the mouse is down
             if (IsMouseDown && OnMouseDown != null)
             {
                 OnMouseDown();
             }
         }
 
+        /// <summary>
+        /// Override the Select event
+        /// </summary>
         protected override void InternalSelect()
         {
             base.InternalSelect();
@@ -77,6 +88,9 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// Override the Deselect event
+        /// </summary>
         protected override void InternalDeselect()
         {
             if (OnDeselect != null)
@@ -87,6 +101,10 @@ namespace UI
             base.InternalDeselect();
         }
 
+        /// <summary>
+        /// Override the MouseOver event
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public override void MouseOver(BaseEventData eventData)
         {
             _tooltipCount = 0.0f;
@@ -94,6 +112,10 @@ namespace UI
             base.MouseOver(eventData);
         }
 
+        /// <summary>
+        /// Override the MouseOut event
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public override void MouseOut(BaseEventData eventData)
         {
             TooltipManager.PopDown();
@@ -101,7 +123,10 @@ namespace UI
             base.MouseOut(eventData);
         }
 
-        public override void PostEvent()
+        /// <summary>
+        /// Update the button image state machine after each event.
+        /// </summary>
+        public override void AfterEvent()
         {
             if (IsEnabled)
             {

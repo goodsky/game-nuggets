@@ -17,8 +17,10 @@ public class PanningCamera : MonoBehaviour
     private Vector3 _right;
     private Vector3 _forward;
 
-
-	void Start ()
+    /// <summary>
+    /// Unity Start method
+    /// </summary>
+	protected void Start ()
     {
         _sqrSpeed = KeyboardSpeed * KeyboardSpeed;
 
@@ -29,28 +31,41 @@ public class PanningCamera : MonoBehaviour
         _right = new Vector3(Mathf.Cos(Mathf.Deg2Rad * (-yRotation)), 0.0f, Mathf.Sin(Mathf.Deg2Rad * (-yRotation)));
 	}
 
-	void Update ()
+    /// <summary>
+    /// Unity Update method
+    /// </summary>
+	protected void Update ()
     {
         float vx = Input.GetAxis("Horizontal") * KeyboardSpeed;
         float vz = Input.GetAxis("Vertical") * KeyboardSpeed;
 
-        // Only pan with camera if the mouse is inside the screen
-        if (Input.mousePosition.x > 0.0f - ScreenEdge &&
-            Input.mousePosition.y > 0.0f - ScreenEdge &&
-            Input.mousePosition.x < Screen.width + ScreenEdge &&
-            Input.mousePosition.y < Screen.height + ScreenEdge)
+        // Move with the mouse if right-key is down
+        if (Input.GetKey(KeyCode.Mouse1))
         {
-            if (Input.mousePosition.x <= 0.0f + ScreenEdge)
-                vx -= KeyboardSpeed;
+            vx -= Input.GetAxis("Mouse X") * MouseSpeedModifier;
+            vz -= Input.GetAxis("Mouse Y") * MouseSpeedModifier;
+        }
+        else
+        {
+            // Pan the camera using the mouse position if the right-key isn't down
+            // and if the mouse is close to a screen edge
+            if (Input.mousePosition.x > 0.0f - ScreenEdge &&
+                Input.mousePosition.y > 0.0f - ScreenEdge &&
+                Input.mousePosition.x < Screen.width + ScreenEdge &&
+                Input.mousePosition.y < Screen.height + ScreenEdge)
+            {
+                if (Input.mousePosition.x <= 0.0f + ScreenEdge)
+                    vx -= KeyboardSpeed;
 
-            if (Input.mousePosition.y <= 0.0f + ScreenEdge)
-                vz -= KeyboardSpeed;
+                if (Input.mousePosition.y <= 0.0f + ScreenEdge)
+                    vz -= KeyboardSpeed;
 
-            if (Input.mousePosition.x >= Screen.width - ScreenEdge)
-                vx += KeyboardSpeed;
+                if (Input.mousePosition.x >= Screen.width - ScreenEdge)
+                    vx += KeyboardSpeed;
 
-            if (Input.mousePosition.y >= Screen.height - ScreenEdge)
-                vz += KeyboardSpeed;
+                if (Input.mousePosition.y >= Screen.height - ScreenEdge)
+                    vz += KeyboardSpeed;
+            }
         }
 
         // Normalize speed
@@ -60,13 +75,6 @@ public class PanningCamera : MonoBehaviour
             var f = Mathf.Sqrt(_sqrSpeed / mag);
             vx = vx * f;
             vz = vz * f;
-        }
-
-        // Add on mouse movement
-        if (Input.GetKey(KeyCode.Mouse1))
-        {
-            vx -= Input.GetAxis("Mouse X") * MouseSpeedModifier;
-            vz -= Input.GetAxis("Mouse Y") * MouseSpeedModifier;
         }
 
         _pos.position += vx * _right;

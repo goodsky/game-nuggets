@@ -5,12 +5,10 @@ public class FlyingCamera : MonoBehaviour
     public float Speed = 1.0f;
     public float Rotation = 1.0f;
 
-    private Transform _pos;
     private float _adjustedSpeed;
 
 	void Start ()
     {
-        _pos = this.transform;
         _adjustedSpeed = Speed * Mathf.Sqrt(0.5f);
 	}
 
@@ -28,9 +26,9 @@ public class FlyingCamera : MonoBehaviour
             vx = vx < 0.0f ? -_adjustedSpeed : _adjustedSpeed;
         }
 
-        _pos.position += _pos.forward * vz;
-        _pos.position += _pos.up * vy;
-        _pos.position += _pos.right * vx;
-        _pos.localEulerAngles += new Vector3(-vrx, vry, 0.0f);
+        transform.position += transform.forward * vz;
+        transform.position += transform.up * vy;
+        transform.position += transform.right * vx;
+        transform.localEulerAngles += new Vector3(-vrx, vry, 0.0f);
     }
 }

@@ -24,6 +24,10 @@ namespace UI
 
             private static Selectable globalSelection = null;
 
+            /// <summary>
+            /// Updates which object is currently selected in the UI.
+            /// </summary>
+            /// <param name="selection">The Selectable component of the new selected GameObject.</param>
             public static void UpdateSelection(Selectable selection)
             {
                 // NOTE: thread safety?
@@ -71,8 +75,12 @@ namespace UI
 
         private EventTrigger _eventTrigger;
 
+        /// <summary>
+        /// Unity Start method
+        /// </summary>
         protected virtual void Start()
         {
+            // Register a custom event system for this GameObject.
             _eventTrigger = gameObject.AddComponent<EventTrigger>();
 
             {
@@ -108,22 +116,33 @@ namespace UI
             // NB: I am not using Unity's Select or Unselect triggers.
         }
 
+        /// <summary>
+        /// Unity OnDisable method
+        /// </summary>
         protected void OnDisable()
         {
             IsMouseOver = false;
             IsMouseDown = false;
             IsSelected = false;
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// Select this GameObject
+        /// NOTE: this method wraps InternalSelect.
+        /// </summary>
         public void Select()
         {
             InternalSelect();
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// Deselect this GameObject
+        /// NOTE: this method wraps InternalDeselect.
+        /// </summary>
         public void Deselect()
         {
             if (SelectionManager.Selected == this ||
@@ -136,32 +155,22 @@ namespace UI
 
             InternalDeselect();
 
-            PostEvent();
+            AfterEvent();
         }
 
-        protected virtual void InternalSelect()
-        {
-            IsSelected = true;
-        }
-
-        protected virtual void InternalDeselect()
-        {
-            IsSelected = false;
-
-            // Entire tree should deselect
-            if (SelectionParent != null)
-            {
-                SelectionParent.Deselect();
-            }
-        }
-
+        /// <summary>
+        /// Enable this selectable instance.
+        /// </summary>
         public virtual void Enable()
         {
             IsEnabled = true;
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// Disable this selectable instance.
+        /// </summary>
         public virtual void Disable()
         {
             IsEnabled = false;
@@ -171,9 +180,13 @@ namespace UI
                 SelectionManager.UpdateSelection(null);
             }
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// Click event that is wired into the UI event system. 
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public virtual void Click(BaseEventData eventData)
         {
             var pointerEventData = eventData as PointerEventData;
@@ -189,9 +202,13 @@ namespace UI
 
             // NB: Disabled and non-selectable (not toggleable) elements don't update selection
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// MouseOver event that is wired into the UI event system.
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public virtual void MouseOver(BaseEventData eventData)
         {
             if (IsEnabled)
@@ -199,17 +216,25 @@ namespace UI
                 IsMouseOver = true;
             }
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// MouseOut event that is wired into the UI event system.
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public virtual void MouseOut(BaseEventData eventData)
         {
             IsMouseOver = false;
             IsMouseDown = false;
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// MouseDown event that is wired into the UI event system.
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public virtual void MouseDown(BaseEventData eventData)
         {
             var pointerEventData = eventData as PointerEventData;
@@ -223,9 +248,13 @@ namespace UI
                 IsMouseDown = true;
             }
 
-            PostEvent();
+            AfterEvent();
         }
 
+        /// <summary>
+        /// MouseUp event that is wired into the UI event system.
+        /// </summary>
+        /// <param name="eventData">Event system data</param>
         public virtual void MouseUp(BaseEventData eventData)
         {
             var pointerEventData = eventData as PointerEventData;
@@ -236,10 +265,38 @@ namespace UI
 
             IsMouseDown = false;
 
-            PostEvent();
+            AfterEvent();
         }
 
-        public virtual void PostEvent()
+        /// <summary>
+        /// Inhereted objects can override this method to hook the Select event.
+        /// Be sure to call the base method though!
+        /// </summary>
+        protected virtual void InternalSelect()
+        {
+            IsSelected = true;
+        }
+
+        /// <summary>
+        /// Inhereted objects can override this method to hook the Deselect event.
+        /// Be sure to call the base method though!
+        /// </summary>
+        protected virtual void InternalDeselect()
+        {
+            IsSelected = false;
+
+            // Entire tree should deselect
+            if (SelectionParent != null)
+            {
+                SelectionParent.Deselect();
+            }
+        }
+
+        /// <summary>
+        /// Inhereted objects can override this method to hook the Deselect event.
+        /// Don't worry about calling the base method.
+        /// </summary>
+        public virtual void AfterEvent()
         {
             // Called after each event update.
         }
