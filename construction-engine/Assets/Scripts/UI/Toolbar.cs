@@ -12,12 +12,40 @@ namespace UI
     {
         protected static readonly float ButtonGroupMargins = 175.0f;
 
+        /// <summary>
+        /// Main menu 'Default' color
+        /// </summary>
         public Sprite MainMenuBackground;
+
+        /// <summary>
+        /// Main menu 'Selected' color
+        /// </summary>
         public Sprite MainMenuSelected;
+
+        /// <summary>
+        /// Main menu Pip Sprite
+        /// </summary>
         public Sprite MainMenuPip;
+
+        /// <summary>
+        /// Sub menu 'Default' color
+        /// </summary>
         public Sprite SubMenuBackground;
+
+        /// <summary>
+        /// Sub menu 'Selected' color
+        /// </summary>
         public Sprite SubMenuSelected;
+
+        /// <summary>
+        /// Sub menu Pip Sprite
+        /// </summary>
         public Sprite SubMenuPip;
+
+        /// <summary>
+        /// Background Window color
+        /// (This may be removed)
+        /// </summary>
         public Sprite PageBackground;
 
         protected GameObject _subMenu;
@@ -29,13 +57,20 @@ namespace UI
         private GameObject _mainMenuPip;
         private GameObject _subMenuPip;
 
-        void Start()
+        private GameObject _selectionRoot;
+
+        /// <summary>
+        /// Unity Start method
+        /// </summary>
+        protected void Start()
         {
             var canvas = gameObject.GetComponentInParent<Canvas>();
             TooltipManager.Initialize(canvas.gameObject.transform);
 
             var image = gameObject.AddComponent<Image>();
             image.sprite = MainMenuBackground;
+
+            _selectionRoot = ToolbarFactory.InstantiateSelectionRoot(canvas.gameObject);
 
             _subMenu = ToolbarFactory.InstantiateSubMenu(gameObject, SubMenuBackground);
             _window = ToolbarFactory.InstantiateWindow(_subMenu.transform,
@@ -52,7 +87,10 @@ namespace UI
             PopulateMenus();
         }
 
-        void Update()
+        /// <summary>
+        /// Unity Update method
+        /// </summary>
+        protected void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {

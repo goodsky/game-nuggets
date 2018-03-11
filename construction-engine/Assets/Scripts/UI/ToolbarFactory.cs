@@ -61,6 +61,34 @@ namespace UI
         private readonly static float ButtonHeight = 75.0f;
 
         /// <summary>
+        /// Instantiates a screen-wide object that is the root of UI selections. 
+        /// This means if you click on the non-UI screen then the selection manager will reset.
+        /// </summary>
+        /// <param name="parent">The Canvas parent.</param>
+        /// <returns>The selection root.</returns>
+        public static GameObject InstantiateSelectionRoot(GameObject parent)
+        {
+            var selectionRoot = new GameObject("SelectionRoot");
+            selectionRoot.transform.SetParent(parent.transform, false);
+            selectionRoot.transform.SetAsFirstSibling();
+
+            var rootRect = selectionRoot.AddComponent<RectTransform>();
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+            rootRect.anchorMin = new Vector2(0.0f, 0.0f);
+            rootRect.anchorMax = new Vector2(1.0f, 1.0f);
+
+            var rootImage = selectionRoot.AddComponent<Image>();
+            rootImage.color = new Color(255.0f, 255.0f, 255.0f, 0.0f);
+            rootImage.raycastTarget = true;
+
+            var rootSelectable = selectionRoot.AddComponent<Selectable>();
+            rootSelectable.IsEnabled = true;
+            rootSelectable.Toggleable = true;
+
+            return selectionRoot;
+        }
+
+        /// <summary>
         /// Instantiates the SubMenu game object as a copy of the main toolbar with a different background.
         /// Starts its life as non-active.
         /// </summary>
