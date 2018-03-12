@@ -48,6 +48,7 @@ namespace UI
         /// </summary>
         public Sprite PageBackground;
 
+        protected GameObject _mainMenu;
         protected GameObject _subMenu;
         protected GameObject _subMenuButtons;
 
@@ -57,8 +58,6 @@ namespace UI
         private GameObject _mainMenuPip;
         private GameObject _subMenuPip;
 
-        private GameObject _selectionRoot;
-
         /// <summary>
         /// Unity Start method
         /// </summary>
@@ -67,13 +66,19 @@ namespace UI
             var canvas = gameObject.GetComponentInParent<Canvas>();
             TooltipManager.Initialize(canvas.gameObject.transform);
 
-            var image = gameObject.AddComponent<Image>();
-            image.sprite = MainMenuBackground;
+            // Fire and forget the selection root object.
+            // This will catch click events on the screen that are not on a UI element.
+            ToolbarFactory.LoadSelectionRoot(canvas.gameObject);
 
-            _selectionRoot = ToolbarFactory.InstantiateSelectionRoot(canvas.gameObject);
+            // Create the Main Menu Bar on the bottom
+            _mainMenu = ToolbarFactory.LoadMenuBar(gameObject, "MainMenu", 0.0f, MainMenuBackground);
 
-            _subMenu = ToolbarFactory.InstantiateSubMenu(gameObject, SubMenuBackground);
-            _window = ToolbarFactory.InstantiateWindow(_subMenu.transform,
+            // Creat the second layer menu
+            float mainMenuHeight = _mainMenu.GetComponent<RectTransform>().sizeDelta.y;
+            _subMenu = ToolbarFactory.LoadMenuBar(gameObject, "SubMenu", mainMenuHeight, SubMenuBackground);
+            _subMenu.SetActive(false);
+
+            _window = ToolbarFactory.GenerateWindow(_subMenu.transform,
                 new WindowArgs()
                 {
                     Name = "Window",
@@ -81,8 +86,8 @@ namespace UI
                     BackgroundImage = PageBackground
                 });
 
-            _mainMenuPip = ToolbarFactory.InstantiatePip(gameObject, MainMenuPip);
-            _subMenuPip = ToolbarFactory.InstantiatePip(_subMenu, SubMenuPip);
+            _mainMenuPip = ToolbarFactory.LoadPip(_mainMenu, MyColors.Gray.Dark);
+            _subMenuPip = ToolbarFactory.LoadPip(_subMenu, MyColors.Gray.Light);
 
             PopulateMenus();
         }
@@ -161,7 +166,7 @@ namespace UI
         {
             return new ButtonGroupArgs()
             {
-                Height = GetComponent<RectTransform>().rect.height,
+                Height = _mainMenu.GetComponent<RectTransform>().rect.height,
                 PosY = 0,
                 Left = ButtonGroupMargins,
                 Right = ButtonGroupMargins,

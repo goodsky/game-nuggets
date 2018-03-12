@@ -6,7 +6,7 @@ namespace UI
     {
         protected override void PopulateMenus()
         {
-            var homeSubMenu = ToolbarFactory.InstantiateButtonGroup(
+            var homeSubMenu = ToolbarFactory.GenerateButtonGroup(
                 "HomeSubMenu",
                 _subMenu.transform,
                 SubMenuGroup(
@@ -19,7 +19,7 @@ namespace UI
                     }));
 
 
-            var circleSubMenu = ToolbarFactory.InstantiateButtonGroup(
+            var circleSubMenu = ToolbarFactory.GenerateButtonGroup(
                 "CircleSubMenu",
                 _subMenu.transform,
                 SubMenuGroup(
@@ -30,7 +30,7 @@ namespace UI
                         new ButtonArgs() { Name = "SubMenuCircle", Tooltip = "Another Circle", IconImage = Resources.Load<Sprite>("toolbar-icon-test2"), OnSelect = () => PopUpWindow(null), OnDeselect = () => PopDownWindow() },
                     }));
 
-            var diamondSubMenu = ToolbarFactory.InstantiateButtonGroup(
+            var diamondSubMenu = ToolbarFactory.GenerateButtonGroup(
                 "DiamondSubMenu",
                 _subMenu.transform,
                 SubMenuGroup(
@@ -60,7 +60,7 @@ namespace UI
             var circleSubMenuButtons = circleSubMenu.GetComponentsInChildren<Button>();
             var diamondSubMenuButtons = diamondSubMenu.GetComponentsInChildren<Button>();
 
-            ToolbarFactory.InstantiateButtonGroup(
+            ToolbarFactory.GenerateButtonGroup(
                 "MainMenu",
                 gameObject.transform,
                 MainMenuGroup(

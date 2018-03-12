@@ -25,12 +25,6 @@ namespace UI
         public GameObject Content;
 
         /// <summary>
-        /// The pip pointing towards the selected button.
-        /// Just a style thing.
-        /// </summary>
-        public GameObject SelectionPip;
-
-        /// <summary>
         /// The speed to scroll.
         /// </summary>
         public float ScrollSpeed = 3.0f;

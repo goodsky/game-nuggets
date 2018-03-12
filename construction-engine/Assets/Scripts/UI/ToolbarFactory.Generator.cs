@@ -55,166 +55,10 @@ namespace UI
     /// Class with factory methods to generate UI components.
     /// A testiment to how uncomfortable I am with using editor tools and prefabs.
     /// </summary>
-    public static class ToolbarFactory
+    public static partial class ToolbarFactory
     {
-        private readonly static float ButtonWidth = 75.0f;
-        private readonly static float ButtonHeight = 75.0f;
-
-        /// <summary>
-        /// Instantiates a screen-wide object that is the root of UI selections. 
-        /// This means if you click on the non-UI screen then the selection manager will reset.
-        /// </summary>
-        /// <param name="parent">The Canvas parent.</param>
-        /// <returns>The selection root.</returns>
-        public static GameObject InstantiateSelectionRoot(GameObject parent)
-        {
-            var selectionRoot = new GameObject("SelectionRoot");
-            selectionRoot.transform.SetParent(parent.transform, false);
-            selectionRoot.transform.SetAsFirstSibling();
-
-            var rootRect = selectionRoot.AddComponent<RectTransform>();
-            rootRect.pivot = new Vector2(0.5f, 0.5f);
-            rootRect.anchorMin = new Vector2(0.0f, 0.0f);
-            rootRect.anchorMax = new Vector2(1.0f, 1.0f);
-
-            var rootImage = selectionRoot.AddComponent<Image>();
-            rootImage.color = new Color(255.0f, 255.0f, 255.0f, 0.0f);
-            rootImage.raycastTarget = true;
-
-            var rootSelectable = selectionRoot.AddComponent<Selectable>();
-            rootSelectable.IsEnabled = true;
-            rootSelectable.Toggleable = true;
-
-            return selectionRoot;
-        }
-
-        /// <summary>
-        /// Instantiates the SubMenu game object as a copy of the main toolbar with a different background.
-        /// Starts its life as non-active.
-        /// </summary>
-        /// <param name="parent">The toolbar to copy.</param>
-        /// <param name="background">The sprite image to use.</param>
-        /// <returns>The submenu.</returns>
-        public static GameObject InstantiateSubMenu(GameObject parent, Sprite background)
-        {
-            var subMenu = new GameObject("SubToolbar");
-            subMenu.transform.SetParent(parent.transform, false);
-
-            var rect = parent.GetComponent<RectTransform>();
-            var subRect = subMenu.AddComponent<RectTransform>();
-            subRect.pivot = rect.pivot;
-            subRect.anchorMin = rect.anchorMin;
-            subRect.anchorMax = rect.anchorMax;
-            subRect.sizeDelta = rect.sizeDelta;
-            subRect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + rect.rect.height);
-
-            var subImage = subMenu.AddComponent<Image>();
-            subImage.sprite = background;
-
-            subMenu.SetActive(false);
-
-            return subMenu;
-        }
-
-        /// <summary>
-        /// Instantiates a the small UI 'pip' that is used entirely for looking pretty.
-        /// Stop and smell the roses sometimes.
-        /// </summary>
-        /// <param name="parent">The parent of the pip.</param>
-        /// <param name="image">The pip image.</param>
-        /// <returns></returns>
-        public static GameObject InstantiatePip(GameObject parent, Sprite image)
-        {
-            var pip = new GameObject("Pip");
-            pip.transform.SetParent(parent.transform, false);
-
-            var pipRect = pip.AddComponent<RectTransform>();
-            pipRect.pivot = new Vector2(0.5f, 1);
-            pipRect.anchorMin = new Vector2(0.5f, 1);
-            pipRect.anchorMax = new Vector2(0.5f, 1);
-            pipRect.sizeDelta = new Vector2(image.rect.width, image.rect.height);
-            pipRect.anchoredPosition = new Vector2(0, 0);
-
-            var pipImage = pip.AddComponent<Image>();
-            pipImage.sprite = image;
-            pipImage.raycastTarget = false;
-
-            pip.SetActive(false);
-
-            return pip;
-        }
-
-        /// <summary>
-        /// Instantiates a tooltip textbox.
-        /// It pops up over buttons to lend helpful pointers.
-        /// </summary>
-        /// <param name="parent">The tooltip parent.</param>
-        /// <returns></returns>
-        public static GameObject InstantiateTooltip(Transform parent)
-        {
-            var tooltip = new GameObject("Tooltip");
-            tooltip.transform.SetParent(parent.transform, false);
-
-            var tooltipRect = tooltip.AddComponent<RectTransform>();
-            tooltipRect.pivot = new Vector2(0, 1);
-            tooltipRect.anchorMin = new Vector2(0, 1);
-            tooltipRect.anchorMax = new Vector2(1, 0);
-
-            var tooltipImage = tooltip.AddComponent<Image>();
-            tooltipImage.color = Color.grey;
-            tooltipImage.raycastTarget = false;
-
-            var tooltipLayout = tooltip.AddComponent<HorizontalLayoutGroup>();
-            tooltipLayout.padding = new RectOffset(5, 5, 5, 5);
-            tooltipLayout.childForceExpandWidth = tooltipLayout.childForceExpandHeight = false;
-            tooltipLayout.childControlWidth = tooltipLayout.childControlHeight = true;
-
-            var tooltipSizeFitter = tooltip.AddComponent<ContentSizeFitter>();
-            tooltipSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            tooltipSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            var text = new GameObject("Text");
-            text.transform.SetParent(tooltip.transform, false);
-
-            var textRect = text.AddComponent<RectTransform>();
-            textRect.pivot = new Vector2(0.5f, 0.5f);
-
-            var textText = text.AddComponent<Text>();
-            textText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            textText.verticalOverflow = VerticalWrapMode.Truncate;
-            textText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            textText.color = Color.black;
-
-            return tooltip;
-        }
-
-        /// <summary>
-        /// Instantiates the small UI divider between buttons.
-        /// It's entirely for looking pretty.
-        /// </summary>
-        /// <param name="parent">The parent for the divider.</param>
-        /// <param name="xPos">X Position for the divider.</param>
-        /// <returns></returns>
-        public static GameObject InstantiateDivider(Transform parent, float xPos)
-        {
-            var divider = new GameObject("Divider");
-            divider.transform.SetParent(parent, false);
-
-            var rectSprite = Resources.Load<Sprite>("toolbar-divider");
-
-            var rect = divider.AddComponent<RectTransform>();
-            rect.pivot = new Vector2(0, 0.5f);
-            rect.anchorMin = new Vector2(0, 0.5f);
-            rect.anchorMax = new Vector2(0, 0.5f);
-            rect.sizeDelta = new Vector2(rectSprite.rect.width, rectSprite.rect.height);
-            rect.anchoredPosition = new Vector2(xPos, 0);
-
-            var rectImage = divider.AddComponent<Image>();
-            rectImage.sprite = rectSprite;
-            rectImage.raycastTarget = false;
-
-            return divider;
-        }
+        private static readonly float ButtonWidth = 75.0f;
+        private static readonly float ButtonHeight = 75.0f;
 
         /// <summary>
         /// Instantiates a button.
@@ -223,7 +67,7 @@ namespace UI
         /// <param name="parent">The parent of the new button.</param>
         /// <param name="args">Instantiation arguments.</param>
         /// <returns>The button.</returns>
-        public static GameObject InstantiateButton(Transform parent, ButtonArgs args)
+        public static GameObject GenerateButton(Transform parent, ButtonArgs args)
         {
             var button = new GameObject(args.Name);
             button.transform.SetParent(parent, false);
@@ -274,7 +118,7 @@ namespace UI
         /// <param name="parent">Parent transform to create the button group on.</param>
         /// <param name="args">Instantiation arguments.</param>
         /// <returns>The button group.</returns>
-        public static GameObject InstantiateButtonGroup(string name, Transform parent, ButtonGroupArgs args)
+        public static GameObject GenerateButtonGroup(string name, Transform parent, ButtonGroupArgs args)
         {
             var buttonGroup = new GameObject(name);
             buttonGroup.transform.SetParent(parent, false);
@@ -288,12 +132,13 @@ namespace UI
             rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, args.PosY);
 
             // Instantiate the Left Arrow
-            var leftArrow = InstantiateButton(
+            var leftArrow = GenerateButton(
                 buttonGroup.transform,
                 new ButtonArgs()
                 {
                     Name = "LeftButton",
-                    Toggleable = false,                    Position = new Vector2(0, 0),
+                    Toggleable = false,
+                    Position = new Vector2(0, 0),
                     Size = new Vector2(ButtonWidth, ButtonHeight),
                     Pivot = new Vector2(1, 0.5f),
                     AnchorMax = new Vector2(0, 0.5f), // 
@@ -305,7 +150,7 @@ namespace UI
                 });
 
             // Instantiate the Right Arrow
-            var rightArrow = InstantiateButton(
+            var rightArrow = GenerateButton(
                 buttonGroup.transform,
                 new ButtonArgs()
                 {
@@ -361,13 +206,13 @@ namespace UI
                 button.MouseOverImage = args.ButtonsMouseOverImage;
                 button.SelectedImage = args.ButtonsSelectedImage;
 
-                InstantiateButton(content.transform, button);
+                GenerateButton(content.transform, button);
             }
 
             for (int i = 1; i < args.Buttons.Length; ++i)
             {
                 // Little extra UI prettyness with the dividers
-                InstantiateDivider(content.transform, i * ButtonWidth - 1);
+                LoadDivider(content.transform, i * ButtonWidth - 1);
             }
 
             var script = buttonGroup.AddComponent<ButtonGroup>();
@@ -384,7 +229,7 @@ namespace UI
         /// <param name="parent">The UI parent.</param>
         /// <param name="args">The window arguments.</param>
         /// <returns>The window.</returns>
-        public static GameObject InstantiateWindow(Transform parent, WindowArgs args)
+        public static GameObject GenerateWindow(Transform parent, WindowArgs args)
         {
             var window = new GameObject(args.Name);
             window.transform.SetParent(parent, false);
