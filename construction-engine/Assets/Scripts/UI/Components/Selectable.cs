@@ -24,30 +24,28 @@ namespace UI
 
             private static Selectable globalSelection = null;
 
+            private static object globalSelectionLock = new object();
+
             /// <summary>
             /// Updates which object is currently selected in the UI.
             /// </summary>
             /// <param name="selection">The Selectable component of the new selected GameObject.</param>
             public static void UpdateSelection(Selectable selection)
             {
-                // NOTE: thread safety?
-
-                if (globalSelection == selection && selection != null)
+                lock (globalSelectionLock)
                 {
-                    selection = selection.SelectionParent;  // move up the selection if you select it again
-                }
+                    var oldSelection = globalSelection;
+                    globalSelection = selection;
 
-                var oldSelection = globalSelection;
-                globalSelection = selection;
+                    if (oldSelection != null)
+                    {
+                        oldSelection.Deselect();
+                    }
 
-                if (oldSelection != null)
-                {
-                    oldSelection.Deselect();
-                }
-
-                if (globalSelection != null)
-                {
-                    globalSelection.Select();
+                    if (globalSelection != null)
+                    {
+                        globalSelection.Select();
+                    }
                 }
             }
         }
@@ -134,6 +132,8 @@ namespace UI
         /// </summary>
         public void Select()
         {
+            IsSelected = true;
+
             InternalSelect();
 
             AfterEvent();
@@ -149,8 +149,16 @@ namespace UI
                 SelectionManager.Selected != null &&
                 SelectionManager.Selected.SelectionParent == this)
             {
-                // Don't deselect if we are a part of the selection tree
+                // Stop deselecting once we hit the selection
                 return;
+            }
+
+            IsSelected = false;
+
+            if (SelectionParent != null)
+            {
+                // Entire tree should deselect
+                SelectionParent.Deselect();
             }
 
             InternalDeselect();
@@ -270,35 +278,17 @@ namespace UI
 
         /// <summary>
         /// Inhereted objects can override this method to hook the Select event.
-        /// Be sure to call the base method though!
         /// </summary>
-        protected virtual void InternalSelect()
-        {
-            IsSelected = true;
-        }
+        protected virtual void InternalSelect() { }
 
         /// <summary>
         /// Inhereted objects can override this method to hook the Deselect event.
-        /// Be sure to call the base method though!
         /// </summary>
-        protected virtual void InternalDeselect()
-        {
-            IsSelected = false;
-
-            // Entire tree should deselect
-            if (SelectionParent != null)
-            {
-                SelectionParent.Deselect();
-            }
-        }
+        protected virtual void InternalDeselect() { }
 
         /// <summary>
         /// Inhereted objects can override this method to hook the Deselect event.
-        /// Don't worry about calling the base method.
         /// </summary>
-        public virtual void AfterEvent()
-        {
-            // Called after each event update.
-        }
+        public virtual void AfterEvent() { }
     }
 }

@@ -76,6 +76,10 @@ namespace UI
 
             var statusBar = InstantiatePrefab(StatusBar, StatusBar, parent.transform);
 
+            var rect = statusBar.GetComponent<RectTransform>();
+            rect.offsetMin = new Vector2(ToolbarConstants.HorizontalMargins, rect.offsetMin.y);
+            rect.offsetMax = new Vector2(-ToolbarConstants.HorizontalMargins, rect.offsetMax.y);
+
             var image = statusBar.GetComponent<Image>();
             image.sprite = background;
 

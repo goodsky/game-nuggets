@@ -4,12 +4,10 @@ namespace UI
 {
     /// <summary>
     /// The base class for the UI Toolbar.
-    /// Can be extended to populate a specific style of toolbar.
+    /// Extend this class to populate menus in the 'PopulateMenus' method.
     /// </summary>
     public class Toolbar : MonoBehaviour
     {
-        protected static readonly float ButtonGroupMargins = 175.0f;
-
         /// <summary>
         /// Main menu 'Default' color
         /// </summary>
@@ -141,15 +139,21 @@ namespace UI
         /// </summary>
         protected virtual void PopulateMenus() { /* IMPLEMENT ME! :) */ }
 
-        #region Helpful Factory Templates
-        protected ButtonGroupArgs MainMenuGroup(ButtonArgs[] buttons)
+        #region Helpful Argument Factories
+
+        /// <summary>
+        /// Helper method to generate a Main Menu button group.
+        /// </summary>
+        /// <param name="buttons">The buttons to put in the main menu.</param>
+        /// <returns>A populated button group argument.</returns>
+        protected ButtonGroupArgs MainMenuButtonGroup(ButtonArgs[] buttons)
         {
             return new ButtonGroupArgs()
             {
                 Height = _mainMenu.GetComponent<RectTransform>().rect.height,
                 PosY = 0,
-                Left = ButtonGroupMargins,
-                Right = ButtonGroupMargins,
+                Left = ToolbarConstants.HorizontalMargins,
+                Right = ToolbarConstants.HorizontalMargins,
                 ButtonsDefaultImage = MainMenuBackground,
                 ButtonsMouseOverImage = SubMenuBackground,
                 ButtonsSelectedImage = MainMenuSelected,
@@ -157,20 +161,26 @@ namespace UI
             };
         }
 
-        protected ButtonGroupArgs SubMenuGroup(ButtonArgs[] buttons)
+        /// <summary>
+        /// Helper method to generate a Sub Menu button group.
+        /// </summary>
+        /// <param name="buttons">The buttons to put in the sub menu.</param>
+        /// <returns>A populated button group argument.</returns>
+        protected ButtonGroupArgs SubMenuButtonGroup(ButtonArgs[] buttons)
         {
             return new ButtonGroupArgs()
                 {
                     Height = _subMenu.GetComponent<RectTransform>().rect.height,
                     PosY = 0,
-                    Left = ButtonGroupMargins,
-                    Right = ButtonGroupMargins,
+                    Left = ToolbarConstants.HorizontalMargins,
+                    Right = ToolbarConstants.HorizontalMargins,
                     ButtonsDefaultImage = SubMenuBackground,
                     ButtonsMouseOverImage = PageBackground,
                     ButtonsSelectedImage = SubMenuSelected,
                     Buttons = buttons
                 };
         }
+
         #endregion
     }
 }

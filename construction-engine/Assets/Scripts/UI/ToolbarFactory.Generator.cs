@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 namespace UI
 {
+    /// <summary>
+    /// Arguments to create a Button via the factory.
+    /// </summary>
     public class ButtonArgs
     {
         // These properties must always be set
@@ -14,7 +17,7 @@ namespace UI
         public Sprite IconImage = null; // can be null
         public Action OnSelect = null; // can be null
         public Action OnDeselect = null; // can be null
-        public Button[] Children = null;
+        public Button[] Children = null; // can be null
 
         // These properties will be set by a ButtonGroup
         public Vector2 Position;
@@ -28,8 +31,15 @@ namespace UI
         public Sprite SelectedImage;
     }
 
+    /// <summary>
+    /// Arguments to create a ButtonGroup via the factory.
+    /// </summary>
     public class ButtonGroupArgs
     {
+        // The buttons to put in a scrollable group.
+        // The factory will overwrite positions & images to conform with the group
+        public ButtonArgs[] Buttons;
+
         public float Left;
         public float Right;
         public float PosY;
@@ -38,17 +48,6 @@ namespace UI
         public Sprite ButtonsDefaultImage;
         public Sprite ButtonsMouseOverImage;
         public Sprite ButtonsSelectedImage;
-
-        // The Factory will overwrite positions & images to conform with the group
-        public ButtonArgs[] Buttons;
-    }
-
-    public class WindowArgs
-    {
-        public string Name = "default";
-        public float PosX;
-
-        public Sprite BackgroundImage;
     }
 
     /// <summary>
@@ -57,9 +56,6 @@ namespace UI
     /// </summary>
     public static partial class ToolbarFactory
     {
-        private static readonly float ButtonWidth = 75.0f;
-        private static readonly float ButtonHeight = 75.0f;
-
         /// <summary>
         /// Instantiates a button.
         /// </summary>
@@ -139,7 +135,7 @@ namespace UI
                     Name = "LeftButton",
                     Toggleable = false,
                     Position = new Vector2(0, 0),
-                    Size = new Vector2(ButtonWidth, ButtonHeight),
+                    Size = new Vector2(ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight),
                     Pivot = new Vector2(1, 0.5f),
                     AnchorMax = new Vector2(0, 0.5f), // 
                     AnchorMin = new Vector2(0, 0.5f),
@@ -157,7 +153,7 @@ namespace UI
                     Name = "RightButton",
                     Toggleable = false,
                     Position = new Vector2(0, 0),
-                    Size = new Vector2(ButtonWidth, ButtonHeight),
+                    Size = new Vector2(ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight),
                     Pivot = new Vector2(0, 0.5f),
                     AnchorMax = new Vector2(1, 0.5f),
                     AnchorMin = new Vector2(1, 0.5f),
@@ -187,7 +183,7 @@ namespace UI
             contentRect.pivot = new Vector2(0, 0.5f);
             contentRect.anchorMin = new Vector2(0, 0.5f); // Left-Align
             contentRect.anchorMax = new Vector2(0, 0.5f);
-            contentRect.sizeDelta = new Vector2(args.Buttons.Length * ButtonWidth, ButtonHeight);
+            contentRect.sizeDelta = new Vector2(args.Buttons.Length * ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight);
             contentRect.anchoredPosition = new Vector2(0, 0);
 
             for (int i = 0; i < args.Buttons.Length; ++i)
@@ -196,8 +192,8 @@ namespace UI
 
                 Assert.IsNotNull(button.Name, "Button in ButtonGroup requires a name!");
 
-                button.Position = new Vector2(i * ButtonWidth, 0);
-                button.Size = new Vector2(ButtonWidth, ButtonHeight);
+                button.Position = new Vector2(i * ToolbarConstants.ButtonWidth, 0);
+                button.Size = new Vector2(ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight);
                 button.Pivot = new Vector2(0, 0.5f);
                 button.AnchorMin = new Vector2(0, 0.5f); // Left-Align
                 button.AnchorMax = new Vector2(0, 0.5f);
@@ -212,7 +208,7 @@ namespace UI
             for (int i = 1; i < args.Buttons.Length; ++i)
             {
                 // Little extra UI prettyness with the dividers
-                LoadDivider(content.transform, i * ButtonWidth - 1);
+                LoadDivider(content.transform, i * ToolbarConstants.ButtonWidth - 1);
             }
 
             var script = buttonGroup.AddComponent<ButtonGroup>();

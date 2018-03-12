@@ -11,7 +11,7 @@ namespace UI
             var homeSubMenu = ToolbarFactory.GenerateButtonGroup(
                 "HomeSubMenu",
                 _subMenu.transform,
-                SubMenuGroup(
+                SubMenuButtonGroup(
                     new ButtonArgs[]
                     {
                         new ButtonArgs() { Name = "SubMenuHome", IconImage = Resources.Load<Sprite>("toolbar-icon-test1") },
@@ -24,7 +24,7 @@ namespace UI
             var circleSubMenu = ToolbarFactory.GenerateButtonGroup(
                 "CircleSubMenu",
                 _subMenu.transform,
-                SubMenuGroup(
+                SubMenuButtonGroup(
                     new ButtonArgs[]
                     {
                         new ButtonArgs() { Name = "SubMenuCircle", IconImage = Resources.Load<Sprite>("toolbar-icon-test2") },
@@ -35,7 +35,7 @@ namespace UI
             var diamondSubMenu = ToolbarFactory.GenerateButtonGroup(
                 "DiamondSubMenu",
                 _subMenu.transform,
-                SubMenuGroup(
+                SubMenuButtonGroup(
                     new ButtonArgs[]
                     {
                         new ButtonArgs() { Name = "SubMenuDiamond", IconImage = Resources.Load<Sprite>("toolbar-icon-test3") },
@@ -65,7 +65,7 @@ namespace UI
             ToolbarFactory.GenerateButtonGroup(
                 "MainMenu",
                 gameObject.transform,
-                MainMenuGroup(
+                MainMenuButtonGroup(
                     new ButtonArgs[]
                     {
                         new ButtonArgs() { Name = "Home", Children = homeSubMenuButtons, IconImage = Resources.Load<Sprite>("toolbar-icon-test1"), OnSelect = () => PopUpSubMenu(homeSubMenu), OnDeselect = () => PopDownSubMenu() },
