@@ -1,12 +1,10 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace UI
 {
     /// <summary>
     /// The base class for the UI Toolbar.
-    /// Can be extended to create a specific style of toolbar.
+    /// Can be extended to populate a specific style of toolbar.
     /// </summary>
     public class Toolbar : MonoBehaviour
     {
@@ -23,11 +21,6 @@ namespace UI
         public Sprite MainMenuSelected;
 
         /// <summary>
-        /// Main menu Pip Sprite
-        /// </summary>
-        public Sprite MainMenuPip;
-
-        /// <summary>
         /// Sub menu 'Default' color
         /// </summary>
         public Sprite SubMenuBackground;
@@ -38,22 +31,15 @@ namespace UI
         public Sprite SubMenuSelected;
 
         /// <summary>
-        /// Sub menu Pip Sprite
-        /// </summary>
-        public Sprite SubMenuPip;
-
-        /// <summary>
         /// Background Window color
         /// (This may be removed)
         /// </summary>
         public Sprite PageBackground;
 
+        protected GameObject _statusBar;
         protected GameObject _mainMenu;
         protected GameObject _subMenu;
         protected GameObject _subMenuButtons;
-
-        private GameObject _window;
-        private GameObject _windowContent;
 
         private GameObject _mainMenuPip;
         private GameObject _subMenuPip;
@@ -70,24 +56,18 @@ namespace UI
             // This will catch click events on the screen that are not on a UI element.
             ToolbarFactory.LoadSelectionRoot(canvas.gameObject);
 
+            // Create the status bar on the top
+            _statusBar = ToolbarFactory.LoadStatusBar(gameObject, MainMenuBackground);
+
             // Create the Main Menu Bar on the bottom
             _mainMenu = ToolbarFactory.LoadMenuBar(gameObject, "MainMenu", 0.0f, MainMenuBackground);
+            _mainMenuPip = ToolbarFactory.LoadPip(_mainMenu, MyColors.Gray.Dark);
 
             // Creat the second layer menu
             float mainMenuHeight = _mainMenu.GetComponent<RectTransform>().sizeDelta.y;
             _subMenu = ToolbarFactory.LoadMenuBar(gameObject, "SubMenu", mainMenuHeight, SubMenuBackground);
+            _subMenuPip = null; // not using sub menu pip
             _subMenu.SetActive(false);
-
-            _window = ToolbarFactory.GenerateWindow(_subMenu.transform,
-                new WindowArgs()
-                {
-                    Name = "Window",
-                    PosX = 0,
-                    BackgroundImage = PageBackground
-                });
-
-            _mainMenuPip = ToolbarFactory.LoadPip(_mainMenu, MyColors.Gray.Dark);
-            _subMenuPip = ToolbarFactory.LoadPip(_subMenu, MyColors.Gray.Light);
 
             PopulateMenus();
         }
@@ -135,13 +115,10 @@ namespace UI
 
         public void PopUpWindow(GameObject windowContent)
         {
-            // windowContent.SetActive(true);
-            _window.SetActive(true);
-
-            _windowContent = windowContent;
+            // TODO: Window Manager
 
             var selected = Selectable.SelectionManager.Selected;
-            if (selected != null)
+            if (selected != null && _subMenuPip != null)
             {
                 _subMenuPip.transform.SetParent(selected.gameObject.transform, false);
                 _subMenuPip.transform.SetAsFirstSibling();
@@ -151,9 +128,12 @@ namespace UI
 
         public void PopDownWindow()
         {
-            _window.SetActive(false);
-            // _windowContent.SetActive(false);
-            _subMenuPip.SetActive(false);
+            // TODO: Window Manager
+
+            if (_subMenuPip != null)
+            {
+                _subMenuPip.SetActive(false);
+            }
         }
 
         /// <summary>

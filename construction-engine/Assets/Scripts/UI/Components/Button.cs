@@ -47,7 +47,11 @@ namespace UI
         {
             base.Start();
 
-            _image = gameObject.AddComponent<Image>();
+            _image = GetComponent<Image>();
+            if (_image == null)
+            {
+                _image = gameObject.AddComponent<Image>();
+            }
 
             AfterEvent();
         }

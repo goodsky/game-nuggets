@@ -56,7 +56,7 @@ namespace UI
         /// <returns>The selection root.</returns>
         public static GameObject LoadSelectionRoot(GameObject parent)
         {
-            const string SelectionRoot = "SelectionRoot";
+            string SelectionRoot = "SelectionRoot";
 
             var selectionRoot = InstantiatePrefab(SelectionRoot, SelectionRoot, parent.transform);
             selectionRoot.transform.SetAsFirstSibling();
@@ -65,14 +65,37 @@ namespace UI
         }
 
         /// <summary>
-        /// Instantiates a menu bar.
+        /// Instantiates the top status bar.
         /// </summary>
-        /// <param name="parent">The toolbar parent.</param>
+        /// <param name="parent">The status bar parent.</param>
         /// <param name="background">The sprite background color.</param>
-        /// <returns>The main menu bar.</returns>
+        /// <returns>The status bar.</returns>
+        public static GameObject LoadStatusBar(GameObject parent, Sprite background)
+        {
+            string StatusBar = "StatusBar";
+
+            var statusBar = InstantiatePrefab(StatusBar, StatusBar, parent.transform);
+
+            var image = statusBar.GetComponent<Image>();
+            image.sprite = background;
+
+            // TODO: wire up the status bar with game state.
+            var statusBarInfo = statusBar.GetComponent<StatusBar>();
+            statusBarInfo.CurrentFunds = 123456;
+            statusBarInfo.CurrentDate = string.Format("{0}\n{1}", DateTime.Now.ToString("MM/dd/yyyy"), "Spring");
+
+            return statusBar;
+        }
+
+        /// <summary>
+        /// Instantiates a bottom menu bar.
+        /// </summary>
+        /// <param name="parent">The menu parent.</param>
+        /// <param name="background">The sprite background color.</param>
+        /// <returns>The menu bar.</returns>
         public static GameObject LoadMenuBar(GameObject parent, string name, float yOffset, Sprite background)
         {
-            const string MenuBar = "MenuBar";
+            string MenuBar = "MenuBar";
 
             var menuBar = InstantiatePrefab(MenuBar, name, parent.transform);
 
@@ -94,7 +117,7 @@ namespace UI
         /// <returns>The toolbar accent pip.</returns>
         public static GameObject LoadPip(GameObject parent, Color color)
         {
-            const string ToolbarPip = "ToolbarPip";
+            string ToolbarPip = "ToolbarPip";
 
             var pip = InstantiatePrefab(ToolbarPip, ToolbarPip, parent.transform);
 
@@ -114,7 +137,7 @@ namespace UI
         /// <returns>The tooltip.</returns>
         public static GameObject LoadTooltip(Transform parent)
         {
-            const string Tooltip = "Tooltip";
+            string Tooltip = "Tooltip";
 
             return InstantiatePrefab(Tooltip, Tooltip, parent);
         }
@@ -128,7 +151,7 @@ namespace UI
         /// <returns>The divider.</returns>
         public static GameObject LoadDivider(Transform parent, float xPos)
         {
-            const string Divider = "Divider";
+            string Divider = "Divider";
 
             var divider = InstantiatePrefab(Divider, Divider, parent);
 

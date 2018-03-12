@@ -222,32 +222,5 @@ namespace UI
 
             return buttonGroup;
         }
-
-        /// <summary>
-        /// Instantiates a window to show content in.
-        /// </summary>
-        /// <param name="parent">The UI parent.</param>
-        /// <param name="args">The window arguments.</param>
-        /// <returns>The window.</returns>
-        public static GameObject GenerateWindow(Transform parent, WindowArgs args)
-        {
-            var window = new GameObject(args.Name);
-            window.transform.SetParent(parent, false);
-
-            var parentRect = parent.gameObject.GetComponent<RectTransform>();
-            var windowRect = window.AddComponent<RectTransform>();
-            windowRect.pivot = new Vector2(0.5f, 0);
-            windowRect.anchorMin = new Vector2(0.5f, 0);
-            windowRect.anchorMax = new Vector2(0.5f, 0);
-            windowRect.sizeDelta = new Vector2(500, 350);
-            windowRect.anchoredPosition = new Vector2(args.PosX, parentRect.rect.height);
-
-            var windowImage = window.AddComponent<Image>();
-            windowImage.sprite = args.BackgroundImage;
-
-            window.SetActive(false);
-
-            return window;
-        }
     }
 }
