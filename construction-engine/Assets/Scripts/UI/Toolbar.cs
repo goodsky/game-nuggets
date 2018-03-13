@@ -11,28 +11,27 @@ namespace UI
         /// <summary>
         /// Main menu 'Default' color
         /// </summary>
-        public Sprite MainMenuBackground;
+        public Color MainMenuBackground = MyColors.Gray.Darkest;
 
         /// <summary>
         /// Main menu 'Selected' color
         /// </summary>
-        public Sprite MainMenuSelected;
+        public Color MainMenuSelected = MyColors.Gray.Darker;
 
         /// <summary>
         /// Sub menu 'Default' color
         /// </summary>
-        public Sprite SubMenuBackground;
+        public Color SubMenuBackground = MyColors.Gray.Dark;
 
         /// <summary>
         /// Sub menu 'Selected' color
         /// </summary>
-        public Sprite SubMenuSelected;
+        public Color SubMenuSelected = MyColors.Gray.Medium;
 
         /// <summary>
         /// Background Window color
-        /// (This may be removed)
         /// </summary>
-        public Sprite PageBackground;
+        public Color PageBackground = MyColors.Gray.Light;
 
         protected GameObject _statusBar;
         protected GameObject _mainMenu;
@@ -111,6 +110,10 @@ namespace UI
             _mainMenuPip.SetActive(false);
         }
 
+        /// <summary>
+        /// Pop up a window.
+        /// </summary>
+        /// <param name="windowContent"></param>
         public void PopUpWindow(GameObject windowContent)
         {
             // TODO: Window Manager
@@ -124,6 +127,9 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// Pop down the window.
+        /// </summary>
         public void PopDownWindow()
         {
             // TODO: Window Manager
@@ -144,19 +150,21 @@ namespace UI
         /// <summary>
         /// Helper method to generate a Main Menu button group.
         /// </summary>
+        /// <param name="name">The name of the main menu.</param>
         /// <param name="buttons">The buttons to put in the main menu.</param>
         /// <returns>A populated button group argument.</returns>
-        protected ButtonGroupArgs MainMenuButtonGroup(ButtonArgs[] buttons)
+        protected ButtonGroupArgs MainMenuButtonGroup(string name, ButtonArgs[] buttons)
         {
             return new ButtonGroupArgs()
             {
+                Name = name,
                 Height = _mainMenu.GetComponent<RectTransform>().rect.height,
                 PosY = 0,
                 Left = ToolbarConstants.HorizontalMargins,
                 Right = ToolbarConstants.HorizontalMargins,
-                ButtonsDefaultImage = MainMenuBackground,
-                ButtonsMouseOverImage = SubMenuBackground,
-                ButtonsSelectedImage = MainMenuSelected,
+                ButtonsDefaultColor = MainMenuBackground,
+                ButtonsMouseOverColor = SubMenuBackground,
+                ButtonsSelectedColor = MainMenuSelected,
                 Buttons = buttons
             };
         }
@@ -164,19 +172,21 @@ namespace UI
         /// <summary>
         /// Helper method to generate a Sub Menu button group.
         /// </summary>
+        /// <param name="name">The name of the sub menu.</param>
         /// <param name="buttons">The buttons to put in the sub menu.</param>
         /// <returns>A populated button group argument.</returns>
-        protected ButtonGroupArgs SubMenuButtonGroup(ButtonArgs[] buttons)
+        protected ButtonGroupArgs SubMenuButtonGroup(string name, ButtonArgs[] buttons)
         {
             return new ButtonGroupArgs()
                 {
+                    Name = name,
                     Height = _subMenu.GetComponent<RectTransform>().rect.height,
                     PosY = 0,
                     Left = ToolbarConstants.HorizontalMargins,
                     Right = ToolbarConstants.HorizontalMargins,
-                    ButtonsDefaultImage = SubMenuBackground,
-                    ButtonsMouseOverImage = PageBackground,
-                    ButtonsSelectedImage = SubMenuSelected,
+                    ButtonsDefaultColor = SubMenuBackground,
+                    ButtonsMouseOverColor = PageBackground,
+                    ButtonsSelectedColor = SubMenuSelected,
                     Buttons = buttons
                 };
         }

@@ -11,13 +11,13 @@ namespace UI
     public class Button : Selectable
     {
         /// <summary>The default background image.</summary>
-        public Sprite DefaultImage;
+        public Color DefaultColor;
         
         /// <summary>The mouse over background image.</summary>
-        public Sprite MouseOverImage;
+        public Color MouseOverColor;
 
         /// <summary>The selected/mouse down background image.</summary>
-        public Sprite SelectedImage;
+        public Color SelectedColor;
 
         /// <summary>(optional) Icon Image.</summary>
         public Image IconImage;
@@ -144,21 +144,21 @@ namespace UI
                 {
                     if (_image != null)
                     {
-                        _image.sprite = SelectedImage;
+                        _image.color = SelectedColor;
                     }
                 }
                 else if (IsMouseOver)
                 {
                     if (_image != null)
                     {
-                        _image.sprite = MouseOverImage;
+                        _image.color = MouseOverColor;
                     }
                 }
                 else
                 {
                     if (_image != null)
                     {
-                        _image.sprite = DefaultImage;
+                        _image.color = DefaultColor;
                     }
                 }
             }

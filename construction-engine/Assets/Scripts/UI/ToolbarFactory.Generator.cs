@@ -26,9 +26,9 @@ namespace UI
         public Vector2 AnchorMin;
         public Vector2 AnchorMax;
 
-        public Sprite DefaultImage;
-        public Sprite MouseOverImage;
-        public Sprite SelectedImage;
+        public Color DefaultColor;
+        public Color MouseOverColor;
+        public Color SelectedColor;
     }
 
     /// <summary>
@@ -36,6 +36,8 @@ namespace UI
     /// </summary>
     public class ButtonGroupArgs
     {
+        public string Name = "default";
+
         // The buttons to put in a scrollable group.
         // The factory will overwrite positions & images to conform with the group
         public ButtonArgs[] Buttons;
@@ -45,9 +47,9 @@ namespace UI
         public float PosY;
         public float Height;
 
-        public Sprite ButtonsDefaultImage;
-        public Sprite ButtonsMouseOverImage;
-        public Sprite ButtonsSelectedImage;
+        public Color ButtonsDefaultColor;
+        public Color ButtonsMouseOverColor;
+        public Color ButtonsSelectedColor;
     }
 
     /// <summary>
@@ -77,9 +79,9 @@ namespace UI
 
             var script = button.AddComponent<Button>();
             script.Toggleable = args.Toggleable;
-            script.DefaultImage = args.DefaultImage;
-            script.MouseOverImage = args.MouseOverImage;
-            script.SelectedImage = args.SelectedImage;
+            script.DefaultColor = args.DefaultColor;
+            script.MouseOverColor = args.MouseOverColor;
+            script.SelectedColor = args.SelectedColor;
             script.OnSelect = args.OnSelect;
             script.OnDeselect = args.OnDeselect;
             script.Tooltip = args.Tooltip;
@@ -114,9 +116,9 @@ namespace UI
         /// <param name="parent">Parent transform to create the button group on.</param>
         /// <param name="args">Instantiation arguments.</param>
         /// <returns>The button group.</returns>
-        public static GameObject GenerateButtonGroup(string name, Transform parent, ButtonGroupArgs args)
+        public static GameObject GenerateButtonGroup(Transform parent, ButtonGroupArgs args)
         {
-            var buttonGroup = new GameObject(name);
+            var buttonGroup = new GameObject(args.Name);
             buttonGroup.transform.SetParent(parent, false);
 
             var rect = buttonGroup.AddComponent<RectTransform>();
@@ -139,9 +141,9 @@ namespace UI
                     Pivot = new Vector2(1, 0.5f),
                     AnchorMax = new Vector2(0, 0.5f), // 
                     AnchorMin = new Vector2(0, 0.5f),
-                    DefaultImage = args.ButtonsDefaultImage,
-                    MouseOverImage = args.ButtonsMouseOverImage,
-                    SelectedImage = args.ButtonsSelectedImage,
+                    DefaultColor = args.ButtonsDefaultColor,
+                    MouseOverColor = args.ButtonsMouseOverColor,
+                    SelectedColor = args.ButtonsSelectedColor,
                     IconImage = Resources.Load<Sprite>("toolbar-arrow-left"),
                 });
 
@@ -157,9 +159,9 @@ namespace UI
                     Pivot = new Vector2(0, 0.5f),
                     AnchorMax = new Vector2(1, 0.5f),
                     AnchorMin = new Vector2(1, 0.5f),
-                    DefaultImage = args.ButtonsDefaultImage,
-                    MouseOverImage = args.ButtonsMouseOverImage,
-                    SelectedImage = args.ButtonsSelectedImage,
+                    DefaultColor = args.ButtonsDefaultColor,
+                    MouseOverColor = args.ButtonsMouseOverColor,
+                    SelectedColor = args.ButtonsSelectedColor,
                     IconImage = Resources.Load<Sprite>("toolbar-arrow-right"),
                 });
 
@@ -198,9 +200,9 @@ namespace UI
                 button.AnchorMin = new Vector2(0, 0.5f); // Left-Align
                 button.AnchorMax = new Vector2(0, 0.5f);
 
-                button.DefaultImage = args.ButtonsDefaultImage;
-                button.MouseOverImage = args.ButtonsMouseOverImage;
-                button.SelectedImage = args.ButtonsSelectedImage;
+                button.DefaultColor = args.ButtonsDefaultColor;
+                button.MouseOverColor = args.ButtonsMouseOverColor;
+                button.SelectedColor = args.ButtonsSelectedColor;
 
                 GenerateButton(content.transform, button);
             }

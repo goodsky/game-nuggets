@@ -1,0 +1,18 @@
+<MenuData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+  
+  <ButtonGroups>
+    
+    <ButtonGroup name="Foo" menu="MainMenu">
+      <Buttons>
+        <Button name="Bar0">
+          <Tooltip>Bar0</Tooltip>
+          <IconImage>BarImage</IconImage>
+          <OnSelect x:type="PopUpWindowAction" windowName="BarWindow"/>
+          <OnDeselect x:type="PopDownWindowAction" />
+        </Button>
+      </Buttons>
+    </ButtonGroup>
+    
+  </ButtonGroups>
+  
+</MenuData>

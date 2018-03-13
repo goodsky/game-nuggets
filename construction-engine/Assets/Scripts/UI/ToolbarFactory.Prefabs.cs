@@ -68,9 +68,9 @@ namespace UI
         /// Instantiates the top status bar.
         /// </summary>
         /// <param name="parent">The status bar parent.</param>
-        /// <param name="background">The sprite background color.</param>
+        /// <param name="background">The background color.</param>
         /// <returns>The status bar.</returns>
-        public static GameObject LoadStatusBar(GameObject parent, Sprite background)
+        public static GameObject LoadStatusBar(GameObject parent, Color background)
         {
             string StatusBar = "StatusBar";
 
@@ -81,7 +81,7 @@ namespace UI
             rect.offsetMax = new Vector2(-ToolbarConstants.HorizontalMargins, rect.offsetMax.y);
 
             var image = statusBar.GetComponent<Image>();
-            image.sprite = background;
+            image.color = background;
 
             // TODO: wire up the status bar with game state.
             var statusBarInfo = statusBar.GetComponent<StatusBar>();
@@ -95,9 +95,9 @@ namespace UI
         /// Instantiates a bottom menu bar.
         /// </summary>
         /// <param name="parent">The menu parent.</param>
-        /// <param name="background">The sprite background color.</param>
+        /// <param name="background">The background color.</param>
         /// <returns>The menu bar.</returns>
-        public static GameObject LoadMenuBar(GameObject parent, string name, float yOffset, Sprite background)
+        public static GameObject LoadMenuBar(GameObject parent, string name, float yOffset, Color background)
         {
             string MenuBar = "MenuBar";
 
@@ -107,7 +107,7 @@ namespace UI
             rect.anchoredPosition = new Vector2(0f, yOffset);
 
             var image = menuBar.GetComponent<Image>();
-            image.sprite = background;
+            image.color = background;
 
             return menuBar;
         }
