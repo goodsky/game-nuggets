@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 
-namespace UI
+namespace Common
 {
     /// <summary>
     /// Colors that I've picked out to use.
     /// </summary>
-    public static class MyColors
+    public static class MyPalette
     {
         public static class Gray
         {
