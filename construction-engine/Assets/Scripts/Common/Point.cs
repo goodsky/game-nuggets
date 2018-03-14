@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine.Assertions;
 
-namespace GridTerrain
+namespace Common
 {
     /// <summary>
     /// 2D Point that has a safe HashCode.

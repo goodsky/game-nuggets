@@ -1,4 +1,4 @@
-﻿namespace GridTerrain
+﻿namespace Common
 {
     public static class Utils
     {

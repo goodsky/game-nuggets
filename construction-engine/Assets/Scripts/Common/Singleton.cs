@@ -1,7 +1,4 @@
-﻿// This utility class was inspired by the Microsoft MRTK plugin for Unity.
-// So then I think this class is protected under the MIT license.
-// https://github.com/Microsoft/MixedRealityToolkit-Unity
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Common
 {
@@ -13,39 +10,20 @@ namespace Common
     {
         private static T instance;
 
-        private static bool searchForInstance = true;
-
         /// <summary>
         /// Returns the Singleton instance of the classes type.
-        /// If no instance is found, then we search for an instance
-        /// in the scene.
-        /// If more than one instance is found, we throw an error and
-        /// no instance is returned.
         /// </summary>
         public static T Instance
         {
             get
             {
-                if (!IsInitialized && searchForInstance)
+                if (!IsInitialized)
                 {
-                    searchForInstance = false;
-                    T[] objects = FindObjectsOfType<T>();
-                    if (objects.Length == 1)
-                    {
-                        instance = objects[0];
-                    }
-                    else if (objects.Length > 1)
-                    {
-                        Debug.LogErrorFormat("Expected exactly 1 {0} but found {1}.", typeof(T).Name, objects.Length);
-                    }
+                    Debug.LogErrorFormat("Singleton {0} is not initialized.", typeof(T).Name);
                 }
+
                 return instance;
             }
-        }
-
-        public static void AssertIsInitialized()
-        {
-            Debug.Assert(IsInitialized, string.Format("The {0} singleton has not been initialized.", typeof(T).Name));
         }
 
         /// <summary>
@@ -60,10 +38,8 @@ namespace Common
         }
 
         /// <summary>
-        /// Base Awake method that sets the Singleton's unique instance.
-        /// Called by Unity when initializing a MonoBehaviour.
-        /// Scripts that extend Singleton should be sure to call base.Awake() to ensure the
-        /// static Instance reference is properly created.
+        /// Sets the singleton instance.
+        /// Singletons should be sure to call base.Awake().
         /// </summary>
         protected virtual void Awake()
         {
@@ -86,22 +62,18 @@ namespace Common
             else if (!IsInitialized)
             {
                 instance = (T)this;
-                searchForInstance = false;
             }
         }
 
         /// <summary>
-        /// Base OnDestroy method that destroys the Singleton's unique instance.
-        /// Called by Unity when destroying a MonoBehaviour. Scripts that extend
-        /// Singleton should be sure to call base.OnDestroy() to ensure the
-        /// underlying static Instance reference is properly cleaned up.
+        /// Desets the singleton instance.
+        /// Singletons should be sure to call base.OnDestroy().
         /// </summary>
         protected virtual void OnDestroy()
         {
             if (instance == this)
             {
                 instance = null;
-                searchForInstance = true;
             }
         }
     }

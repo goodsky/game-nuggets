@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Common;
 using UnityEngine;
 
 namespace GridTerrain
@@ -91,7 +91,7 @@ namespace GridTerrain
                     _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1)));
             }
 
-            var mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
             if (_collider.Raycast(mouseRay, out hit, float.MaxValue))

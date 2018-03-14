@@ -2,17 +2,64 @@
   
   <ButtonGroups>
     
-    <ButtonGroup name="Foo" menu="MainMenu">
+    <!-- Main Menu -->
+    <MainButtonGroup name="MainMenu">
       <Buttons>
-        <Button name="Bar0">
-          <Tooltip>Bar0</Tooltip>
-          <IconImage>BarImage</IconImage>
-          <OnSelect x:type="PopUpWindowAction" windowName="BarWindow"/>
+        <Button name="Home">
+          <Tooltip>Home Button</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpSubMenuAction" buttonGroupName="BarWindow"/>
+          <OnDeselect x:type="PopDownSubMenuAction" />
+        </Button>
+      </Buttons>
+    </MainButtonGroup>
+
+    <!-- Home Sub Menu-->
+    <SubButtonGroup name="HomeMenu">
+      <Buttons>
+        <Button name="Home 01">
+          <Tooltip>Home 01</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpWindowAction" />
+          <OnDeselect x:type="PopDownWindowAction" />
+        </Button>
+        
+        <Button name="Home 02">
+          <Tooltip>Home 02</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpWindowAction" />
+          <OnDeselect x:type="PopDownWindowAction" />
+        </Button>
+        
+        <Button name="Home 03">
+          <Tooltip>Home 03</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpWindowAction" />
+          <OnDeselect x:type="PopDownWindowAction" />
+        </Button>
+        
+        <Button name="Home 04">
+          <Tooltip>Home 04</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpWindowAction" />
+          <OnDeselect x:type="PopDownWindowAction" />
+        </Button>
+        
+        <Button name="Home 05">
+          <Tooltip>Home 05</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpWindowAction" />
+          <OnDeselect x:type="PopDownWindowAction" />
+        </Button>
+        
+        <Button name="Home 06">
+          <Tooltip>Home 06</Tooltip>
+          <IconImage>toolbar-icon-test1</IconImage>
+          <OnSelect x:type="PopUpWindowAction" />
           <OnDeselect x:type="PopDownWindowAction" />
         </Button>
       </Buttons>
-    </ButtonGroup>
+    </SubButtonGroup>
     
   </ButtonGroups>
-  
 </MenuData>

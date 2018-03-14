@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Common;
+using UnityEngine;
 
 namespace UI
 {
@@ -6,33 +7,8 @@ namespace UI
     /// The base class for the UI Toolbar.
     /// Extend this class to populate menus in the 'PopulateMenus' method.
     /// </summary>
-    public class Toolbar : MonoBehaviour
+    public class Toolbar : Singleton<Toolbar>
     {
-        /// <summary>
-        /// Main menu 'Default' color
-        /// </summary>
-        public Color MainMenuBackground = MyColors.Gray.Darkest;
-
-        /// <summary>
-        /// Main menu 'Selected' color
-        /// </summary>
-        public Color MainMenuSelected = MyColors.Gray.Darker;
-
-        /// <summary>
-        /// Sub menu 'Default' color
-        /// </summary>
-        public Color SubMenuBackground = MyColors.Gray.Dark;
-
-        /// <summary>
-        /// Sub menu 'Selected' color
-        /// </summary>
-        public Color SubMenuSelected = MyColors.Gray.Medium;
-
-        /// <summary>
-        /// Background Window color
-        /// </summary>
-        public Color PageBackground = MyColors.Gray.Light;
-
         protected GameObject _statusBar;
         protected GameObject _mainMenu;
         protected GameObject _subMenu;
@@ -58,7 +34,7 @@ namespace UI
 
             // Create the Main Menu Bar on the bottom
             _mainMenu = ToolbarFactory.LoadMenuBar(gameObject, "MainMenu", 0.0f, MainMenuBackground);
-            _mainMenuPip = ToolbarFactory.LoadPip(_mainMenu, MyColors.Gray.Dark);
+            _mainMenuPip = ToolbarFactory.LoadPip(_mainMenu, MyPalette.Gray.Dark);
 
             // Creat the second layer menu
             float mainMenuHeight = _mainMenu.GetComponent<RectTransform>().sizeDelta.y;

@@ -1,7 +1,4 @@
-﻿using GameData;
-using UnityEngine;
-
-namespace UI
+﻿namespace UI
 {
     public class Toolbar02 : Toolbar
     {
