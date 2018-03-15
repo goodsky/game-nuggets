@@ -1,7 +1,6 @@
 ﻿using Common;
 using GameData;
 using System;
-using System.Collections.Generic;
 using UI;
 using UnityEngine;
 
@@ -13,8 +12,8 @@ public class Game : MonoBehaviour
     /// <summary>Singleton reference to the root Game object.</summary>
     public static Game Instance { get; private set; }
 
-    [Header("Name of the toolbar configuration.")]
-    public TextAsset ToolbarConfiguration;
+    [Header("UI Configuration")]
+    public TextAsset UIConfiguration;
 
     /// <summary>Link to the game toolbar.</summary>
     public Toolbar Toolbar { get; private set; }
@@ -32,7 +31,6 @@ public class Game : MonoBehaviour
 
         GameLogger.Info("Loading game data.");
         InitializeStores();
-
     }
 
     /// <summary>
@@ -84,11 +82,11 @@ public class Game : MonoBehaviour
         }
         else
         {
-            ToolbarData data = null;
+            UIData data = null;
 
             try
             {
-                data = GameDataSerializer.Load<ToolbarData>(ToolbarConfiguration);
+                data = GameDataSerializer.Load<UIData>(UIConfiguration);
 
                 if (data == null)
                     throw new ArgumentNullException("Toolbar GameData was null.");

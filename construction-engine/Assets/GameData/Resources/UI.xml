@@ -1,6 +1,6 @@
-<ToolbarData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+<UIData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
   
-  <!-- Toolbar Configuration -->
+  <!-- UI Configuration -->
   <Configuration>
     <HorizontalMargins>175.0</HorizontalMargins>
     <ButtonWidth>75.0</ButtonWidth>
@@ -14,7 +14,7 @@
   </Configuration>
 
   <ButtonGroups>
-    <!-- Main Menu -->
+    <!-- Main Menu Buttons -->
     <MainButtonGroup name="MainMenu">
       <Buttons>
         <Button name="Home">
@@ -26,7 +26,7 @@
       </Buttons>
     </MainButtonGroup>
 
-    <!-- Home Sub Menu-->
+    <!-- Home Sub Menu Buttons -->
     <SubButtonGroup name="HomeMenu">
       <Buttons>
         <Button name="Home 01">
@@ -74,4 +74,4 @@
     </SubButtonGroup>
   </ButtonGroups>
   
-</ToolbarData>
+</UIData>

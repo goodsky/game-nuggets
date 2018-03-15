@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace GameData
 {
-    /// <summary>Root element for toolbar game data.</summary>
-    [XmlRoot("ToolbarData")]
-    public class ToolbarData
+    /// <summary>Root element for UI game data.</summary>
+    [XmlRoot("UIData")]
+    public class UIData
     {
         [XmlElement("Configuration")]
-        public ToolbarConfig Config { get; set; }
+        public UIConfig Config { get; set; }
 
         [XmlArray("ButtonGroups")]
         [XmlArrayItem(ElementName = "MainButtonGroup", Type = typeof(MainButtonGroupData))]
@@ -17,8 +17,8 @@ namespace GameData
         public List<ButtonGroupData> ButtonGroups { get; set; }
     }
 
-    /// <summary>Configuration values for the toolbar.</summary>
-    public class ToolbarConfig
+    /// <summary>Configuration values for the UI.</summary>
+    public class UIConfig
     {
         [XmlElement("HorizontalMargins")]
         public float HorizontalMargins { get; set; }

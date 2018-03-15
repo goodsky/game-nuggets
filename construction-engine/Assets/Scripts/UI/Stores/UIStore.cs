@@ -1,15 +1,13 @@
-﻿using Common;
-using GameData;
+﻿using GameData;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace UI
 {
     /// <summary>
-    /// In-Memory database for Menu GameObjects loaded from Menu.xml.
+    /// In-Memory database for Menu GameObjects loaded from UI.xml.
     /// </summary>
-    public class ToolbarStore : MonoBehaviour
+    public class UIStore : MonoBehaviour
     {
         private Dictionary<string, GameObject> _buttonGroups = new Dictionary<string, GameObject>();
 
@@ -29,7 +27,7 @@ namespace UI
         /// Constructs the store objects based on toolbar game data.
         /// </summary>
         /// <param name="data">Toolbar game data.</param>
-        public void Build(ToolbarData data)
+        public void Build(UIData data)
         {
             var canvas = gameObject.GetComponentInParent<Canvas>();
             TooltipManager.Initialize(canvas.gameObject.transform);
@@ -66,7 +64,11 @@ namespace UI
 
         }
 
-        private GameObject CreateButtonGroup(ButtonGroupData buttonGroup, ToolbarConfig config)
+        /// <summary>
+        /// Convert ButtonGroup GameData into a GameObject in the store.
+        /// Uses the Factory methods to load the button group.
+        /// </summary>
+        private GameObject CreateButtonGroup(ButtonGroupData buttonGroup, UIConfig config)
         {
             Transform menuTransform = null;
             Color background = Color.white;
@@ -88,8 +90,6 @@ namespace UI
                 accent = config.SubMenuAccentColor.Value;
             }
 
-            // var buttons = new ButtonArgs[]
-
             return UIFactory.GenerateButtonGroup(
                 menuTransform,
                 new ButtonGroupArgs()
@@ -99,14 +99,35 @@ namespace UI
                     PosY = 0,
                     Left = config.HorizontalMargins,
                     Right = config.HorizontalMargins,
+                    ButtonSize = new Vector2(config.ButtonWidth, config.ButtonHeight),
                     ButtonsDefaultColor = background,
                     ButtonsMouseOverColor = accent,
                     ButtonsSelectedColor = selected,
-                    Buttons = new ButtonArgs[]
-                    {
-
-                    }
+                    Buttons = CreateButtons(buttonGroup.Buttons, config)
                 });
+        }
+
+        /// <summary>
+        /// Convert Button GameData into arguments for the Factory method.
+        /// Called by CreateButtonGroup.
+        /// </summary>
+        private ButtonArgs[] CreateButtons(List<ButtonData> buttons, UIConfig config)
+        {
+            ButtonArgs[] buttonArgs = new ButtonArgs[buttons.Count];
+            for (int i = 0; i < buttonArgs.Length; ++i)
+            {
+                ButtonData button = buttons[i];
+
+                buttonArgs[i] = new ButtonArgs()
+                {
+                    Name = button.Name,
+                    Tooltip = button.Tooltip,
+                    IconImage = Resources.Load<Sprite>(button.IconImage),
+                    // OnSelect and OnDeselect linked during second pass construction
+                };
+            }
+
+            return buttonArgs;
         }
     }
 }

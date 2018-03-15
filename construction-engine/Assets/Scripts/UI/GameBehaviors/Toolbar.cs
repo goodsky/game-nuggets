@@ -11,7 +11,7 @@ namespace UI
     public class Toolbar : MonoBehaviour
     {
         /// <summary>Store for toolbar game objects</summary>
-        private ToolbarStore _toolbarStore;
+        private UIStore _toolbarStore;
 
         /// <summary>Sub Menu buttons that are currently active.</summary>
         private GameObject _activeSubMenuButtons;
@@ -39,12 +39,12 @@ namespace UI
         /// Initialize the game data.
         /// </summary>
         /// <param name="toolbarData">Toolbar game data.</param>
-        public void InitializeStore(ToolbarData toolbarData)
+        public void InitializeStore(UIData toolbarData)
         {
-            _toolbarStore = GetComponent<ToolbarStore>();
+            _toolbarStore = GetComponent<UIStore>();
             if (_toolbarStore == null)
             {
-                _toolbarStore = gameObject.AddComponent<ToolbarStore>();
+                _toolbarStore = gameObject.AddComponent<UIStore>();
             }
 
             _toolbarStore.Build(toolbarData);

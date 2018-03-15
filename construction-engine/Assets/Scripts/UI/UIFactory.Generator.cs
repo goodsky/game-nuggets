@@ -42,17 +42,16 @@ namespace UI
         // The factory will overwrite positions & images to conform with the group
         public ButtonArgs[] Buttons;
 
-        public float Left;
-        public float Right;
-        public float PosY;
-        public float Height;
-
-        public float ButtonWidth;
-        public float ButtonHeight;
+        public Vector2 ButtonSize;
 
         public Color ButtonsDefaultColor;
         public Color ButtonsMouseOverColor;
         public Color ButtonsSelectedColor;
+
+        public float Left;
+        public float Right;
+        public float PosY;
+        public float Height;
     }
 
     /// <summary>
@@ -140,7 +139,7 @@ namespace UI
                     Name = "LeftButton",
                     Toggleable = false,
                     Position = new Vector2(0, 0),
-                    Size = new Vector2(args.ButtonWidth, args.ButtonHeight),
+                    Size = args.ButtonSize,
                     Pivot = new Vector2(1, 0.5f),
                     AnchorMax = new Vector2(0, 0.5f),
                     AnchorMin = new Vector2(0, 0.5f),
@@ -158,7 +157,7 @@ namespace UI
                     Name = "RightButton",
                     Toggleable = false,
                     Position = new Vector2(0, 0),
-                    Size = new Vector2(args.ButtonWidth, args.ButtonHeight),
+                    Size = args.ButtonSize,
                     Pivot = new Vector2(0, 0.5f),
                     AnchorMax = new Vector2(1, 0.5f),
                     AnchorMin = new Vector2(1, 0.5f),
@@ -188,7 +187,7 @@ namespace UI
             contentRect.pivot = new Vector2(0, 0.5f);
             contentRect.anchorMin = new Vector2(0, 0.5f); // Left-Align
             contentRect.anchorMax = new Vector2(0, 0.5f);
-            contentRect.sizeDelta = new Vector2(args.Buttons.Length * args.ButtonWidth, args.ButtonHeight);
+            contentRect.sizeDelta = new Vector2(args.Buttons.Length * args.ButtonSize.x, args.ButtonSize.y);
             contentRect.anchoredPosition = new Vector2(0, 0);
 
             for (int i = 0; i < args.Buttons.Length; ++i)
@@ -197,8 +196,8 @@ namespace UI
 
                 Assert.IsNotNull(button.Name, "Button in ButtonGroup requires a name!");
 
-                button.Position = new Vector2(i * args.ButtonWidth, 0);
-                button.Size = new Vector2(args.ButtonWidth, args.ButtonHeight);
+                button.Position = new Vector2(i * args.ButtonSize.x, 0);
+                button.Size = args.ButtonSize;
                 button.Pivot = new Vector2(0, 0.5f);
                 button.AnchorMin = new Vector2(0, 0.5f); // Left-Align
                 button.AnchorMax = new Vector2(0, 0.5f);
@@ -213,7 +212,7 @@ namespace UI
             for (int i = 1; i < args.Buttons.Length; ++i)
             {
                 // Little extra UI prettyness with the dividers
-                LoadDivider(content.transform, i * args.ButtonWidth - 1);
+                LoadDivider(content.transform, i * args.ButtonSize.x - 1);
             }
 
             var script = buttonGroup.AddComponent<ButtonGroup>();
