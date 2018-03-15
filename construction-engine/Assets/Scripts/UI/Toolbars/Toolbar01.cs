@@ -1,12 +1,12 @@
-﻿using UnityEngine;
-
-namespace UI
+﻿namespace UI
 {
     public class Toolbar01 : Toolbar
     {
+        /*
         protected override void PopulateMenus()
         {
-            var homeSubMenu = ToolbarFactory.GenerateButtonGroup(
+            
+            var homeSubMenu = UIFactory.GenerateButtonGroup(
                 _subMenu.transform,
                 SubMenuButtonGroup(
                     "HomeSubMenu",
@@ -18,7 +18,7 @@ namespace UI
                         new ButtonArgs() { Name = "SubMenuHome", Tooltip = "Another Home", IconImage = Resources.Load<Sprite>("toolbar-icon-test1"), OnSelect = () => PopUpWindow(null), OnDeselect = PopDownWindow },
                     }));
 
-            var circleSubMenu = ToolbarFactory.GenerateButtonGroup(
+            var circleSubMenu = UIFactory.GenerateButtonGroup(
                 _subMenu.transform,
                 SubMenuButtonGroup(
                     "CircleSubMenu",
@@ -29,7 +29,7 @@ namespace UI
                         new ButtonArgs() { Name = "SubMenuCircle", Tooltip = "Another Circle", IconImage = Resources.Load<Sprite>("toolbar-icon-test2"), OnSelect = () => PopUpWindow(null), OnDeselect = PopDownWindow },
                     }));
 
-            var diamondSubMenu = ToolbarFactory.GenerateButtonGroup(
+            var diamondSubMenu = UIFactory.GenerateButtonGroup(
                 _subMenu.transform,
                 SubMenuButtonGroup(
                     "DiamondSubMenu",
@@ -59,7 +59,7 @@ namespace UI
             var circleSubMenuButtons = circleSubMenu.GetComponentsInChildren<Button>();
             var diamondSubMenuButtons = diamondSubMenu.GetComponentsInChildren<Button>();
 
-            ToolbarFactory.GenerateButtonGroup(
+            UIFactory.GenerateButtonGroup(
                 gameObject.transform,
                 MainMenuButtonGroup(
                     "MainMenu",
@@ -70,5 +70,6 @@ namespace UI
                         new ButtonArgs() { Name = "Diamond", Tooltip = "Diamond", Children = diamondSubMenuButtons, IconImage = Resources.Load<Sprite>("toolbar-icon-test3"), OnSelect = () => PopUpSubMenu(diamondSubMenu), OnDeselect = PopDownSubMenu },
                     }));
         }
+        */
     }
 }

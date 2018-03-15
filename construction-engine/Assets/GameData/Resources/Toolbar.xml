@@ -1,7 +1,19 @@
-<MenuData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+<ToolbarData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
   
+  <!-- Toolbar Configuration -->
+  <Configuration>
+    <HorizontalMargins>175.0</HorizontalMargins>
+    <ButtonWidth>75.0</ButtonWidth>
+    <ButtonHeight>75.0</ButtonHeight>
+    <MainMenuBackground>DarkestGray</MainMenuBackground>
+    <MainMenuSelected>DarkerGray</MainMenuSelected>
+    <MainMenuAccent>DarkGray</MainMenuAccent>
+    <SubMenuBackground>DarkGray</SubMenuBackground>
+    <SubMenuSelected>Gray</SubMenuSelected>
+    <SubMenuAccent>LightGray</SubMenuAccent>
+  </Configuration>
+
   <ButtonGroups>
-    
     <!-- Main Menu -->
     <MainButtonGroup name="MainMenu">
       <Buttons>
@@ -60,6 +72,6 @@
         </Button>
       </Buttons>
     </SubButtonGroup>
-    
   </ButtonGroups>
-</MenuData>
+  
+</ToolbarData>

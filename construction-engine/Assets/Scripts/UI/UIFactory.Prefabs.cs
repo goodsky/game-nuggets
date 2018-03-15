@@ -9,14 +9,14 @@ namespace UI
     /// Load UI Prefabs.
     /// Makes minor adjustments to the prefabs as necessary before returning them.
     /// </summary>
-    public static partial class ToolbarFactory
+    public static partial class UIFactory
     {
         private static readonly Dictionary<string, GameObject> Prefabs = new Dictionary<string, GameObject>();
 
         /// <summary>
         /// Load all UI Prefabs in the static ctor.
         /// </summary>
-        static ToolbarFactory()
+        static UIFactory()
         {
             var uiPrefabs = Resources.LoadAll<GameObject>("UI");
 
@@ -68,17 +68,18 @@ namespace UI
         /// Instantiates the top status bar.
         /// </summary>
         /// <param name="parent">The status bar parent.</param>
+        /// <param name="margins">The left and right margins of the status bar compared to the screen.</param>
         /// <param name="background">The background color.</param>
         /// <returns>The status bar.</returns>
-        public static GameObject LoadStatusBar(GameObject parent, Color background)
+        public static GameObject LoadStatusBar(GameObject parent, float margins, Color background)
         {
             string StatusBar = "StatusBar";
 
             var statusBar = InstantiatePrefab(StatusBar, StatusBar, parent.transform);
 
             var rect = statusBar.GetComponent<RectTransform>();
-            rect.offsetMin = new Vector2(ToolbarConstants.HorizontalMargins, rect.offsetMin.y);
-            rect.offsetMax = new Vector2(-ToolbarConstants.HorizontalMargins, rect.offsetMax.y);
+            rect.offsetMin = new Vector2(margins, rect.offsetMin.y);
+            rect.offsetMax = new Vector2(-margins, rect.offsetMax.y);
 
             var image = statusBar.GetComponent<Image>();
             image.color = background;

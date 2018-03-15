@@ -47,6 +47,9 @@ namespace UI
         public float PosY;
         public float Height;
 
+        public float ButtonWidth;
+        public float ButtonHeight;
+
         public Color ButtonsDefaultColor;
         public Color ButtonsMouseOverColor;
         public Color ButtonsSelectedColor;
@@ -56,7 +59,7 @@ namespace UI
     /// Class with factory methods to generate UI components.
     /// A testiment to how uncomfortable I am with using editor tools and prefabs.
     /// </summary>
-    public static partial class ToolbarFactory
+    public static partial class UIFactory
     {
         /// <summary>
         /// Instantiates a button.
@@ -137,9 +140,9 @@ namespace UI
                     Name = "LeftButton",
                     Toggleable = false,
                     Position = new Vector2(0, 0),
-                    Size = new Vector2(ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight),
+                    Size = new Vector2(args.ButtonWidth, args.ButtonHeight),
                     Pivot = new Vector2(1, 0.5f),
-                    AnchorMax = new Vector2(0, 0.5f), // 
+                    AnchorMax = new Vector2(0, 0.5f),
                     AnchorMin = new Vector2(0, 0.5f),
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
@@ -155,7 +158,7 @@ namespace UI
                     Name = "RightButton",
                     Toggleable = false,
                     Position = new Vector2(0, 0),
-                    Size = new Vector2(ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight),
+                    Size = new Vector2(args.ButtonWidth, args.ButtonHeight),
                     Pivot = new Vector2(0, 0.5f),
                     AnchorMax = new Vector2(1, 0.5f),
                     AnchorMin = new Vector2(1, 0.5f),
@@ -185,7 +188,7 @@ namespace UI
             contentRect.pivot = new Vector2(0, 0.5f);
             contentRect.anchorMin = new Vector2(0, 0.5f); // Left-Align
             contentRect.anchorMax = new Vector2(0, 0.5f);
-            contentRect.sizeDelta = new Vector2(args.Buttons.Length * ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight);
+            contentRect.sizeDelta = new Vector2(args.Buttons.Length * args.ButtonWidth, args.ButtonHeight);
             contentRect.anchoredPosition = new Vector2(0, 0);
 
             for (int i = 0; i < args.Buttons.Length; ++i)
@@ -194,8 +197,8 @@ namespace UI
 
                 Assert.IsNotNull(button.Name, "Button in ButtonGroup requires a name!");
 
-                button.Position = new Vector2(i * ToolbarConstants.ButtonWidth, 0);
-                button.Size = new Vector2(ToolbarConstants.ButtonWidth, ToolbarConstants.ButtonHeight);
+                button.Position = new Vector2(i * args.ButtonWidth, 0);
+                button.Size = new Vector2(args.ButtonWidth, args.ButtonHeight);
                 button.Pivot = new Vector2(0, 0.5f);
                 button.AnchorMin = new Vector2(0, 0.5f); // Left-Align
                 button.AnchorMax = new Vector2(0, 0.5f);
@@ -210,7 +213,7 @@ namespace UI
             for (int i = 1; i < args.Buttons.Length; ++i)
             {
                 // Little extra UI prettyness with the dividers
-                LoadDivider(content.transform, i * ToolbarConstants.ButtonWidth - 1);
+                LoadDivider(content.transform, i * args.ButtonWidth - 1);
             }
 
             var script = buttonGroup.AddComponent<ButtonGroup>();

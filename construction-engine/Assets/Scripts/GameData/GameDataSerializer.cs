@@ -32,14 +32,12 @@ namespace GameData
         /// Throws SerializationException on a malconfigured XML.
         /// </summary>
         /// <typeparam name="T">The GameData contract type.</typeparam>
-        /// <param name="config">Name of the Unity TextAsset configuration without extension.</param>
+        /// <param name="config">Unity TextAsset configuration.</param>
         /// <returns>The serialized game data.</returns>
-        public static T Load<T>(string config) where T : class
+        public static T Load<T>(TextAsset config) where T : class
         {
-            var configFile = Resources.Load<TextAsset>(config);
-
-            var serializer = new XmlSerializer(typeof(MenuData));
-            using (var configStream = new MemoryStream(configFile.bytes))
+            var serializer = new XmlSerializer(typeof(ToolbarData));
+            using (var configStream = new MemoryStream(config.bytes))
             {
                 return serializer.Deserialize(configStream) as T;
             }

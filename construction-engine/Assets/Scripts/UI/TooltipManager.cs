@@ -12,7 +12,7 @@ namespace UI
 
         public static void Initialize(Transform canvas)
         {
-            Tooltip = ToolbarFactory.LoadTooltip(canvas);
+            Tooltip = UIFactory.LoadTooltip(canvas);
             Tooltip.SetActive(false);
         }
 
