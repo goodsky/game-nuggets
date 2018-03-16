@@ -139,7 +139,7 @@ namespace GameData
     /// <summary>Action to pop up the sub menu.</summary>
     public class PopUpSubMenuAction : ButtonAction
     {
-        [XmlAttribute("buttonGroup")]
+        [XmlAttribute("buttonGroupName")]
         public string ButtonGroupName { get; set; }
     }
 

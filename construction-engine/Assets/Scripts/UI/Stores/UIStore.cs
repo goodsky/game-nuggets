@@ -59,9 +59,57 @@ namespace UI
         /// Link actions that reference other GameObjects.
         /// All other GameObjects in dependent stores must already be Instantiated.
         /// </summary>
-        public void Link()
+        /// <param name="data">Toolbar game data.</param>
+        public void Link(UIData data)
         {
+            var toolbar = GetComponent<Toolbar>();
 
+            // Link button children and actions
+            foreach (var buttonGroupData in data.ButtonGroups)
+            {
+                var buttonGroupObject = _buttonGroups[buttonGroupData.Name];
+                var buttonGroup = buttonGroupObject.GetComponent<ButtonGroup>();
+
+                for (int i = 0; i < buttonGroupData.Buttons.Count; ++i)
+                {
+                    var buttonData = buttonGroupData.Buttons[i];
+                    var button = buttonGroup.Buttons[i];
+
+                    // Link OnSelect Action -----------------------
+                    if (buttonData.OnSelect is PopUpSubMenuAction)
+                    {
+                        var popUpSubMenuAction = buttonData.OnSelect as PopUpSubMenuAction;
+                        var popUpSubMenuObject = _buttonGroups[popUpSubMenuAction.ButtonGroupName];
+                        button.OnSelect = () => toolbar.PopUpSubMenu(popUpSubMenuObject);
+                    }
+                    else if (buttonData.OnSelect is PopUpWindowAction)
+                    {
+                        // reference window
+                    }
+
+                    // Link OnDeselect Action -----------------------
+                    if (buttonData.OnDeselect is PopDownSubMenuAction)
+                    {
+                        button.OnDeselect = () => toolbar.PopDownSubMenu();
+                    }
+                    else if (buttonData.OnDeselect is PopDownWindowAction)
+                    {
+                        // reference window
+                    }
+
+                    /// Link Child Selectables -----------------------
+                    if (!string.IsNullOrEmpty(buttonData.ChildButtonGroup))
+                    {
+                        var childButtonGroupObject = _buttonGroups[buttonData.ChildButtonGroup];
+                        var childButtonGroup = childButtonGroupObject.GetComponent<ButtonGroup>();
+
+                        foreach (var childButton in childButtonGroup.Buttons)
+                        {
+                            childButton.SelectionParent = button;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -74,6 +122,7 @@ namespace UI
             Color background = Color.white;
             Color selected = Color.white;
             Color accent = Color.white;
+            bool active = true;
 
             if (buttonGroup is MainButtonGroupData)
             {
@@ -81,6 +130,7 @@ namespace UI
                 background = config.MainMenuBackgroundColor.Value;
                 selected = config.MainMenuSelectedColor.Value;
                 accent = config.MainMenuAccentColor.Value;
+                active = true;
             }
             else if (buttonGroup is SubButtonGroupData)
             {
@@ -88,9 +138,10 @@ namespace UI
                 background = config.SubMenuBackgroundColor.Value;
                 selected = config.SubMenuSelectedColor.Value;
                 accent = config.SubMenuAccentColor.Value;
+                active = false;
             }
 
-            return UIFactory.GenerateButtonGroup(
+            var buttonGroupObject = UIFactory.GenerateButtonGroup(
                 menuTransform,
                 new ButtonGroupArgs()
                 {
@@ -105,6 +156,10 @@ namespace UI
                     ButtonsSelectedColor = selected,
                     Buttons = CreateButtons(buttonGroup.Buttons, config)
                 });
+
+            buttonGroupObject.SetActive(active);
+
+            return buttonGroupObject;
         }
 
         /// <summary>

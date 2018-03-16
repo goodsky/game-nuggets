@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace UI
@@ -25,6 +26,11 @@ namespace UI
         public GameObject Content;
 
         /// <summary>
+        /// The buttons in this button group.
+        /// </summary>
+        public List<Button> Buttons { get; set; }
+
+        /// <summary>
         /// The speed to scroll.
         /// </summary>
         public float ScrollSpeed = 3.0f;
@@ -40,8 +46,6 @@ namespace UI
         /// </summary>
         protected void Start()
         {
-            // this.SelectionPip.SetActive(false);
-
             ScrollButtonLeft.GetComponent<Button>().OnMouseDown = ScrollLeft;
             ScrollButtonRight.GetComponent<Button>().OnMouseDown = ScrollRight;
 

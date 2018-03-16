@@ -76,14 +76,14 @@ public class Game : MonoBehaviour
     /// </summary>
     private void InitializeStores()
     {
+        UIData data = null;
+
         if (Toolbar == null)
         {
             GameLogger.Warning("No toolbar found. Skipping initialization.");
         }
         else
         {
-            UIData data = null;
-
             try
             {
                 data = GameDataSerializer.Load<UIData>(UIConfiguration);
@@ -102,7 +102,7 @@ public class Game : MonoBehaviour
 
         if (Toolbar != null)
         {
-            Toolbar.LinkStore();
+            Toolbar.LinkStore(data);
         }
     }
 }

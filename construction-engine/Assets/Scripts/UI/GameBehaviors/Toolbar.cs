@@ -53,7 +53,7 @@ namespace UI
         /// <summary>
         /// Link references between game data.
         /// </summary>
-        public void LinkStore()
+        public void LinkStore(UIData toolbarData)
         {
             if (_toolbarStore == null)
             {
@@ -61,7 +61,7 @@ namespace UI
                 Application.Quit();
             }
 
-            _toolbarStore.Link();
+            _toolbarStore.Link(toolbarData);
         }
 
         /// <summary>

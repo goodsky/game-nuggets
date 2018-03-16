@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -190,6 +191,8 @@ namespace UI
             contentRect.sizeDelta = new Vector2(args.Buttons.Length * args.ButtonSize.x, args.ButtonSize.y);
             contentRect.anchoredPosition = new Vector2(0, 0);
 
+            var buttons = new List<Button>();
+
             for (int i = 0; i < args.Buttons.Length; ++i)
             {
                 var button = args.Buttons[i];
@@ -206,7 +209,8 @@ namespace UI
                 button.MouseOverColor = args.ButtonsMouseOverColor;
                 button.SelectedColor = args.ButtonsSelectedColor;
 
-                GenerateButton(content.transform, button);
+                var buttonObject = GenerateButton(content.transform, button);
+                buttons.Add(buttonObject.GetComponent<Button>());
             }
 
             for (int i = 1; i < args.Buttons.Length; ++i)
@@ -219,6 +223,7 @@ namespace UI
             script.ScrollButtonLeft = leftArrow;
             script.ScrollButtonRight = rightArrow;
             script.Content = content;
+            script.Buttons = buttons;
 
             return buttonGroup;
         }
