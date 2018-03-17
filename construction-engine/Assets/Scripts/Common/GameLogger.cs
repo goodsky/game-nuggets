@@ -120,6 +120,17 @@ namespace Common
         }
 
         /// <summary>
+        /// Write a log message at Error level and then quit the application.
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="args">The arguments to the message</param>
+        public static void FatalError(string message, params object[] args)
+        {
+            Log(LogLevel.Error, message, args);
+            Application.Quit();
+        }
+
+        /// <summary>
         /// Flush all logs.
         /// </summary>
         public static void Flush()

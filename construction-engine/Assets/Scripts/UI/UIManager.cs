@@ -1,57 +1,70 @@
-﻿using GameData;
+﻿using Common;
+using GameData;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UI
 {
-    /// <summary>
-    /// In-Memory database for Menu GameObjects loaded from UI.xml.
-    /// </summary>
-    public class UIStore : MonoBehaviour
+    public class UIManager : MonoBehaviour
     {
         private Dictionary<string, GameObject> _buttonGroups = new Dictionary<string, GameObject>();
+        private UIData _data;
+
+        /// <summary>The configuration to load</summary>
+        public TextAsset Config { get; set; }
 
         /// <summary>UI Status Bar</summary>
         public GameObject StatusBar { get; private set; }
 
-        /// <summary>UI Main Menu Bar</summary>
+        /// <summary>Main Toolbar</summary>
         public GameObject MainMenu { get; private set; }
 
-        /// <summary>UI Sub Menu Bar</summary>
-        public GameObject SubMenu { get; private set; }
-
-        /// <summary>UI Main Menu Pip</summary>
+        /// <summary>Main Toolbar selection pip</summary>
         public GameObject MainMenuPip { get; private set; }
 
+        /// <summary>Sub Toolbarr</summary>
+        public GameObject SubMenu { get; private set; }
+
         /// <summary>
-        /// Constructs the store objects based on toolbar game data.
+        /// Unity's Awake method.
         /// </summary>
-        /// <param name="data">Toolbar game data.</param>
-        public void Build(UIData data)
+        protected void Awake()
         {
-            var canvas = gameObject.GetComponentInParent<Canvas>();
-            TooltipManager.Initialize(canvas.gameObject.transform);
+            try
+            {
+                _data = GameDataSerializer.Load<UIData>(Config);
+            }
+            catch (Exception e)
+            {
+                GameLogger.FatalError("Failed to load toolbar game data. Ex = {0}", e);
+            }
 
             // Fire and forget the selection root object.
             // This will catch click events on the screen that are not on a UI element.
-            UIFactory.LoadSelectionRoot(canvas.gameObject);
+            UIFactory.LoadSelectionRoot(gameObject);
 
             // Create the status bar on the top
-            StatusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor.Value);
+            StatusBar = UIFactory.LoadStatusBar(gameObject, _data.Config.HorizontalMargins, _data.Config.MainMenuBackgroundColor.Value);
 
             // Create the Main Menu Bar on the bottom
-            MainMenu = UIFactory.LoadMenuBar(gameObject, "MainMenu", 0.0f, data.Config.MainMenuBackgroundColor.Value);
-            MainMenuPip = UIFactory.LoadPip(MainMenu, data.Config.SubMenuBackgroundColor.Value);
+            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, _data.Config.MainMenuBackgroundColor.Value);
+            MainMenuPip = UIFactory.LoadPip(MainMenu, _data.Config.SubMenuBackgroundColor.Value);
 
-            // Creat the second layer menu
+            // Create the second layer menu
             float mainMenuHeight = MainMenu.GetComponent<RectTransform>().sizeDelta.y;
-            SubMenu = UIFactory.LoadMenuBar(gameObject, "SubMenu", mainMenuHeight, data.Config.SubMenuBackgroundColor.Value);
+            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, _data.Config.SubMenuBackgroundColor.Value);
             SubMenu.SetActive(false);
 
+            // Link the main and sub menus
+            var mainMenuToolbar = MainMenu.AddComponent<Toolbar>();
+            mainMenuToolbar.SubMenu = SubMenu;
+            mainMenuToolbar.Pip = MainMenuPip;
+
             // Load the Button Groups
-            foreach (var buttonGroup in data.ButtonGroups)
+            foreach (var buttonGroup in _data.ButtonGroups)
             {
-                _buttonGroups[buttonGroup.Name] = CreateButtonGroup(buttonGroup, data.Config);
+                _buttonGroups[buttonGroup.Name] = CreateButtonGroup(buttonGroup, _data.Config);
             }
         }
 
@@ -60,12 +73,12 @@ namespace UI
         /// All other GameObjects in dependent stores must already be Instantiated.
         /// </summary>
         /// <param name="data">Toolbar game data.</param>
-        public void Link(UIData data)
+        protected void Start()
         {
-            var toolbar = GetComponent<Toolbar>();
+            var toolbar = MainMenu.GetComponent<Toolbar>();
 
             // Link button children and actions
-            foreach (var buttonGroupData in data.ButtonGroups)
+            foreach (var buttonGroupData in _data.ButtonGroups)
             {
                 var buttonGroupObject = _buttonGroups[buttonGroupData.Name];
                 var buttonGroup = buttonGroupObject.GetComponent<ButtonGroup>();

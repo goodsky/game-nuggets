@@ -1,6 +1,4 @@
-﻿using Common;
-using GameData;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UI
 {
@@ -10,58 +8,23 @@ namespace UI
     /// </summary>
     public class Toolbar : MonoBehaviour
     {
-        /// <summary>Store for toolbar game objects</summary>
-        private UIStore _toolbarStore;
+        public GameObject SubMenu { get; set; }
+
+        public GameObject Pip { get; set; }
 
         /// <summary>Sub Menu buttons that are currently active.</summary>
         private GameObject _activeSubMenuButtons;
-
-        /// <summary>
-        /// Unity Start method
-        /// </summary>
-        protected void Start()
-        {
-
-        }
 
         /// <summary>
         /// Unity Update method
         /// </summary>
         protected void Update()
         {
+            // TODO: move this to a global selection manager
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 Selectable.SelectionManager.UpdateSelection(null);
             }
-        }
-
-        /// <summary>
-        /// Initialize the game data.
-        /// </summary>
-        /// <param name="toolbarData">Toolbar game data.</param>
-        public void InitializeStore(UIData toolbarData)
-        {
-            _toolbarStore = GetComponent<UIStore>();
-            if (_toolbarStore == null)
-            {
-                _toolbarStore = gameObject.AddComponent<UIStore>();
-            }
-
-            _toolbarStore.Build(toolbarData);
-        }
-
-        /// <summary>
-        /// Link references between game data.
-        /// </summary>
-        public void LinkStore(UIData toolbarData)
-        {
-            if (_toolbarStore == null)
-            {
-                GameLogger.Error("Failed to Link ToolbarStore. Store does not exist.");
-                Application.Quit();
-            }
-
-            _toolbarStore.Link(toolbarData);
         }
 
         /// <summary>
@@ -70,14 +33,14 @@ namespace UI
         /// <param name="buttonGroup">The button group to populate with the sub-menu.</param>
         public void PopUpSubMenu(GameObject buttonGroup)
         {
-            _toolbarStore.SubMenu.SetActive(true);
+            SubMenu.SetActive(true);
 
             var selected = Selectable.SelectionManager.Selected;
             if (selected != null)
             {
-                _toolbarStore.MainMenuPip.transform.SetParent(selected.gameObject.transform, false);
-                _toolbarStore.MainMenuPip.transform.SetAsFirstSibling();
-                _toolbarStore.MainMenuPip.SetActive(true);
+                Pip.transform.SetParent(selected.gameObject.transform, false);
+                Pip.transform.SetAsFirstSibling();
+                Pip.SetActive(true);
             }
 
             buttonGroup.SetActive(true);
@@ -89,27 +52,10 @@ namespace UI
         /// </summary>
         public void PopDownSubMenu()
         {
-            _toolbarStore.SubMenu.SetActive(false);
-            _toolbarStore.MainMenuPip.SetActive(false);
+            SubMenu.SetActive(false);
+            Pip.SetActive(false);
 
             _activeSubMenuButtons.SetActive(false);
-        }
-
-        /// <summary>
-        /// Pop up a window.
-        /// </summary>
-        /// <param name="windowContent"></param>
-        public void PopUpWindow(GameObject windowContent)
-        {
-            // TODO: Window Manager
-        }
-
-        /// <summary>
-        /// Pop down the window.
-        /// </summary>
-        public void PopDownWindow()
-        {
-            // TODO: Window Manager
         }
     }
 }

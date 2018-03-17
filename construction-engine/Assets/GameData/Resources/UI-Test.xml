@@ -14,7 +14,7 @@
   </Configuration>
 
   <ButtonGroups>
-    <!-- Main Menu Buttons -->
+    <!-- Main Toolbar Buttons -->
     <MainButtonGroup name="MainMenu">
       <Buttons>
         <Button name="Home">

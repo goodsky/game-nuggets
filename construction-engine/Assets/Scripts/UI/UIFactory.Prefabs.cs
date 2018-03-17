@@ -49,6 +49,30 @@ namespace UI
         }
 
         /// <summary>
+        /// Load the screen-wide canvas object that the toolbar, statusbar and windows will be rendered on.
+        /// </summary>
+        /// <param name="parent">The parent</param>
+        /// <returns>The UI Canvas.</returns>
+        public static GameObject LoadUICanvas(GameObject parent)
+        {
+            string UICanvas = "UI Canvas";
+
+            return InstantiatePrefab(UICanvas, UICanvas, parent.transform);
+        }
+
+        /// <summary>
+        /// Load the Unity EventSystem component to forward events to our UI.
+        /// </summary>
+        /// <param name="parent">The parent</param>
+        /// <returns>The UI EventSystem.</returns>
+        public static GameObject LoadUIEventSystem(GameObject parent)
+        {
+            string UIEventSystem = "UI EventSystem";
+
+            return InstantiatePrefab(UIEventSystem, UIEventSystem, parent.transform);
+        }
+
+        /// <summary>
         /// Instantiates the screen-wide object that is the root of UI selections. 
         /// This means if you click on the non-UI screen then the selection manager will reset.
         /// </summary>
@@ -85,7 +109,7 @@ namespace UI
             image.color = background;
 
             // TODO: wire up the status bar with game state.
-            var statusBarInfo = statusBar.GetComponent<StatusBar>();
+            var statusBarInfo = statusBar.GetComponent<Statusbar>();
             statusBarInfo.CurrentFunds = 123456;
             statusBarInfo.CurrentDate = string.Format("{0}\n{1}", DateTime.Now.ToString("MM/dd/yyyy"), "Spring");
 
@@ -98,9 +122,9 @@ namespace UI
         /// <param name="parent">The menu parent.</param>
         /// <param name="background">The background color.</param>
         /// <returns>The menu bar.</returns>
-        public static GameObject LoadMenuBar(GameObject parent, string name, float yOffset, Color background)
+        public static GameObject LoadToolbar(GameObject parent, string name, float yOffset, Color background)
         {
-            string MenuBar = "MenuBar";
+            string MenuBar = "Toolbar";
 
             var menuBar = InstantiatePrefab(MenuBar, name, parent.transform);
 

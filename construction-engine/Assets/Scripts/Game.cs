@@ -1,5 +1,4 @@
 ﻿using Common;
-using GameData;
 using System;
 using UI;
 using UnityEngine;
@@ -13,24 +12,21 @@ public class Game : MonoBehaviour
     public static Game Instance { get; private set; }
 
     [Header("UI Configuration")]
-    public TextAsset UIConfiguration;
+    public TextAsset UIConfig;
 
-    /// <summary>Link to the game toolbar.</summary>
-    public Toolbar Toolbar { get; private set; }
+    /// <summary>The User Interface Manager</summary>
+    public UIManager UI { get; private set; }
 
     /// <summary>
     /// Bootstrap the game state and data.
     /// </summary>
     protected void Awake()
     {
-        InitializeLogging();
+        InitLogging();
         GameLogger.Info("Game started at {0}.", DateTime.Now);
 
         GameLogger.Info("Creating game objects.");
-        InitializeGameObjects();
-
-        GameLogger.Info("Loading game data.");
-        InitializeStores();
+        InitGameObjects();
     }
 
     /// <summary>
@@ -45,7 +41,7 @@ public class Game : MonoBehaviour
     /// <summary>
     /// Set up the game session loggers.
     /// </summary>
-    private void InitializeLogging()
+    private void InitLogging()
     {
         if (Application.isEditor)
         {
@@ -58,51 +54,18 @@ public class Game : MonoBehaviour
     /// <summary>
     /// Initialize the game objects.
     /// </summary>
-    private void InitializeGameObjects()
+    private void InitGameObjects()
     {
-        Canvas canvas = FindObjectOfType<Canvas>();
+        UIFactory.LoadUIEventSystem(gameObject);
 
-        if (canvas == null)
-        {
-            GameLogger.Error("Scene requires a Canvas to load UI.");
-            Application.Quit();
-        }
+        var canvas = UIFactory.LoadUICanvas(gameObject);
+        canvas.SetActive(false);
 
-        Toolbar = canvas.gameObject.AddComponent<Toolbar>();
-    }
+        UI = canvas.AddComponent<UIManager>();
+        UI.Config = UIConfig;
 
-    /// <summary>
-    /// Initialize the game object stores.
-    /// </summary>
-    private void InitializeStores()
-    {
-        UIData data = null;
+        TooltipManager.Initialize(canvas.gameObject.transform);
 
-        if (Toolbar == null)
-        {
-            GameLogger.Warning("No toolbar found. Skipping initialization.");
-        }
-        else
-        {
-            try
-            {
-                data = GameDataSerializer.Load<UIData>(UIConfiguration);
-
-                if (data == null)
-                    throw new ArgumentNullException("Toolbar GameData was null.");
-            }
-            catch (Exception e)
-            {
-                GameLogger.Error("Failed to load toolbar game data. Ex = {0}", e);
-                Application.Quit();
-            }
-
-            Toolbar.InitializeStore(data);
-        }
-
-        if (Toolbar != null)
-        {
-            Toolbar.LinkStore(data);
-        }
+        canvas.SetActive(true);
     }
 }

@@ -8,8 +8,10 @@ namespace UI
     /// <summary>
     /// Companion behavior for the Status UI bar.
     /// </summary>
-    public class StatusBar : MonoBehaviour
+    public class Statusbar : MonoBehaviour
     {
+        public string Test { get; set; }
+
         /// <summary>
         /// The funds string
         /// </summary>
@@ -51,7 +53,7 @@ namespace UI
         /// <summary>
         /// Unity Start method
         /// </summary>
-        protected virtual void Start()
+        protected void Start()
         {
             if (FundsText == null)
                 throw new ArgumentNullException("FundsText");
