@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace UI
 {
     /// <summary>
-    /// Companion behavior for the Status UI bar.
+    /// Behaviour for the status bar at the top of the screen.
     /// </summary>
     public class Statusbar : MonoBehaviour
     {

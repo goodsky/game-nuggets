@@ -3,13 +3,14 @@
 namespace UI
 {
     /// <summary>
-    /// The base class for the UI Toolbar.
-    /// Extend this class to populate menus in the 'PopulateMenus' method.
+    /// Behaviour for the toolbar at the bottom of the screen.
     /// </summary>
     public class Toolbar : MonoBehaviour
     {
+        /// <summary>The second layer toolbar that pops up.</summary>
         public GameObject SubMenu { get; set; }
 
+        /// <summary>The little selection indicator between main and sub menu.</summary>
         public GameObject Pip { get; set; }
 
         /// <summary>Sub Menu buttons that are currently active.</summary>

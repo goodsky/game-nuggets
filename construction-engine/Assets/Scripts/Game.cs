@@ -62,7 +62,7 @@ public class Game : MonoBehaviour
         canvas.SetActive(false);
 
         UI = canvas.AddComponent<UIManager>();
-        UI.Config = UIConfig;
+        UI.SetConfig(UIConfig);
 
         TooltipManager.Initialize(canvas.gameObject.transform);
 

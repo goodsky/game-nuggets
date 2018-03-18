@@ -1,18 +1,15 @@
-﻿using Common;
-using GameData;
-using System;
+﻿using GameData;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UI
 {
-    public class UIManager : MonoBehaviour
+    /// <summary>
+    /// Root level object for the game UI.
+    /// </summary>
+    public class UIManager : GameDataLoader<UIData>
     {
         private Dictionary<string, GameObject> _buttonGroups = new Dictionary<string, GameObject>();
-        private UIData _data;
-
-        /// <summary>The configuration to load</summary>
-        public TextAsset Config { get; set; }
 
         /// <summary>UI Status Bar</summary>
         public GameObject StatusBar { get; private set; }
@@ -27,33 +24,25 @@ namespace UI
         public GameObject SubMenu { get; private set; }
 
         /// <summary>
-        /// Unity's Awake method.
+        /// Load UI runtime instances.
         /// </summary>
-        protected void Awake()
+        /// <param name="gameData">UI GameData</param>
+        protected override void LoadData(UIData gameData)
         {
-            try
-            {
-                _data = GameDataSerializer.Load<UIData>(Config);
-            }
-            catch (Exception e)
-            {
-                GameLogger.FatalError("Failed to load toolbar game data. Ex = {0}", e);
-            }
-
             // Fire and forget the selection root object.
             // This will catch click events on the screen that are not on a UI element.
             UIFactory.LoadSelectionRoot(gameObject);
 
             // Create the status bar on the top
-            StatusBar = UIFactory.LoadStatusBar(gameObject, _data.Config.HorizontalMargins, _data.Config.MainMenuBackgroundColor.Value);
+            StatusBar = UIFactory.LoadStatusBar(gameObject, gameData.Config.HorizontalMargins, gameData.Config.MainMenuBackgroundColor.Value);
 
             // Create the Main Menu Bar on the bottom
-            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, _data.Config.MainMenuBackgroundColor.Value);
-            MainMenuPip = UIFactory.LoadPip(MainMenu, _data.Config.SubMenuBackgroundColor.Value);
+            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, gameData.Config.MainMenuBackgroundColor.Value);
+            MainMenuPip = UIFactory.LoadPip(MainMenu, gameData.Config.SubMenuBackgroundColor.Value);
 
             // Create the second layer menu
             float mainMenuHeight = MainMenu.GetComponent<RectTransform>().sizeDelta.y;
-            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, _data.Config.SubMenuBackgroundColor.Value);
+            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, gameData.Config.SubMenuBackgroundColor.Value);
             SubMenu.SetActive(false);
 
             // Link the main and sub menus
@@ -62,9 +51,9 @@ namespace UI
             mainMenuToolbar.Pip = MainMenuPip;
 
             // Load the Button Groups
-            foreach (var buttonGroup in _data.ButtonGroups)
+            foreach (var buttonGroup in gameData.ButtonGroups)
             {
-                _buttonGroups[buttonGroup.Name] = CreateButtonGroup(buttonGroup, _data.Config);
+                _buttonGroups[buttonGroup.Name] = CreateButtonGroup(buttonGroup, gameData.Config);
             }
         }
 
@@ -72,13 +61,13 @@ namespace UI
         /// Link actions that reference other GameObjects.
         /// All other GameObjects in dependent stores must already be Instantiated.
         /// </summary>
-        /// <param name="data">Toolbar game data.</param>
-        protected void Start()
+        /// <param name="gameData">UI GameData</param>
+        protected override void LinkData(UIData gameData)
         {
             var toolbar = MainMenu.GetComponent<Toolbar>();
 
             // Link button children and actions
-            foreach (var buttonGroupData in _data.ButtonGroups)
+            foreach (var buttonGroupData in gameData.ButtonGroups)
             {
                 var buttonGroupObject = _buttonGroups[buttonGroupData.Name];
                 var buttonGroup = buttonGroupObject.GetComponent<ButtonGroup>();
