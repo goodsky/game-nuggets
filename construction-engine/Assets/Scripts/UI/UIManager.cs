@@ -9,7 +9,7 @@ namespace UI
     /// </summary>
     public class UIManager : GameDataLoader<UIData>
     {
-        private Dictionary<string, GameObject> _buttonGroups = new Dictionary<string, GameObject>();
+        private Dictionary<string, ButtonGroup> _buttonGroups = new Dictionary<string, ButtonGroup>();
 
         /// <summary>UI Status Bar</summary>
         public GameObject StatusBar { get; private set; }
@@ -69,8 +69,7 @@ namespace UI
             // Link button children and actions
             foreach (var buttonGroupData in gameData.ButtonGroups)
             {
-                var buttonGroupObject = _buttonGroups[buttonGroupData.Name];
-                var buttonGroup = buttonGroupObject.GetComponent<ButtonGroup>();
+                var buttonGroup = _buttonGroups[buttonGroupData.Name];
 
                 for (int i = 0; i < buttonGroupData.Buttons.Count; ++i)
                 {
@@ -78,37 +77,25 @@ namespace UI
                     var button = buttonGroup.Buttons[i];
 
                     // Link OnSelect Action -----------------------
-                    if (buttonData.OnSelect is PopUpSubMenuAction)
+                    if (buttonData.OnSelect is OpenSubMenuAction)
                     {
-                        var popUpSubMenuAction = buttonData.OnSelect as PopUpSubMenuAction;
-                        var popUpSubMenuObject = _buttonGroups[popUpSubMenuAction.ButtonGroupName];
-                        button.OnSelect = () => toolbar.PopUpSubMenu(popUpSubMenuObject);
+                        var openSubMenuAction = buttonData.OnSelect as OpenSubMenuAction;
+                        var openSubMenuButtons = _buttonGroups[openSubMenuAction.ButtonGroupName];
+                        button.OnSelect = () => toolbar.OpenSubMenu(openSubMenuButtons);
                     }
-                    else if (buttonData.OnSelect is PopUpWindowAction)
+                    else if (buttonData.OnSelect is OpenWindowAction)
                     {
                         // reference window
                     }
 
                     // Link OnDeselect Action -----------------------
-                    if (buttonData.OnDeselect is PopDownSubMenuAction)
+                    if (buttonData.OnDeselect is CloseSubMenuAction)
                     {
-                        button.OnDeselect = () => toolbar.PopDownSubMenu();
+                        button.OnDeselect = () => toolbar.CloseSubMenu();
                     }
-                    else if (buttonData.OnDeselect is PopDownWindowAction)
+                    else if (buttonData.OnDeselect is CloseWindowAction)
                     {
                         // reference window
-                    }
-
-                    /// Link Child Selectables -----------------------
-                    if (!string.IsNullOrEmpty(buttonData.ChildButtonGroup))
-                    {
-                        var childButtonGroupObject = _buttonGroups[buttonData.ChildButtonGroup];
-                        var childButtonGroup = childButtonGroupObject.GetComponent<ButtonGroup>();
-
-                        foreach (var childButton in childButtonGroup.Buttons)
-                        {
-                            childButton.SelectionParent = button;
-                        }
                     }
                 }
             }
@@ -118,7 +105,7 @@ namespace UI
         /// Convert ButtonGroup GameData into a GameObject in the store.
         /// Uses the Factory methods to load the button group.
         /// </summary>
-        private GameObject CreateButtonGroup(ButtonGroupData buttonGroup, UIConfig config)
+        private ButtonGroup CreateButtonGroup(ButtonGroupData buttonGroup, UIConfig config)
         {
             Transform menuTransform = null;
             Color background = Color.white;
@@ -156,19 +143,19 @@ namespace UI
                     ButtonsDefaultColor = background,
                     ButtonsMouseOverColor = accent,
                     ButtonsSelectedColor = selected,
-                    Buttons = CreateButtons(buttonGroup.Buttons, config)
+                    Buttons = CreateButtonArgs(buttonGroup.Buttons, config)
                 });
 
             buttonGroupObject.SetActive(active);
 
-            return buttonGroupObject;
+            return buttonGroupObject.GetComponent<ButtonGroup>();
         }
 
         /// <summary>
         /// Convert Button GameData into arguments for the Factory method.
         /// Called by CreateButtonGroup.
         /// </summary>
-        private ButtonArgs[] CreateButtons(List<ButtonData> buttons, UIConfig config)
+        private ButtonArgs[] CreateButtonArgs(List<ButtonData> buttons, UIConfig config)
         {
             ButtonArgs[] buttonArgs = new ButtonArgs[buttons.Count];
             for (int i = 0; i < buttonArgs.Length; ++i)

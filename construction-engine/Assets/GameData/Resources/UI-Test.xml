@@ -20,23 +20,20 @@
         <Button name="Home">
           <Tooltip>Home Button</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpSubMenuAction" buttonGroupName="HomeMenu"/>
-          <OnDeselect x:type="PopDownSubMenuAction" />
-          <ChildButtonGroup>HomeMenu</ChildButtonGroup>
+          <OnSelect x:type="OpenSubMenuAction" buttonGroupName="HomeMenu"/>
+          <OnDeselect x:type="CloseSubMenuAction" />
         </Button>
         <Button name="Circle">
           <Tooltip>Circle Button</Tooltip>
           <IconImage>toolbar-icon-test2</IconImage>
-          <OnSelect x:type="PopUpSubMenuAction" buttonGroupName="CircleMenu"/>
-          <OnDeselect x:type="PopDownSubMenuAction" />
-          <ChildButtonGroup>CircleMenu</ChildButtonGroup>
+          <OnSelect x:type="OpenSubMenuAction" buttonGroupName="CircleMenu"/>
+          <OnDeselect x:type="CloseSubMenuAction" />
         </Button>
         <Button name="Diamond">
           <Tooltip>Diamond Button</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpSubMenuAction" buttonGroupName="DiamondMenu"/>
-          <OnDeselect x:type="PopDownSubMenuAction" />
-          <ChildButtonGroup>DiamondMenu</ChildButtonGroup>
+          <OnSelect x:type="OpenSubMenuAction" buttonGroupName="DiamondMenu"/>
+          <OnDeselect x:type="CloseSubMenuAction" />
         </Button>
       </Buttons>
     </MainButtonGroup>
@@ -47,43 +44,43 @@
         <Button name="Home 01">
           <Tooltip>Home 01</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
         
         <Button name="Home 02">
           <Tooltip>Home 02</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
         
         <Button name="Home 03">
           <Tooltip>Home 03</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
         
         <Button name="Home 04">
           <Tooltip>Home 04</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
         
         <Button name="Home 05">
           <Tooltip>Home 05</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
         
         <Button name="Home 06">
           <Tooltip>Home 06</Tooltip>
           <IconImage>toolbar-icon-test1</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
     </SubButtonGroup>
@@ -94,22 +91,22 @@
         <Button name="Circle 01">
           <Tooltip>Circle 01</Tooltip>
           <IconImage>toolbar-icon-test2</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Circle 02">
           <Tooltip>Circle 02</Tooltip>
           <IconImage>toolbar-icon-test2</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Circle 03">
           <Tooltip>Circle 03</Tooltip>
           <IconImage>toolbar-icon-test2</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
     </SubButtonGroup>
@@ -120,127 +117,127 @@
         <Button name="Diamond 01">
           <Tooltip>Diamond 01</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 02">
           <Tooltip>Diamond 02</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 03">
           <Tooltip>Diamond 03</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 04">
           <Tooltip>Diamond 04</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 05">
           <Tooltip>Diamond 05</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 06">
           <Tooltip>Diamond 03</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 06">
           <Tooltip>Diamond 03</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 07">
           <Tooltip>Diamond 07</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 08">
           <Tooltip>Diamond 08</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 09">
           <Tooltip>Diamond 09</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 10">
           <Tooltip>Diamond 10</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 11">
           <Tooltip>Diamond 11</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 12">
           <Tooltip>Diamond 12</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 13">
           <Tooltip>Diamond 13</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 14">
           <Tooltip>Diamond 14</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 15">
           <Tooltip>Diamond 15</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 16">
           <Tooltip>Diamond 16</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="Diamond 17">
           <Tooltip>Diamond 17</Tooltip>
           <IconImage>toolbar-icon-test3</IconImage>
-          <OnSelect x:type="PopUpWindowAction" />
-          <OnDeselect x:type="PopDownWindowAction" />
+          <OnSelect x:type="OpenWindowAction" />
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
     </SubButtonGroup>

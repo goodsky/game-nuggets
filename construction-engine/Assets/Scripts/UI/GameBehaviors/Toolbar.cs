@@ -14,7 +14,7 @@ namespace UI
         public GameObject Pip { get; set; }
 
         /// <summary>Sub Menu buttons that are currently active.</summary>
-        private GameObject _activeSubMenuButtons;
+        private ButtonGroup _subMenuButtonGroup;
 
         /// <summary>
         /// Unity Update method
@@ -29,10 +29,10 @@ namespace UI
         }
 
         /// <summary>
-        /// Pop up a sub-menu.
+        /// Opens the sub-menu with a set of buttons.
         /// </summary>
         /// <param name="buttonGroup">The button group to populate with the sub-menu.</param>
-        public void PopUpSubMenu(GameObject buttonGroup)
+        public void OpenSubMenu(ButtonGroup buttonGroup)
         {
             SubMenu.SetActive(true);
 
@@ -42,21 +42,26 @@ namespace UI
                 Pip.transform.SetParent(selected.gameObject.transform, false);
                 Pip.transform.SetAsFirstSibling();
                 Pip.SetActive(true);
+
+                foreach (var button in buttonGroup.Buttons)
+                {
+                    button.SelectionParent = selected;
+                }
             }
 
-            buttonGroup.SetActive(true);
-            _activeSubMenuButtons = buttonGroup;
+            buttonGroup.gameObject.SetActive(true);
+            _subMenuButtonGroup = buttonGroup;
         }
 
         /// <summary>
-        /// Pop down the sub-menu and its button group.
+        /// Closes the sub-menu.
         /// </summary>
-        public void PopDownSubMenu()
+        public void CloseSubMenu()
         {
             SubMenu.SetActive(false);
             Pip.SetActive(false);
 
-            _activeSubMenuButtons.SetActive(false);
+            _subMenuButtonGroup.gameObject.SetActive(false);
         }
     }
 }

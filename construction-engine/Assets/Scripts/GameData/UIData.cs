@@ -124,30 +124,27 @@ namespace GameData
 
         [XmlElement("OnDeselect")]
         public ButtonAction OnDeselect { get; set; }
-
-        [XmlElement("ChildButtonGroup")]
-        public string ChildButtonGroup { get; set; }
     }
 
     /// <summary>Defines an Action that can be invoked by a Button.</summary>
-    [XmlInclude(typeof(PopUpSubMenuAction))]
-    [XmlInclude(typeof(PopDownSubMenuAction))]
-    [XmlInclude(typeof(PopUpWindowAction))]
-    [XmlInclude(typeof(PopDownWindowAction))]
+    [XmlInclude(typeof(OpenSubMenuAction))]
+    [XmlInclude(typeof(CloseSubMenuAction))]
+    [XmlInclude(typeof(OpenWindowAction))]
+    [XmlInclude(typeof(CloseWindowAction))]
     public abstract class ButtonAction { }
 
     /// <summary>Action to pop up the sub menu.</summary>
-    public class PopUpSubMenuAction : ButtonAction
+    public class OpenSubMenuAction : ButtonAction
     {
         [XmlAttribute("buttonGroupName")]
         public string ButtonGroupName { get; set; }
     }
 
     /// <summary>Action to pop down the active window.</summary>
-    public class PopDownSubMenuAction : ButtonAction { }
+    public class CloseSubMenuAction : ButtonAction { }
 
     /// <summary>Action to pop up a window.</summary>
-    public class PopUpWindowAction : ButtonAction
+    public class OpenWindowAction : ButtonAction
     {
         [XmlAttribute("windowName")]
         public string WindowName { get; set; }
@@ -157,5 +154,5 @@ namespace GameData
     }
 
     /// <summary>Action to pop down the active window.</summary>
-    public class PopDownWindowAction : ButtonAction { }
+    public class CloseWindowAction : ButtonAction { }
 }
