@@ -27,7 +27,14 @@ namespace GameData
             }
             catch (Exception e)
             {
-                GameLogger.FatalError("Failed to load toolbar game data. Ex = {0}", e);
+                GameLogger.FatalError("Failed to load game data for {0}. Ex = {1}", GetType().Name, e);
+                return;
+            }
+
+            if (GameData == null)
+            {
+                GameLogger.FatalError("Null game data for {0}.", GetType().Name);
+                return;
             }
 
             LoadData(GameData);
@@ -38,7 +45,10 @@ namespace GameData
         /// </summary>
         protected virtual void Start()
         {
-            LinkData(GameData);
+            if (GameData != null)
+            {
+                LinkData(GameData);
+            }
         }
 
         /// <summary>
@@ -51,7 +61,7 @@ namespace GameData
         {
             if (gameObject.activeSelf)
             {
-                GameLogger.FatalError("Setting configuration on an active GameObject!");
+                GameLogger.FatalError("Setting game data configuration on an active GameObject!");
             }
 
             Config = config;

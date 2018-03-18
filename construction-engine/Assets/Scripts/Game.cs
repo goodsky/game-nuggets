@@ -45,10 +45,10 @@ public class Game : MonoBehaviour
     {
         if (Application.isEditor)
         {
-            GameLogger.CreateUnityLogger(LogLevel.All);
+            GameLogger.CreateUnityLogger(LogLevel.Info);
         }
 
-        GameLogger.CreateMyDocumentsStream("debug", LogLevel.All);
+        GameLogger.CreateMyDocumentsStream("debug", LogLevel.Info);
     }
 
     /// <summary>

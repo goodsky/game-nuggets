@@ -5,13 +5,12 @@ using UnityEngine;
 
 namespace Common
 {
-    [Flags]
     internal enum LogLevel
     {
-        Info =      1 << 1,     // Verbose information
-        Warning =   1 << 2,     // Abnormal behavior
-        Error =     1 << 3,     // Critical errors
-        All = Info | Warning | Error,
+        Info = 0,       // Verbose information
+        Warning,        // Abnormal behavior
+        Error,          // Critical errors
+                        // It is important to order these enums from most verbose to least verbose!
     }
 
     /// <summary>
@@ -20,7 +19,10 @@ namespace Common
     /// </summary>
     static class GameLogger
     {
+        private static readonly int NumberOfFilesToKeepInMyDocuments = 10;
+
         private static List<LogStream> Streams = new List<LogStream>();
+        private static string[] LogLevelStrings = Enum.GetNames(typeof(LogLevel));
 
         /// <summary>
         /// Create a stream in the My Documents directory of a Windows machine.
@@ -41,7 +43,7 @@ namespace Common
             Array.Sort(files);
 
             int logCount = files.Length;
-            for (int i = logCount; i >= 3; --i) // Keep at most 3 log files
+            for (int i = logCount; i >= NumberOfFilesToKeepInMyDocuments; --i)
             {
                 // I'm making an assumption that files are sorted by DateTime in their filename
                 File.Delete(files[logCount - i]);
@@ -82,9 +84,9 @@ namespace Common
         {
             foreach (LogStream stream in Streams)
             {
-                if ((stream.levels & level) != 0)
+                if (level >= stream._level)
                 {
-                    stream.Log(message, args);
+                    stream.Log(level, message, args);
                 }
             }
         }
@@ -127,7 +129,13 @@ namespace Common
         public static void FatalError(string message, params object[] args)
         {
             Log(LogLevel.Error, message, args);
+
             Application.Quit();
+
+            if (Application.isEditor)
+            {
+                UnityEditor.EditorApplication.isPaused = true;
+            }
         }
 
         /// <summary>
@@ -157,41 +165,53 @@ namespace Common
         /// </summary>
         private class LogStream
         {
-            public StreamWriter stream { get; private set; }
+            public StreamWriter _stream { get; private set; }
 
-            public LogLevel levels { get; private set; }
+            public LogLevel _level { get; private set; }
 
             public LogStream(StreamWriter stream, LogLevel levels)
             {
-                this.stream = stream;
-                this.levels = levels;
+                _stream = stream;
+                _level = levels;
             }
 
             public void Flush()
             {
-                if (this.stream != null)
+                if (_stream != null)
                 {
-                    this.stream.Flush();
+                    _stream.Flush();
                 }
             }
 
             public void Close()
             {
-                if (this.stream != null)
+                if (_stream != null)
                 {
-                    this.stream.Close();
+                    _stream.Close();
                 }
             }
 
-            public void Log(string message, params object[] args)
+            public void Log(LogLevel level, string message, params object[] args)
             {
-                if (this.stream != null)
+                if (_stream != null)
                 {
-                    this.stream.WriteLine(message, args);
+                    var formattedMessage = string.Format("{0}\t{1}\t{2}", DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.f"), LogLevelStrings[(int)level], message);
+                    _stream.WriteLine(formattedMessage, args);
                 }
                 else
                 {
-                    Debug.Log(string.Format(message, args));
+                    switch (level)
+                    {
+                        case LogLevel.Info:
+                            Debug.LogFormat(message, args);
+                            break;
+                        case LogLevel.Warning:
+                            Debug.LogWarningFormat(message, args);
+                            break;
+                        case LogLevel.Error:
+                            Debug.LogErrorFormat(message, args);
+                            break;
+                    }
                 }
             }
         }
