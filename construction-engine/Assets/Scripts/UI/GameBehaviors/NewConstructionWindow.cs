@@ -1,6 +1,7 @@
 ﻿using Common;
 using GameData;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using UnityEngine;
@@ -13,6 +14,9 @@ namespace UI
     /// </summary>
     public class NewConstructionWindow : Window
     {
+        private string _title;
+        private string _description;
+
         /// <summary>
         /// The building title text.
         /// </summary>
@@ -59,8 +63,11 @@ namespace UI
             }
         }
 
-        private string _title;
-        private string _description;
+        /// <summary>Gets the UI Buttons on this window.</summary>
+        public override List<Button> Buttons
+        {
+            get { return new List<Button>() { BuildButton }; }
+        }
 
         /// <summary>
         /// Open the window to display the game data.

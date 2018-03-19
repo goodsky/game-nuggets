@@ -10,6 +10,10 @@ namespace UI
     {
         private static GameObject Tooltip;
 
+        /// <summary>
+        /// Initialize the tooltip manager
+        /// </summary>
+        /// <param name="canvas"></param>
         public static void Initialize(Transform canvas)
         {
             Tooltip = UIFactory.LoadTooltip(canvas);
@@ -22,6 +26,9 @@ namespace UI
         /// <param name="text">Text to display.</param>
         public static void PopUp(string text)
         {
+            if (Tooltip == null)
+                return;
+
             var textComponent = Tooltip.GetComponentInChildren<Text>();
             textComponent.text = text;
 
@@ -38,6 +45,9 @@ namespace UI
         /// </summary>
         public static void PopDown()
         {
+            if (Tooltip == null)
+                return;
+
             Tooltip.SetActive(false);
         }
     }

@@ -211,6 +211,15 @@ namespace UI
             var image = window.GetComponent<Image>();
             image.color = config.WindowBackgroundColor.Value;
 
+            var windowBehaviour = window.GetComponent<Window>();
+
+            foreach (var button in windowBehaviour.Buttons)
+            {
+                button.DefaultColor = config.SubMenuBackgroundColor.Value;
+                button.SelectedColor = config.SubMenuSelectedColor.Value;
+                button.MouseOverColor = config.SubMenuSelectedColor.Value;
+            }
+
             window.SetActive(false);
             return window;
         }

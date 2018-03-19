@@ -62,6 +62,8 @@ namespace UI
                             GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
                         }
                     }
+
+                    TooltipManager.PopDown();
                 }
             }
         }
