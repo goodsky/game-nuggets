@@ -1,5 +1,5 @@
-﻿using Common;
-using System;
+﻿using Campus;
+using Common;
 using UI;
 using UnityEngine;
 
@@ -14,8 +14,14 @@ public class Game : MonoBehaviour
     [Header("UI Configuration")]
     public TextAsset UIConfig;
 
+    [Header("Campus Configuration")]
+    public TextAsset CampusConfig;
+
     /// <summary>The User Interface Manager</summary>
     public UIManager UI { get; private set; }
+
+    /// <summary>The Campus Manager</summary>
+    public CampusManager Campus { get; private set; }
 
     /// <summary>
     /// Bootstrap the game state and data.
@@ -23,10 +29,19 @@ public class Game : MonoBehaviour
     protected void Awake()
     {
         InitLogging();
-        GameLogger.Info("Game started at {0}.", DateTime.Now);
+        GameLogger.Info("Game started.");
+
+        if (Instance != null)
+        {
+            GameLogger.Warning("It appears there are multiple root Game objects.");
+        }
+
+        Instance = this;
 
         GameLogger.Info("Creating game objects.");
         InitGameObjects();
+
+        Test();
     }
 
     /// <summary>
@@ -34,7 +49,7 @@ public class Game : MonoBehaviour
     /// </summary>
     protected void OnDestroy()
     {
-        GameLogger.Info("Game exiting at {0}", DateTime.Now);
+        GameLogger.Info("Game exiting.");
         GameLogger.Close();
     }
 
@@ -58,14 +73,50 @@ public class Game : MonoBehaviour
     {
         UIFactory.LoadUIEventSystem(gameObject);
 
-        var canvas = UIFactory.LoadUICanvas(gameObject);
-        canvas.SetActive(false);
+        var ui = UIFactory.LoadUICanvas(gameObject);
 
-        UI = canvas.AddComponent<UIManager>();
+        ui.SetActive(false);
+        UI = ui.AddComponent<UIManager>();
         UI.SetConfig(UIConfig);
+        ui.SetActive(true);
 
-        TooltipManager.Initialize(canvas.gameObject.transform);
+        var campus = UIFactory.GenerateEmpty("Campus", transform);
 
-        canvas.SetActive(true);
+        campus.SetActive(false);
+        Campus = campus.AddComponent<CampusManager>();
+        Campus.SetConfig(CampusConfig);
+        campus.SetActive(true);
+
+        TooltipManager.Initialize(ui.gameObject.transform);
+    }
+
+    /// <summary>
+    /// For testing!
+    /// </summary>
+    private void Test()
+    {
+        //var ui = new UIData()
+        //{
+        //    ButtonGroups = new List<ButtonGroupData>()
+        //    {
+        //        new MainButtonGroupData()
+        //        {
+        //            Name = "Foo",
+        //            Buttons = new List<ButtonData>()
+        //            {
+        //                new ButtonData()
+        //                {
+        //                    Name = "Bar",
+        //                    OnSelect = new OpenWindowAction()
+        //                    {
+        //                        DataType = GameDataType.Building
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //};
+
+        //GameLogger.Info(GameDataSerializer.Save(ui));
     }
 }

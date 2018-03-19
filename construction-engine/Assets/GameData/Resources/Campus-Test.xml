@@ -1,0 +1,14 @@
+﻿<CampusData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+
+  <!-- Registry of buildings that can be built. -->
+  <Buildings>
+    <Building name="Test Building">
+      <ConstructionCost>424242</ConstructionCost>
+      <MaintenanceCost>69</MaintenanceCost>
+      <Classrooms>10</Classrooms>
+      <Icon>Building/TestBuildingIcon</Icon>
+      <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
+    </Building>
+  </Buildings>
+  
+</CampusData>

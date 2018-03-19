@@ -36,7 +36,7 @@ namespace GameData
         /// <returns>The serialized game data.</returns>
         public static T Load<T>(TextAsset config) where T : class
         {
-            var serializer = new XmlSerializer(typeof(UIData));
+            var serializer = new XmlSerializer(typeof(T));
             using (var configStream = new MemoryStream(config.bytes))
             {
                 return serializer.Deserialize(configStream) as T;

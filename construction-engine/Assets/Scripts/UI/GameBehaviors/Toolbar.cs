@@ -34,6 +34,11 @@ namespace UI
         /// <param name="buttonGroup">The button group to populate with the sub-menu.</param>
         public void OpenSubMenu(ButtonGroup buttonGroup)
         {
+            if (buttonGroup == _subMenuButtonGroup)
+                return;
+
+            CloseSubMenu();
+
             SubMenu.SetActive(true);
 
             var selected = Selectable.SelectionManager.Selected;
@@ -61,7 +66,11 @@ namespace UI
             SubMenu.SetActive(false);
             Pip.SetActive(false);
 
-            _subMenuButtonGroup.gameObject.SetActive(false);
+            if (_subMenuButtonGroup != null)
+            {
+                _subMenuButtonGroup.gameObject.SetActive(false);
+                _subMenuButtonGroup = null;
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using GameData;
+﻿using Common;
+using GameData;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +12,9 @@ namespace UI
     public class UIManager : GameDataLoader<UIData>
     {
         private Dictionary<string, ButtonGroup> _buttonGroups = new Dictionary<string, ButtonGroup>();
+
+        /// <summary>UI Window Manager</summary>
+        public WindowManager WindowManager { get; private set; }
 
         /// <summary>UI Status Bar</summary>
         public GameObject StatusBar { get; private set; }
@@ -24,25 +29,40 @@ namespace UI
         public GameObject SubMenu { get; private set; }
 
         /// <summary>
+        /// Try to load a button group from the store.
+        /// </summary>
+        /// <param name="name">Name of the button group to load.</param>
+        /// <param name="buttonGroup">The button group.</param>
+        /// <returns>True if the button group exists, false otherwise.</returns>
+        public bool TryGetButtonGroup(string name, out ButtonGroup buttonGroup)
+        {
+            return _buttonGroups.TryGetValue(name, out buttonGroup);
+        }
+
+        /// <summary>
         /// Load UI runtime instances.
         /// </summary>
-        /// <param name="gameData">UI GameData</param>
-        protected override void LoadData(UIData gameData)
+        /// <param name="data">UI GameData</param>
+        protected override void LoadData(UIData data)
         {
             // Fire and forget the selection root object.
             // This will catch click events on the screen that are not on a UI element.
             UIFactory.LoadSelectionRoot(gameObject);
 
+            // Create the manager for opening and closing windows
+            WindowManager = UIFactory.GenerateEmptyUI("Window Manager", transform).AddComponent<WindowManager>();
+            WindowManager.LoadData(data);
+
             // Create the status bar on the top
-            StatusBar = UIFactory.LoadStatusBar(gameObject, gameData.Config.HorizontalMargins, gameData.Config.MainMenuBackgroundColor.Value);
+            StatusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor.Value);
 
             // Create the Main Menu Bar on the bottom
-            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, gameData.Config.MainMenuBackgroundColor.Value);
-            MainMenuPip = UIFactory.LoadPip(MainMenu, gameData.Config.SubMenuBackgroundColor.Value);
+            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, data.Config.MainMenuBackgroundColor.Value);
+            MainMenuPip = UIFactory.LoadPip(MainMenu, data.Config.SubMenuBackgroundColor.Value);
 
             // Create the second layer menu
             float mainMenuHeight = MainMenu.GetComponent<RectTransform>().sizeDelta.y;
-            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, gameData.Config.SubMenuBackgroundColor.Value);
+            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, data.Config.SubMenuBackgroundColor.Value);
             SubMenu.SetActive(false);
 
             // Link the main and sub menus
@@ -51,9 +71,9 @@ namespace UI
             mainMenuToolbar.Pip = MainMenuPip;
 
             // Load the Button Groups
-            foreach (var buttonGroup in gameData.ButtonGroups)
+            foreach (var buttonGroup in data.ButtonGroups)
             {
-                _buttonGroups[buttonGroup.Name] = CreateButtonGroup(buttonGroup, gameData.Config);
+                _buttonGroups[buttonGroup.Name] = CreateButtonGroup(buttonGroup, data.Config);
             }
         }
 
@@ -61,13 +81,13 @@ namespace UI
         /// Link actions that reference other GameObjects.
         /// All other GameObjects in dependent stores must already be Instantiated.
         /// </summary>
-        /// <param name="gameData">UI GameData</param>
-        protected override void LinkData(UIData gameData)
+        /// <param name="data">UI GameData</param>
+        protected override void LinkData(UIData data)
         {
             var toolbar = MainMenu.GetComponent<Toolbar>();
 
             // Link button children and actions
-            foreach (var buttonGroupData in gameData.ButtonGroups)
+            foreach (var buttonGroupData in data.ButtonGroups)
             {
                 var buttonGroup = _buttonGroups[buttonGroupData.Name];
 
@@ -80,12 +100,13 @@ namespace UI
                     if (buttonData.OnSelect is OpenSubMenuAction)
                     {
                         var openSubMenuAction = buttonData.OnSelect as OpenSubMenuAction;
-                        var openSubMenuButtons = _buttonGroups[openSubMenuAction.ButtonGroupName];
+                        var openSubMenuButtons = GameDataStore.Get<ButtonGroup>(GameDataType.ButtonGroup, openSubMenuAction.ButtonGroupName);
                         button.OnSelect = () => toolbar.OpenSubMenu(openSubMenuButtons);
                     }
                     else if (buttonData.OnSelect is OpenWindowAction)
                     {
-                        // reference window
+                        var openWindowAction = buttonData.OnSelect as OpenWindowAction;
+                        button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, openWindowAction.DataType, openWindowAction.DataName);
                     }
 
                     // Link OnDeselect Action -----------------------
@@ -95,7 +116,7 @@ namespace UI
                     }
                     else if (buttonData.OnDeselect is CloseWindowAction)
                     {
-                        // reference window
+                        button.OnDeselect = () => WindowManager.CloseWindow();
                     }
                 }
             }

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Common;
+using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace UI
@@ -39,12 +41,26 @@ namespace UI
 
                     if (oldSelection != null)
                     {
-                        oldSelection.Deselect();
+                        try
+                        {
+                            oldSelection.Deselect();
+                        }
+                        catch (Exception e)
+                        {
+                            GameLogger.Warning("Exception during Deselect. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
+                        }
                     }
 
                     if (globalSelection != null)
                     {
-                        globalSelection.Select();
+                        try
+                        {
+                            globalSelection.Select();
+                        }
+                        catch (Exception e)
+                        {
+                            GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
+                        }
                     }
                 }
             }

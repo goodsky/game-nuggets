@@ -62,6 +62,39 @@ namespace UI
     public static partial class UIFactory
     {
         /// <summary>
+        /// Instantiates an empty game object.
+        /// </summary>
+        /// <param name="name">Name of the empty game object.</param>
+        /// <param name="parent">Parent of the empty game object.</param>
+        /// <returns>An empty game object.</returns>
+        public static GameObject GenerateEmpty(string name, Transform parent)
+        {
+            var empty = new GameObject(name);
+            empty.transform.SetParent(parent, false);
+
+            return empty;
+        }
+
+        /// <summary>
+        /// Instantiates an empty UI game object with a full canvas.
+        /// </summary>
+        /// <param name="name">Name of the empty game object.</param>
+        /// <param name="parent">Parent of the empty game object.</param>
+        /// <returns>An empty UI game object.</returns>
+        public static GameObject GenerateEmptyUI(string name, Transform parent)
+        {
+            var empty = GenerateEmpty(name, parent);
+
+            var rect = empty.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.offsetMin = new Vector2(0f, 0f);
+            rect.offsetMax = new Vector2(0f, 0f);
+
+            return empty;
+        }
+
+        /// <summary>
         /// Instantiates a button.
         /// </summary>
         /// <param name="name">The name of the button.</param>
@@ -147,7 +180,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
-                    IconImage = Resources.Load<Sprite>("toolbar-arrow-left"),
+                    IconImage = Resources.Load<Sprite>("Toolbar/arrow-left"),
                 });
 
             // Instantiate the Right Arrow
@@ -165,7 +198,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
-                    IconImage = Resources.Load<Sprite>("toolbar-arrow-right"),
+                    IconImage = Resources.Load<Sprite>("Toolbar/arrow-right"),
                 });
 
             // Instantiate ButtonGroup's Content Mask

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace GameData
     /// Colors that I've picked out to use.
     /// Intended to be loaded from GameData.
     /// </summary>
-    public static class MyPalette
+    public static class ColorPalette
     {
         private static readonly Dictionary<string, Color> Palette = new Dictionary<string, Color>()
         {
@@ -30,9 +31,11 @@ namespace GameData
         /// <returns>The color. Or an exception to the face.</returns>
         public static Color GetColor(string name)
         {
-            Color color;
+            Color color = Color.magenta; // default to a garish color
             if (!Palette.TryGetValue(name, out color))
-                throw new InvalidOperationException(string.Format("The color '{0}' is not defined!", name));
+            {
+                GameLogger.Warning("Configuration attempted to load unrecognized color name '{0}'", name);
+            }
 
             return color;
         }

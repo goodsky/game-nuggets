@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameData;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -188,6 +189,30 @@ namespace UI
             rect.anchoredPosition = new Vector2(xPos, 0);
 
             return divider;
+        }
+
+        /// <summary>
+        /// Instantiates a window.
+        /// This method assumes that the root GameObject of a Window controlls the content panel.
+        /// </summary>
+        /// <param name="prefabName">Name of the window prefab to load.</param>
+        /// <param name="name">Name of the window game object.</param>
+        /// <param name="parent">The window parent transform.</param>
+        /// <param name="config">UI Configuration to choose the colors and margins.</param>
+        /// <returns>The window.</returns>
+        public static GameObject LoadWindow(string prefabName, string name, Transform parent, UIConfig config)
+        {
+            var window = InstantiatePrefab(prefabName, name, parent);
+
+            var rect = window.GetComponent<RectTransform>();
+            rect.offsetMin = new Vector2(config.HorizontalMargins, rect.offsetMin.y);
+            rect.offsetMax = new Vector2(-config.HorizontalMargins, rect.offsetMax.y);
+
+            var image = window.GetComponent<Image>();
+            image.color = config.WindowBackgroundColor.Value;
+
+            window.SetActive(false);
+            return window;
         }
     }
 }

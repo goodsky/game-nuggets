@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Common;
+using GameData;
+using System;
+using System.Globalization;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +11,7 @@ namespace UI
     /// <summary>
     /// Companion behavior for the New Construction UI window.
     /// </summary>
-    public class NewConstructionWindow : MonoBehaviour
+    public class NewConstructionWindow : Window
     {
         /// <summary>
         /// The building title text.
@@ -59,23 +63,46 @@ namespace UI
         private string _description;
 
         /// <summary>
-        /// Unity Start method
+        /// Open the window to display the game data.
         /// </summary>
-        protected virtual void Start()
+        /// <param name="data">The game data</param>
+        public override void Open(object data)
         {
-            if (TitleText == null)
-                throw new ArgumentNullException("TitleText");
+            var buildingData = data as BuildingData;
+            if (buildingData == null)
+            {
+                GameLogger.FatalError("New Construction Window was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
+            }
 
-            if (ConstructionImage == null)
-                throw new ArgumentNullException("ConstructionImage");
-
-            if (DescriptionText == null)
-                throw new ArgumentNullException("DescriptionText");
-
-            if (BuildButton == null)
-                throw new ArgumentNullException("BuildButton");
+            Title = buildingData.Name;
+            Description = WriteDescription(buildingData);
+            ConstructionImage.sprite = buildingData.Icon.Value;
 
             BuildButton.OnSelect = () => { Debug.Log("Selected!"); };
+        }
+
+        /// <summary>
+        /// Write the building description to display.
+        /// </summary>
+        /// <param name="data">The game data.</param>
+        /// <returns>A string summary of the building.</returns>
+        private string WriteDescription(BuildingData data)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Cost:</b> {0:C0}{1}", data.ConstructionCost, Environment.NewLine);
+
+            if (data.MaintenanceCost != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per year{1}", data.MaintenanceCost, Environment.NewLine);
+
+            if (data.Classrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Classrooms:</b> {0}{1}", data.Classrooms, Environment.NewLine);
+
+            sb.AppendLine();
+
+            sb.AppendLine(data.Description);
+
+            return sb.ToString();
         }
     }
 }
