@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -149,7 +150,7 @@ namespace GridTerrain
                 summaryLog += string.Format("Heightmap Step: {0}\n", HeightmapStepSize);
                 summaryLog += string.Format("\n");
 
-                Debug.Log(summaryLog);
+                GameLogger.Info(summaryLog);
             }
         }
 

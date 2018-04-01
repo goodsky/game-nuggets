@@ -100,7 +100,11 @@ namespace GridTerrain
         {
             _state = EditingStates.None;
             _gridSelection = Point3.Null;
-            _cursor.SetActive(false);
+
+            if (_cursor.activeSelf)
+            {
+                _cursor.SetActive(false);
+            }
         }
 
         /// <summary>
