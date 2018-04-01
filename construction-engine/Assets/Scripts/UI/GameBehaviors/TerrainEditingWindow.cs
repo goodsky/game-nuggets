@@ -40,6 +40,7 @@ namespace UI
         /// </summary>
         public override void Close()
         {
+            EditableTerrain.Singleton.SelectionParent = null;
             GameStateMachine.SetState(GameState.Selecting);
         }
     }
