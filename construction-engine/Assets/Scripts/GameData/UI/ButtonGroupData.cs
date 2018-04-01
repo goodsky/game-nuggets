@@ -43,6 +43,7 @@ namespace GameData
     [XmlInclude(typeof(OpenSubMenuAction))]
     [XmlInclude(typeof(CloseSubMenuAction))]
     [XmlInclude(typeof(OpenWindowAction))]
+    [XmlInclude(typeof(OpenWindowWithDataAction))]
     [XmlInclude(typeof(CloseWindowAction))]
     public abstract class ButtonAction { }
 
@@ -58,6 +59,14 @@ namespace GameData
 
     /// <summary>Action to pop up a window.</summary>
     public class OpenWindowAction : ButtonAction
+    {
+        /// <summary>Name of the window to open.</summary>
+        [XmlAttribute("windowName")]
+        public string WindowName { get; set; }
+    }
+
+    /// <summary>Action to pop up a window.</summary>
+    public class OpenWindowWithDataAction : ButtonAction
     {
         /// <summary>Name of the window to open.</summary>
         [XmlAttribute("windowName")]

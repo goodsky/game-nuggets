@@ -89,6 +89,14 @@ namespace UI
         }
 
         /// <summary>
+        /// Close the window.
+        /// </summary>
+        public override void Close()
+        {
+            
+        }
+
+        /// <summary>
         /// Write the building description to display.
         /// </summary>
         /// <param name="data">The game data.</param>

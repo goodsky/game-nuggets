@@ -8,6 +8,8 @@ namespace GridTerrain
     /// </summary>
     public class EditableTerrain : Selectable
     {
+        public static EditableTerrain Singleton { get; private set; }
+
         /// <summary>Object to place at the cursor's position.</summary>
         public GameObject CursorPrefab;
 
@@ -41,6 +43,7 @@ namespace GridTerrain
         {
             base.Start();
 
+            Singleton = this;
             OnMouseDown = Clicked;
 
             var terrainComponent = GetComponent<Terrain>();
@@ -58,10 +61,11 @@ namespace GridTerrain
 
             _collider = GetComponent<TerrainCollider>();
 
-            _state = EditingStates.Selecting;
-            _gridSelection = Point3.Null;
-
             _cursor = Instantiate(CursorPrefab);
+
+            _state = EditingStates.None;
+            _gridSelection = Point3.Null;
+            _cursor.SetActive(false);
         }
 
         /// <summary>
@@ -82,25 +86,46 @@ namespace GridTerrain
         }
 
         /// <summary>
+        /// Start editing the terrain.
+        /// </summary>
+        public void StartEditing()
+        {
+            _state = EditingStates.Editing;
+        }
+
+        /// <summary>
+        /// Stop editing the terrain.
+        /// </summary>
+        public void StopEditing()
+        {
+            _state = EditingStates.None;
+            _gridSelection = Point3.Null;
+            _cursor.SetActive(false);
+        }
+
+        /// <summary>
         /// Called when the terrain is clicked.
         /// </summary>
         /// <param name="mouse"></param>
         private void Clicked(MouseButton mouse)
         {
-            if (mouse == MouseButton.Left)
+            if (_state == EditingStates.Selecting)
             {
-                _state = EditingStates.Editing;
-                _mouseDragStartY = Input.mousePosition.y;
-                _mouseDragHeightChange = 0;
-            }
-            else if (mouse == MouseButton.Right)
-            {
-                GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
-                   _gridSelection,
-                   _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
-                   _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
-                   _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
-                   _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
+                if (mouse == MouseButton.Left)
+                {
+                    _state = EditingStates.Editing;
+                    _mouseDragStartY = Input.mousePosition.y;
+                    _mouseDragHeightChange = 0;
+                }
+                else if (mouse == MouseButton.Right)
+                {
+                    GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
+                       _gridSelection,
+                       _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
+                       _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
+                       _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
+                       _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
+                }
             }
         }
 
@@ -177,6 +202,7 @@ namespace GridTerrain
         /// </summary>
         private enum EditingStates
         {
+            None,
             Selecting,
             Editing
         }

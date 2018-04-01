@@ -106,6 +106,11 @@ namespace UI
                     else if (buttonData.OnSelect is OpenWindowAction)
                     {
                         var openWindowAction = buttonData.OnSelect as OpenWindowAction;
+                        button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, null);
+                    }
+                    else if (buttonData.OnSelect is OpenWindowWithDataAction)
+                    {
+                        var openWindowAction = buttonData.OnSelect as OpenWindowWithDataAction;
                         button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, openWindowAction.DataType, openWindowAction.DataName);
                     }
 

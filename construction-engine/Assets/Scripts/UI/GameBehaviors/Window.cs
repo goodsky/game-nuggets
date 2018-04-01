@@ -13,5 +13,10 @@ namespace UI
         /// </summary>
         /// <param name="data">The data backing this window.</param>
         public abstract void Open(object data);
+
+        /// <summary>
+        /// Close the window.
+        /// </summary>
+        public abstract void Close();
     }
 }

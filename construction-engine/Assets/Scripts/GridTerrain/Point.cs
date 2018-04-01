@@ -19,7 +19,7 @@ namespace GridTerrain
             this._x = x;
             this._y = y;
 
-            Assert.IsTrue(x >= 0 && x < (1 << 10) && y >= 0 && y < (1 << 10));
+            Assert.IsTrue(x >= 0 && x < (1 << 10) && y >= 0 && y < (1 << 10), string.Format("Point out of range ({0}, {1})", x, y));
         }
 
         public override string ToString()
@@ -73,7 +73,7 @@ namespace GridTerrain
             this._y = y;
             this._z = z;
 
-            Assert.IsTrue(x >= 0 && x < (1 << 10) && y >= 0 && y < (1 << 10) && z >= 0 && z < (1 << 10));
+            Assert.IsTrue(x >= 0 && x < (1 << 10) && y >= 0 && y < (1 << 10) && z >= 0 && z < (1 << 10), string.Format("Point out of range ({0}, {1}, {2})", x, y, z));
         }
 
         private Point3(object _)

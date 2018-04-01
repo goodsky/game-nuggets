@@ -42,12 +42,23 @@ namespace UI
         }
 
         /// <summary>
-        /// Starts to open a window on screen.
+        /// Opens a window on screen using GameDataStore data.
         /// </summary>
         /// <param name="name">Name of the window to open.</param>
         /// <param name="type">The type of game data to pass to the window.</param>
         /// <param name="dataName">Name of the data to pass to the window.</param>
         public void OpenWindow(string name, GameDataType type, string dataName)
+        {
+            object data = GameDataStore.Get(type, dataName);
+            OpenWindow(name, data);
+        }
+
+        /// <summary>
+        /// Opens a window on the screen with custom (possibly null) data.
+        /// </summary>
+        /// <param name="name">Name of the window to open.</param>
+        /// <param name="data">The data to pass to the window.</param>
+        public void OpenWindow(string name, object data)
         {
             Window window = null;
             if (!_windows.TryGetValue(name, out window))
@@ -55,8 +66,6 @@ namespace UI
                 GameLogger.FatalError("Attempted to open non-existant window '{0}'", name);
                 return;
             }
-
-            object data = GameDataStore.Get(type, dataName);
 
             CloseWindow();
 
@@ -79,6 +88,7 @@ namespace UI
         {
             if (_openWindow != null)
             {
+                _openWindow.Close();
                 _openWindow.gameObject.SetActive(false);
                 _openWindow = null;
             }

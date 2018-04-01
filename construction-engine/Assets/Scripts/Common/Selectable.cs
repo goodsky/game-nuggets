@@ -235,11 +235,9 @@ namespace Common
         /// </summary>
         public void Deselect()
         {
-            if (SelectionManager.Selected == this ||
-                SelectionManager.Selected != null &&
-                SelectionManager.Selected.SelectionParent == this)
+            if (IsChild(SelectionManager.Selected))
             {
-                // Stop deselecting once we hit the selection
+                // Don't deselect if the new selected is a child of ours.
                 return;
             }
 
@@ -457,6 +455,32 @@ namespace Common
             }
 
             AfterEvent();
+        }
+
+        /// <summary>
+        /// Check if the selectable is a child of mine.
+        /// </summary>
+        /// <param name="other">The potential child.</param>
+        /// <returns>True if the selectable is a child. False otherwise.</returns>
+        private bool IsChild(Selectable other)
+        {
+            if (other == this)
+            {
+                // I am my own child... for this purpose at least.
+                return true;
+            }
+
+            while (other != null)
+            {
+                if (other.SelectionParent == this)
+                {
+                    return true;
+                }
+
+                other = other.SelectionParent;
+            }
+
+            return false;
         }
 
         /// <summary>
