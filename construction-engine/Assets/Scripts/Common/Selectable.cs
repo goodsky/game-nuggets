@@ -1,9 +1,8 @@
-﻿using Common;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UI
+namespace Common
 {
     /// <summary>
     /// The Unity EventSystem is great, but the behavior did not fit into my menu model perfectly.
@@ -11,63 +10,12 @@ namespace UI
     ///    UNITY: The Unselect event is fired before MouseDown, or Select
     ///    UNITY: MouseDown unselects the current selection
     /// 
-    /// This Selectable base class implements my own behavior for selecting UI elements.
+    /// This Selectable base class implements my own behavior for selecting elements.
     ///    CUSTOM: Unselect checks a Parent/Child relationship before unselecting an element
     ///    CUSTOM: Selection is not updated until a new object is selected (including root Canvas)
     /// </summary>
     public class Selectable : MonoBehaviour
     {
-        /// <summary>
-        /// Static tracker of the UI element that is selected.
-        /// </summary>
-        public static class SelectionManager
-        {
-            public static Selectable Selected { get { return globalSelection; } }
-
-            private static Selectable globalSelection = null;
-
-            private static object globalSelectionLock = new object();
-
-            /// <summary>
-            /// Updates which object is currently selected in the UI.
-            /// </summary>
-            /// <param name="selection">The Selectable component of the new selected GameObject.</param>
-            public static void UpdateSelection(Selectable selection)
-            {
-                lock (globalSelectionLock)
-                {
-                    var oldSelection = globalSelection;
-                    globalSelection = selection;
-
-                    if (oldSelection != null)
-                    {
-                        try
-                        {
-                            oldSelection.Deselect();
-                        }
-                        catch (Exception e)
-                        {
-                            GameLogger.Warning("Exception during Deselect. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
-                        }
-                    }
-
-                    if (globalSelection != null)
-                    {
-                        try
-                        {
-                            globalSelection.Select();
-                        }
-                        catch (Exception e)
-                        {
-                            GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
-                        }
-                    }
-
-                    TooltipManager.PopDown();
-                }
-            }
-        }
-
         /// <summary>
         /// Whether the object can be selected.
         /// </summary>
@@ -79,17 +27,60 @@ namespace UI
         public bool Toggleable = true;
 
         /// <summary>
+        /// Tooltip message to display over this button when hovered over.
+        /// </summary>
+        public string Tooltip = string.Empty;
+
+        /// <summary>
+        /// Delay in seconds before the tooltip will pop up.
+        /// </summary>
+        public float TooltipDelay = 1.0f;
+
+        /// <summary>
         /// Indicates that this object is the child of an object. 
-        /// NOTE: If a child is selected after a parent, the parent stays selected. 
+        /// If a child is selected after a parent, the parent stays selected. 
         /// If a child is unselected, all parents are unselected.
         /// </summary>
         public Selectable SelectionParent;
 
-        protected bool IsMouseOver;
-        protected bool IsMouseDown;
-        protected bool IsSelected;
+        /// <summary>Action to invoke when selected (one per click).</summary>
+        public Action OnSelect { get; set; }
+
+        /// <summary>Action to invoke when deselected.</summary>
+        public Action OnDeselect { get; set; }
+
+        /// <summary>Action to invoke when enabled.</summary>
+        public Action OnEnabled { get; set; }
+
+        /// <summary>Action to invoke when disabled.</summary>
+        public Action OnDisabled { get; set; }
+
+        /// <summary>Action to invoke each step the mouse is down on it.</summary>
+        public Action OnMouseOver { get; set; }
+
+        /// <summary>Action to invoke each step the mouse is down on it.</summary>
+        public Action OnMouseOut { get; set; }
+
+        /// <summary>Action to invoke each step the mouse is down on it.</summary>
+        public Action WhileMouseDown { get; set; }
+
+        /// <summary>
+        /// Whether the object is selected.
+        /// </summary>
+        public bool IsSelected { get; private set; }
+
+        /// <summary>
+        /// Whether the mouse is over the object.
+        /// </summary>
+        public bool IsMouseOver { get; private set; }
+
+        /// <summary>
+        /// Whether the mouse is down on the object.
+        /// </summary>
+        public bool IsMouseDown { get; private set; }
 
         private EventTrigger _eventTrigger;
+        private float _tooltipCount;
 
         /// <summary>
         /// Unity Start method
@@ -133,33 +124,57 @@ namespace UI
         }
 
         /// <summary>
+        /// Unity Update method.
+        /// </summary>
+        protected void Update()
+        {
+            // Tooltip Popup
+            if (IsMouseOver && !string.IsNullOrEmpty(Tooltip))
+            {
+                _tooltipCount += Time.deltaTime;
+
+                if (_tooltipCount > TooltipDelay)
+                {
+                    TooltipManager.PopUp(Tooltip);
+                }
+            }
+
+            // Call the MouseDown event each step the mouse is down
+            if (IsMouseDown && WhileMouseDown != null)
+            {
+                WhileMouseDown();
+            }
+        }
+
+        /// <summary>
         /// Unity OnDisable method
         /// </summary>
-        protected void OnDisable()
+        protected virtual void OnDisable()
         {
+            IsSelected = false;
             IsMouseOver = false;
             IsMouseDown = false;
-            IsSelected = false;
 
             AfterEvent();
         }
 
         /// <summary>
         /// Select this GameObject
-        /// NOTE: this method wraps InternalSelect.
         /// </summary>
         public void Select()
         {
             IsSelected = true;
 
-            InternalSelect();
+            if (OnSelect != null)
+            {
+                OnSelect();
+            }
 
             AfterEvent();
         }
 
         /// <summary>
         /// Deselect this GameObject
-        /// NOTE: this method wraps InternalDeselect.
         /// </summary>
         public void Deselect()
         {
@@ -179,7 +194,10 @@ namespace UI
                 SelectionParent.Deselect();
             }
 
-            InternalDeselect();
+            if (OnDeselect != null)
+            {
+                OnDeselect();
+            }
 
             AfterEvent();
         }
@@ -187,9 +205,15 @@ namespace UI
         /// <summary>
         /// Enable this selectable instance.
         /// </summary>
-        public virtual void Enable()
+        public void Enable()
         {
             IsEnabled = true;
+            _eventTrigger.enabled = true;
+
+            if (OnEnabled != null)
+            {
+                OnEnabled();
+            }
 
             AfterEvent();
         }
@@ -197,23 +221,29 @@ namespace UI
         /// <summary>
         /// Disable this selectable instance.
         /// </summary>
-        public virtual void Disable()
+        public void Disable()
         {
             IsEnabled = false;
+            _eventTrigger.enabled = false;
 
             if (SelectionManager.Selected == this)
             {
                 SelectionManager.UpdateSelection(null);
             }
 
+            if (OnDisabled != null)
+            {
+                OnDisabled();
+            }
+
             AfterEvent();
         }
 
         /// <summary>
-        /// Click event that is wired into the UI event system. 
+        /// Click event that is wired into the event system. 
         /// </summary>
         /// <param name="eventData">Event system data</param>
-        public virtual void Click(BaseEventData eventData)
+        public void Click(BaseEventData eventData)
         {
             var pointerEventData = eventData as PointerEventData;
             if (pointerEventData == null || pointerEventData.button != PointerEventData.InputButton.Left)
@@ -221,44 +251,55 @@ namespace UI
                 return;
             }
 
-            if (IsEnabled && Toggleable)
+            if (!Toggleable)
             {
-                SelectionManager.UpdateSelection(this);
+                // Only select if toggleable (non-toggleable objects don't affect the global selection).
+                return;
             }
 
-            // NB: Disabled and non-selectable (not toggleable) elements don't update selection
+            SelectionManager.UpdateSelection(this);
 
             AfterEvent();
         }
 
         /// <summary>
-        /// MouseOver event that is wired into the UI event system.
+        /// MouseOver event that is wired into the event system.
         /// </summary>
         /// <param name="eventData">Event system data</param>
-        public virtual void MouseOver(BaseEventData eventData)
+        public void MouseOver(BaseEventData eventData)
         {
-            if (IsEnabled)
+            IsMouseOver = true;
+            _tooltipCount = 0.0f;
+
+            if (OnMouseOver != null)
             {
-                IsMouseOver = true;
+                OnMouseOver();
             }
 
             AfterEvent();
         }
 
         /// <summary>
-        /// MouseOut event that is wired into the UI event system.
+        /// MouseOut event that is wired into the event system.
         /// </summary>
         /// <param name="eventData">Event system data</param>
-        public virtual void MouseOut(BaseEventData eventData)
+        public void MouseOut(BaseEventData eventData)
         {
             IsMouseOver = false;
             IsMouseDown = false;
 
+            TooltipManager.PopDown();
+
+            if (OnMouseOut != null)
+            {
+                OnMouseOut();
+            }
+
             AfterEvent();
         }
 
         /// <summary>
-        /// MouseDown event that is wired into the UI event system.
+        /// MouseDown event that is wired into the event system.
         /// </summary>
         /// <param name="eventData">Event system data</param>
         public virtual void MouseDown(BaseEventData eventData)
@@ -269,16 +310,13 @@ namespace UI
                 return;
             }
 
-            if (IsEnabled)
-            {
-                IsMouseDown = true;
-            }
+            IsMouseDown = true;
 
             AfterEvent();
         }
 
         /// <summary>
-        /// MouseUp event that is wired into the UI event system.
+        /// MouseUp event that is wired into the event system.
         /// </summary>
         /// <param name="eventData">Event system data</param>
         public virtual void MouseUp(BaseEventData eventData)
@@ -295,17 +333,7 @@ namespace UI
         }
 
         /// <summary>
-        /// Inhereted objects can override this method to hook the Select event.
-        /// </summary>
-        protected virtual void InternalSelect() { }
-
-        /// <summary>
-        /// Inhereted objects can override this method to hook the Deselect event.
-        /// </summary>
-        protected virtual void InternalDeselect() { }
-
-        /// <summary>
-        /// Inhereted objects can override this method to hook the Deselect event.
+        /// Inhereted objects can override this method to update after any event.
         /// </summary>
         public virtual void AfterEvent() { }
     }

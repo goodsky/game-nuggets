@@ -60,7 +60,7 @@ namespace UI
 
             CloseWindow();
 
-            var selected = Selectable.SelectionManager.Selected;
+            var selected = SelectionManager.Selected;
             if (selected != null)
             {
                 window.SelectionParent = selected;

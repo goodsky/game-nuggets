@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using UI;
+using UnityEngine;
 using UnityEngine.UI;
 
-namespace UI
+namespace Common
 {
     /// <summary>
     /// In charge of placing the tooltip around on the screen.

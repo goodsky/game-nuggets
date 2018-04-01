@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Common;
+using UnityEngine;
 
 namespace UI
 {
@@ -24,7 +25,7 @@ namespace UI
             // TODO: move this to a global selection manager
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                Selectable.SelectionManager.UpdateSelection(null);
+                SelectionManager.UpdateSelection(null);
             }
         }
 
@@ -41,7 +42,7 @@ namespace UI
 
             SubMenu.SetActive(true);
 
-            var selected = Selectable.SelectionManager.Selected;
+            var selected = SelectionManager.Selected;
             if (selected != null)
             {
                 Pip.transform.SetParent(selected.gameObject.transform, false);
