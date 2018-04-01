@@ -6,7 +6,7 @@ namespace GridTerrain
     /// <summary>
     /// Unity Behavior for terrain that can be edited.
     /// </summary>
-    public class EditableTerrain : MonoBehaviour
+    public class EditableTerrain : Selectable
     {
         /// <summary>Object to place at the cursor's position.</summary>
         public GameObject CursorPrefab;
@@ -37,8 +37,12 @@ namespace GridTerrain
         /// <summary>
         /// Unity Start method
         /// </summary>
-        protected void Start()
+        protected override void Start()
         {
+            base.Start();
+
+            OnMouseDown = Clicked;
+
             var terrainComponent = GetComponent<Terrain>();
 
             _terrain = new GridTerrainData(
@@ -63,8 +67,10 @@ namespace GridTerrain
         /// <summary>
         /// Unity Update method
         /// </summary>
-        protected void Update()
+        protected override void Update()
         {
+            base.Update();
+
             if (_state == EditingStates.Selecting)
             {
                 UpdateCursorSelection();
@@ -76,30 +82,33 @@ namespace GridTerrain
         }
 
         /// <summary>
-        /// Move the terrain editing cursor.
+        /// Called when the terrain is clicked.
         /// </summary>
-        void UpdateCursorSelection()
+        /// <param name="mouse"></param>
+        private void Clicked(MouseButton mouse)
         {
-            if (_cursor.activeSelf && Input.GetMouseButton(0))
+            if (mouse == MouseButton.Left)
             {
                 _state = EditingStates.Editing;
                 _mouseDragStartY = Input.mousePosition.y;
                 _mouseDragHeightChange = 0;
-
-                return;
             }
-
-            // Debug Print Data
-            if (_cursor.activeSelf && Input.GetMouseButtonDown(1))
+            else if (mouse == MouseButton.Right)
             {
-                Debug.Log(string.Format("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
-                    _gridSelection,
-                    _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
-                    _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
-                    _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
-                    _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1)));
+                GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
+                   _gridSelection,
+                   _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
+                   _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
+                   _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
+                   _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
             }
+        }
 
+        /// <summary>
+        /// Move the terrain editing cursor.
+        /// </summary>
+        private void UpdateCursorSelection()
+        {
             var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
@@ -129,7 +138,7 @@ namespace GridTerrain
         /// <summary>
         /// Move terrain up and down.
         /// </summary>
-        void UpdateTerrainHeight()
+        private void UpdateTerrainHeight()
         {
             if (!Input.GetMouseButton(0))
             {

@@ -49,9 +49,10 @@ namespace GridTerrain
             Assert.AreApproximatelyEqual(scale.x, GridSize, string.Format("The X ratio of the terrain does not map to a {0}x{0} grid. Actual Scale: {1}", GridSize, scale.x));
             Assert.AreApproximatelyEqual(scale.z, GridSize, string.Format("The Z ratio of the terrain does not map to a {0}x{0} grid. Actual Scale: {1}", GridSize, scale.z));
 
-            // This restriction exists to make the floating point math better in heightmaps
+            
             float height = terrainData.size.y;
-            Assert.IsTrue(height == 16.0f || height == 32.0f || height == 64.0f || height == 128.0f || height == 256.0f, "Terrains with heights of 16,32, 64, 128 and 256 only are supported.");
+            // This restriction exists to make the floating point math better in heightmaps
+            // Assert.IsTrue(height == 8.0f || height == 16.0f || height == 32.0f || height == 64.0f || height == 128.0f || height == 256.0f, "Terrain height should be a power of two.");
 
             Assert.AreApproximatelyEqual(height % GridHeightSize, 0.0f, string.Format("The terrain height must divide exactly into requested terrain height step. Height: {0} Step: {1}", height, GridHeightSize));
             Assert.IsTrue(height / GridHeightSize < 101.0f, string.Format("The terrain is too tall for the requested step size. Please have 100 or fewer steps. Step Count: {0}", height / GridHeightSize));

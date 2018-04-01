@@ -55,6 +55,12 @@ namespace Common
         /// <summary>Action to invoke when disabled.</summary>
         public Action OnDisabled { get; set; }
 
+        /// <summary>Action to invoke when the mouse is pressed down on the object.</summary>
+        public Action<MouseButton> OnMouseDown { get; set; }
+
+        /// <summary>Action to invoke when the mouse is release from the object.</summary>
+        public Action<MouseButton> OnMouseUp { get; set; }
+
         /// <summary>Action to invoke each step the mouse is down on it.</summary>
         public Action OnMouseOver { get; set; }
 
@@ -75,9 +81,19 @@ namespace Common
         public bool IsMouseOver { get; private set; }
 
         /// <summary>
-        /// Whether the mouse is down on the object.
+        /// Whether the left mouse is down on the object.
         /// </summary>
-        public bool IsMouseDown { get; private set; }
+        public bool IsLeftMouseDown { get; private set; }
+
+        /// <summary>
+        /// Whether the right mouse is down on the object.
+        /// </summary>
+        public bool IsRightMouseDown { get; private set; }
+
+        /// <summary>
+        /// Whether the middle mouse is down on the object.
+        /// </summary>
+        public bool IsMiddleMouseDown { get; private set; }
 
         private EventTrigger _eventTrigger;
         private float _tooltipCount;
@@ -126,7 +142,7 @@ namespace Common
         /// <summary>
         /// Unity Update method.
         /// </summary>
-        protected void Update()
+        protected virtual void Update()
         {
             // Tooltip Popup
             if (IsMouseOver && !string.IsNullOrEmpty(Tooltip))
@@ -140,7 +156,7 @@ namespace Common
             }
 
             // Call the MouseDown event each step the mouse is down
-            if (IsMouseDown && WhileMouseDown != null)
+            if (IsLeftMouseDown && WhileMouseDown != null)
             {
                 WhileMouseDown();
             }
@@ -151,9 +167,50 @@ namespace Common
         /// </summary>
         protected virtual void OnDisable()
         {
-            IsSelected = false;
-            IsMouseOver = false;
-            IsMouseDown = false;
+            if (IsSelected)
+            {
+                IsSelected = false;
+                if (OnDeselect != null)
+                {
+                    OnDeselect();
+                }
+            }
+
+            if (IsMouseOver)
+            {
+                IsMouseOver = false;
+                if (OnMouseOut != null)
+                {
+                    OnMouseOut();
+                }
+            }
+
+            if (IsLeftMouseDown)
+            {
+                IsLeftMouseDown = false;
+                if (OnMouseUp != null)
+                {
+                    OnMouseUp(MouseButton.Left);
+                }
+            }
+
+            if (IsRightMouseDown)
+            {
+                IsRightMouseDown = false;
+                if (OnMouseUp != null)
+                {
+                    OnMouseUp(MouseButton.Right);
+                }
+            }
+
+            if (IsMiddleMouseDown)
+            {
+                IsMiddleMouseDown = false;
+                if (OnMouseUp != null)
+                {
+                    OnMouseUp(MouseButton.Middle);
+                }
+            }
 
             AfterEvent();
         }
@@ -285,8 +342,34 @@ namespace Common
         /// <param name="eventData">Event system data</param>
         public void MouseOut(BaseEventData eventData)
         {
+            if (IsLeftMouseDown)
+            {
+                IsLeftMouseDown = false;
+                if (OnMouseUp != null)
+                {
+                    OnMouseUp(MouseButton.Left);
+                }
+            }
+
+            if (IsRightMouseDown)
+            {
+                IsRightMouseDown = false;
+                if (OnMouseUp != null)
+                {
+                    OnMouseUp(MouseButton.Right);
+                }
+            }
+
+            if (IsMiddleMouseDown)
+            {
+                IsMiddleMouseDown = false;
+                if (OnMouseUp != null)
+                {
+                    OnMouseUp(MouseButton.Middle);
+                }
+            }
+
             IsMouseOver = false;
-            IsMouseDown = false;
 
             TooltipManager.PopDown();
 
@@ -305,12 +388,34 @@ namespace Common
         public virtual void MouseDown(BaseEventData eventData)
         {
             var pointerEventData = eventData as PointerEventData;
-            if (pointerEventData == null || pointerEventData.button != PointerEventData.InputButton.Left)
+            if (pointerEventData == null)
             {
                 return;
             }
 
-            IsMouseDown = true;
+            MouseButton mouseButton = MouseButton.Left;
+            switch (pointerEventData.button)
+            {
+                case PointerEventData.InputButton.Left:
+                    IsLeftMouseDown = true;
+                    mouseButton = MouseButton.Left;
+                    break;
+
+                case PointerEventData.InputButton.Right:
+                    IsRightMouseDown = true;
+                    mouseButton = MouseButton.Right;
+                    break;
+
+                case PointerEventData.InputButton.Middle:
+                    IsMiddleMouseDown = true;
+                    mouseButton = MouseButton.Middle;
+                    break;
+            }
+
+            if (OnMouseDown != null)
+            {
+                OnMouseDown(mouseButton);
+            }
 
             AfterEvent();
         }
@@ -322,12 +427,34 @@ namespace Common
         public virtual void MouseUp(BaseEventData eventData)
         {
             var pointerEventData = eventData as PointerEventData;
-            if (pointerEventData == null || pointerEventData.button != PointerEventData.InputButton.Left)
+            if (pointerEventData == null)
             {
                 return;
             }
 
-            IsMouseDown = false;
+            MouseButton mouseButton = MouseButton.Left;
+            switch (pointerEventData.button)
+            {
+                case PointerEventData.InputButton.Left:
+                    IsLeftMouseDown = false;
+                    mouseButton = MouseButton.Left;
+                    break;
+
+                case PointerEventData.InputButton.Right:
+                    IsRightMouseDown = false;
+                    mouseButton = MouseButton.Right;
+                    break;
+
+                case PointerEventData.InputButton.Middle:
+                    IsMiddleMouseDown = false;
+                    mouseButton = MouseButton.Middle;
+                    break;
+            }
+
+            if (OnMouseUp != null)
+            {
+                OnMouseUp(mouseButton);
+            }
 
             AfterEvent();
         }
@@ -336,5 +463,12 @@ namespace Common
         /// Inhereted objects can override this method to update after any event.
         /// </summary>
         public virtual void AfterEvent() { }
+    }
+
+    public enum MouseButton
+    {
+        Left,
+        Right,
+        Middle
     }
 }

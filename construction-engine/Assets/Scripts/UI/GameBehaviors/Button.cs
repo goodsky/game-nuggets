@@ -53,7 +53,7 @@ namespace UI
                     IconImage.color = Color.white;
                 }
 
-                if (IsSelected || IsMouseDown)
+                if (IsSelected || IsLeftMouseDown)
                 {
                     if (_image != null)
                     {
