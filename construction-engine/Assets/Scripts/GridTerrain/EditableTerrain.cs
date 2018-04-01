@@ -11,6 +11,15 @@ namespace GridTerrain
         /// <summary>Object to place at the cursor's position.</summary>
         public GameObject CursorPrefab;
 
+        /// <summary>Size of each grid square in world units.</summary>
+        public float GridSize = 1.0f;
+
+        /// <summary>Size of each vertical grid square in world units.</summary>
+        public float GridHeight = 0.5f;
+
+        /// <summary>Count of grid tiles you can dig down from the start.</summary>
+        public int UndergroundGridCount = 5;
+
         private GameObject _cursor;
 
         private GridTerrainData _terrain;
@@ -36,9 +45,9 @@ namespace GridTerrain
                 terrainComponent, 
                 new GridTerrainArgs()
                 {
-                    GridSize = 10.0f,
-                    GridHeightSize = 4.0f,
-                    UndergroundGridCount = 4
+                    GridSize = GridSize,
+                    GridHeightSize = GridHeight,
+                    UndergroundGridCount = UndergroundGridCount
                 });
 
             _editor = new SafeTerrainEditor(_terrain);
