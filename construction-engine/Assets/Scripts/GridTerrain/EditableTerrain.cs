@@ -27,9 +27,9 @@ namespace GridTerrain
 
         private GameObject _cursor;
 
-        private GridTerrainData _terrain;
+        private IGridTerrain _terrain;
         private SafeTerrainEditor _editor;
-        private TerrainCollider _collider;
+        private Collider _collider;
 
         // Editing State  -----------
         private EditingStates _state;
@@ -50,19 +50,32 @@ namespace GridTerrain
             OnMouseDown = Clicked;
 
             var terrainComponent = GetComponent<Terrain>();
+            if (terrainComponent != null)
+            {
+                _terrain = new GridTerrainData(
+                    terrainComponent,
+                    new GridTerrainArgs()
+                    {
+                        GridSize = GridSize,
+                        GridHeightSize = GridHeight,
+                        UndergroundGridCount = UndergroundGridCount
+                    });
+            }
 
-            _terrain = new GridTerrainData(
-                terrainComponent, 
-                new GridTerrainArgs()
-                {
-                    GridSize = GridSize,
-                    GridHeightSize = GridHeight,
-                    UndergroundGridCount = UndergroundGridCount
-                });
+            var customTerrainComponent = GetComponent<GridTerrainData2>();
+            if (customTerrainComponent != null)
+            {
+                _terrain = customTerrainComponent;
+            }
 
             _editor = new SafeTerrainEditor(_terrain);
 
             _collider = GetComponent<TerrainCollider>();
+
+            if (_collider == null)
+            {
+                _collider = GetComponent<MeshCollider>();
+            }
 
             _cursor = Instantiate(CursorPrefab);
 
@@ -183,7 +196,7 @@ namespace GridTerrain
             {
                 _mouseDragHeightChange = newHeightChange;
 
-                var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.GridCountY);
+                var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.CountY);
 
                 if (_editor.SafeSetHeight(_gridSelection.x, _gridSelection.z, gridHeight))
                 {

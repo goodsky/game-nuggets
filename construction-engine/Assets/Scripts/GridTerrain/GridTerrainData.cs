@@ -12,10 +12,15 @@ namespace GridTerrain
     /// Double the resolution of the underlying TerrainData. This hides some rendering weirdness.
     /// This means that the gridData stored here is not 1:1 with the terrainData. Keep that in mind.
     /// </summary>
-    public class GridTerrainData
+    public class GridTerrainData : IGridTerrain
     {
         // This is trying to counteract floating point errors. No guarantees though.
         private const float ep = 0.001f;
+
+        // Size of the grid in each direction
+        public int CountX { get; private set; }
+        public int CountY { get; private set; }
+        public int CountZ { get; private set; }
 
         // World Unit size of each grid square.
         private readonly float GridSize;
@@ -29,11 +34,6 @@ namespace GridTerrain
 
         // Heightmap Unit size of each heightmap step
         private readonly float HeightmapStepSize;
-
-        // Size of the grid in each direction
-        public readonly int GridCountX;
-        public readonly int GridCountY;
-        public readonly int GridCountZ;
 
         // World Unit minimum for the terrain X-axis.
         private readonly float MinTerrainX;
@@ -66,13 +66,13 @@ namespace GridTerrain
             GridHeightSize = args.GridHeightSize;
             UndergroundGridCount = args.UndergroundGridCount;
 
-            GridCountX = Mathf.RoundToInt(_terrainData.size.x / GridSize);
-            GridCountY = Mathf.RoundToInt(_terrainData.size.y / GridHeightSize);
-            GridCountZ = Mathf.RoundToInt(_terrainData.size.z / GridSize);
+            CountX = Mathf.RoundToInt(_terrainData.size.x / GridSize);
+            CountY = Mathf.RoundToInt(_terrainData.size.y / GridHeightSize);
+            CountZ = Mathf.RoundToInt(_terrainData.size.z / GridSize);
 
-            _gridData = new int[GridCountX + 1, GridCountZ + 1];
+            _gridData = new int[CountX + 1, CountZ + 1];
 
-            HeightmapStepSize = 1.0f / GridCountY;
+            HeightmapStepSize = 1.0f / CountY;
 
             // Minimum values are needed for conversion base-lines
             var parent = terrain.gameObject;
@@ -91,7 +91,7 @@ namespace GridTerrain
                 string summaryLog = string.Empty;
                 summaryLog += "GridTerrain Initialized.\n";
                 summaryLog += string.Format("Voxel Size {0}x{1}x{0}\n", GridSize, GridHeightSize);
-                summaryLog += string.Format("Grid Size {0}x{1}x{2}\n", GridCountX, GridCountY, GridCountZ);
+                summaryLog += string.Format("Grid Size {0}x{1}x{2}\n", CountX, CountY, CountZ);
                 summaryLog += string.Format("Origin Position {0}, {1}, {2}\n", MinTerrainX, MinTerrainHeight, MinTerrainZ);
                 summaryLog += string.Format("Heightmap Step: {0}\n", HeightmapStepSize);
                 summaryLog += string.Format("\n");
@@ -135,8 +135,8 @@ namespace GridTerrain
         /// <param name="gridHeight">Grid y height</param>
         public void SetHeight(int x, int z, int gridHeight)
         {
-            if (x < 0 || x >= GridCountX || z < 0 || z >= GridCountZ)
-                throw new ArgumentOutOfRangeException(string.Format("Attempted to set a square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, GridCountX, GridCountZ));
+            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+                throw new ArgumentOutOfRangeException(string.Format("Attempted to set a square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ));
 
             SetPointHeights(x, z, new int[,] { { gridHeight, gridHeight }, { gridHeight, gridHeight } });
         }
@@ -152,8 +152,8 @@ namespace GridTerrain
             int xLength = heights.GetLength(0);
             int zLength = heights.GetLength(1);
 
-            if (xBase < 0 || xBase + xLength > GridCountX + 1 || zBase < 0 || zBase + zLength > GridCountZ + 1)
-                throw new ArgumentOutOfRangeException(string.Format("Attempted to set points height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, GridCountX + 1, GridCountZ + 1));
+            if (xBase < 0 || xBase + xLength > CountX + 1 || zBase < 0 || zBase + zLength > CountZ + 1)
+                throw new ArgumentOutOfRangeException(string.Format("Attempted to set points height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, CountX + 1, CountZ + 1));
 
             int heightmapXBase; // read the comments on CreateDoubleResolutionArray to try to understand this headache.
             int heightmapXOriginAdjust; // no seriously. I had to take a break and play guitar while writing this.
@@ -266,9 +266,9 @@ namespace GridTerrain
         /// <param name="gridHeight">Grid y height</param>
         public void Flatten(int gridHeight = 0)
         {
-            var resetHeights = new int[GridCountX + 1, GridCountZ + 1];
-            for (int i = 0; i < GridCountX + 1; ++i)
-                for (int j = 0; j < GridCountZ + 1; ++j)
+            var resetHeights = new int[CountX + 1, CountZ + 1];
+            for (int i = 0; i < CountX + 1; ++i)
+                for (int j = 0; j < CountZ + 1; ++j)
                     resetHeights[i, j] = gridHeight;
 
             SetPointHeights(0, 0, resetHeights);
@@ -320,13 +320,13 @@ namespace GridTerrain
             }
 
             heightmapXSizeAdjust = 0;
-            if (heightmapXBase + xLength * 2 + 1 > GridCountX * 2)
+            if (heightmapXBase + xLength * 2 + 1 > CountX * 2)
             {
                 heightmapXSizeAdjust = -1;
             }
 
             heightmapZSizeAdjust = 0;
-            if (heightmapZBase + zLength * 2 + 1 > GridCountZ * 2)
+            if (heightmapZBase + zLength * 2 + 1 > CountZ * 2)
             {
                 heightmapZSizeAdjust = -1;
             }
