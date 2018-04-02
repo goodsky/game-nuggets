@@ -22,6 +22,9 @@ namespace GridTerrain
         /// <summary>Count of grid tiles you can dig down from the start.</summary>
         public int UndergroundGridCount = 5;
 
+        /// <summary>Should the terrain be editable at start.</summary>
+        public bool EditingAtStart = false;
+
         private GameObject _cursor;
 
         private GridTerrainData _terrain;
@@ -63,7 +66,7 @@ namespace GridTerrain
 
             _cursor = Instantiate(CursorPrefab);
 
-            _state = EditingStates.None;
+            _state = EditingAtStart ? EditingStates.Editing : EditingStates.None;
             _gridSelection = Point3.Null;
             _cursor.SetActive(false);
         }
@@ -101,7 +104,7 @@ namespace GridTerrain
             _state = EditingStates.None;
             _gridSelection = Point3.Null;
 
-            if (_cursor.activeSelf)
+            if (_cursor.gameObject != null)
             {
                 _cursor.SetActive(false);
             }
