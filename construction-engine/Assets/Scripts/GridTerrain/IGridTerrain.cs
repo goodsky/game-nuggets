@@ -14,14 +14,14 @@ namespace GridTerrain
         int CountX { get; }
 
         /// <summary>
-        /// Gets the maximum number of grid steps along the y-axis.
-        /// </summary>
-        int CountY { get; }
-
-        /// <summary>
         /// Gets the count of grid squares along the z-axis.
         /// </summary>
         int CountZ { get; }
+
+        /// <summary>
+        /// Gets the maximum number of grid steps along the y-axis.
+        /// </summary>
+        int CountY { get; }
 
         /// <summary>
         /// Gets the world height of a square.
@@ -61,10 +61,36 @@ namespace GridTerrain
         /// <param name="gridHeight">Grid y height</param>
         void Flatten(int gridHeight = 0);
 
+        /// <summary>
+        /// Raycast against the terrain.
+        /// </summary>
+        /// <param name="ray">Ray to cast along.</param>
+        /// <param name="hit">Hit information.</param>
+        /// <param name="maxDistance">Max distance to cast along the ray.</param>
+        /// <returns>True if the collission occurred, false otherwise.</returns>
+        bool Raycast(Ray ray, out RaycastHit hit, float maxDistance);
+
+        /// <summary>
+        /// Convert a world coordinate to a grid coordinate on this terrain.
+        /// </summary>
+        /// <param name="world">The world coordinate.</param>
+        /// <returns>The grid coordinate.</returns>
         Point3 ConvertWorldToGrid(Vector3 world);
 
+        /// <summary>
+        /// Convert a grid coordinate to a world coordinate.
+        /// Points to the origin of the grid.
+        /// </summary>
+        /// <param name="grid">The grid coordinate.</param>
+        /// <returns>The world coordinate.</returns>
         Vector3 ConvertGridToWorld(Point3 grid);
 
+        /// <summary>
+        /// Convert a grid coordinate to a world coordinate.
+        /// Points to the center of the grid.
+        /// </summary>
+        /// <param name="grid">The grid coordinate.</param>
+        /// <returns>The world coordinate.</returns>
         Vector3 ConvertGridCenterToWorld(Point3 grid);
     }
 }

@@ -44,8 +44,11 @@ namespace GridTerrain
         // World Unit minimum for the terrain height.
         private readonly float MinTerrainHeight;
 
-        // Unit's terrain data
+        // Unity's terrain data
         private TerrainData _terrainData;
+
+        // Unity's terrain collider
+        private TerrainCollider _terrainCollider;
 
         // My grid data mapped to integers
         private int[,] _gridData;
@@ -60,6 +63,7 @@ namespace GridTerrain
             args.ValidateTerrain(terrain);
 
             _terrainData = terrain.terrainData;
+            _terrainCollider = terrain.gameObject.GetComponent<TerrainCollider>();
 
             GridSize = args.GridSize;
             HalfGridSize = GridSize / 2.0f;
@@ -272,6 +276,18 @@ namespace GridTerrain
                     resetHeights[i, j] = gridHeight;
 
             SetPointHeights(0, 0, resetHeights);
+        }
+
+        /// <summary>
+        /// Raycast against the terrain.
+        /// </summary>
+        /// <param name="ray">Ray to cast along.</param>
+        /// <param name="hit">Hit information.</param>
+        /// <param name="maxDistance">Max distance to cast along the ray.</param>
+        /// <returns>True if the collission occurred, false otherwise.</returns>
+        public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance)
+        {
+            return _terrainCollider.Raycast(ray, out hit, maxDistance);
         }
 
         /// <summary>

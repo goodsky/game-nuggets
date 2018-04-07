@@ -29,7 +29,6 @@ namespace GridTerrain
 
         private IGridTerrain _terrain;
         private SafeTerrainEditor _editor;
-        private Collider _collider;
 
         // Editing State  -----------
         private EditingStates _state;
@@ -62,20 +61,19 @@ namespace GridTerrain
                     });
             }
 
-            var customTerrainComponent = GetComponent<GridTerrainData2>();
-            if (customTerrainComponent != null)
+            var customTerrainComponent2 = GetComponent<GridTerrainData2>();
+            if (customTerrainComponent2 != null)
             {
-                _terrain = customTerrainComponent;
+                _terrain = customTerrainComponent2;
+            }
+
+            var customTerrainComponent3 = GetComponent<GridTerrainData3>();
+            if (customTerrainComponent3 != null)
+            {
+                _terrain = customTerrainComponent3;
             }
 
             _editor = new SafeTerrainEditor(_terrain);
-
-            _collider = GetComponent<TerrainCollider>();
-
-            if (_collider == null)
-            {
-                _collider = GetComponent<MeshCollider>();
-            }
 
             _cursor = Instantiate(CursorPrefab);
 
@@ -157,7 +155,7 @@ namespace GridTerrain
             var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
-            if (_collider.Raycast(mouseRay, out hit, float.MaxValue))
+            if (_terrain.Raycast(mouseRay, out hit, float.MaxValue))
             {
                 var newGridSelection = _terrain.ConvertWorldToGrid(hit.point);
 
