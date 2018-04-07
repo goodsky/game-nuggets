@@ -62,6 +62,9 @@ namespace GridTerrain
         /// <summary>Whether or not this terrain is runtime editable.</summary>
         public bool Editable = true;
 
+        /// <summary>Whether or not to surround the terrain with a skirt.</summary>
+        public bool Skirt = false;
+
         // World Unit minimum for the terrain height.
         private float MinTerrainHeight;
 
@@ -342,6 +345,13 @@ namespace GridTerrain
         /// <param name="mesh"></param>
         private void InitializeGrid()
         {
+            // Create terrain skirt if requested
+            if (Skirt)
+            {
+                var skirt = Resources.Load<GameObject>("terrain_skirt");
+                Instantiate(skirt);
+            }
+
             // Triangle and UV coordinates are the same for each square
             Grid.triangles = new int[] 
             {
