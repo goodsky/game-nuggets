@@ -1,4 +1,5 @@
 ﻿using Common;
+using System;
 using UnityEngine;
 
 namespace GridTerrain
@@ -224,6 +225,16 @@ namespace GridTerrain
             }
 
             UpdateMesh();
+        }
+
+        public int GetMaterial(int x, int z)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetMaterial(int x, int z, int materialId)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

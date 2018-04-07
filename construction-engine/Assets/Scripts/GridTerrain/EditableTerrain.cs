@@ -17,7 +17,7 @@ namespace GridTerrain
         public float GridSize = 1.0f;
 
         /// <summary>Size of each vertical grid square in world units.</summary>
-        public float GridHeight = 0.5f;
+        public float GridHeight = 0.4f;
 
         /// <summary>Count of grid tiles you can dig down from the start.</summary>
         public int UndergroundGridCount = 5;
@@ -71,6 +71,12 @@ namespace GridTerrain
             if (customTerrainComponent3 != null)
             {
                 _terrain = customTerrainComponent3;
+            }
+
+            var customTerrainComponent4 = GetComponent<GridTerrainData4>();
+            if (customTerrainComponent4 != null)
+            {
+                _terrain = customTerrainComponent4;
             }
 
             _editor = new SafeTerrainEditor(_terrain);
@@ -143,6 +149,13 @@ namespace GridTerrain
                        _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
                        _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
                        _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
+
+                    GridTerrainData4 test = _terrain as GridTerrainData4;
+                    if (Input.GetKey(KeyCode.LeftControl) && test != null)
+                    {
+                        int material = _terrain.GetMaterial(_gridSelection.x, _gridSelection.z);
+                        _terrain.SetMaterial(_gridSelection.x, _gridSelection.z, (material + 1) % test.Materials.Length);
+                    }
                 }
             }
         }

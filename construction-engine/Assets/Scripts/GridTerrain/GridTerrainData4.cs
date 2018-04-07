@@ -6,41 +6,17 @@ namespace GridTerrain
 {
     /// <summary>
     /// A Custom terrain mesh based using a runtime generated plane mesh instead of Unity's heavy Terrain component.
-    /// Creates a unique mesh per each grid square. This allows us to set multiple materials.
+    /// Splits squares using submeshes.
     /// 
-    /// 'GridTerrain v3.1'
+    /// 'GridTerrain v3.2'
     /// </summary>
-    public class GridTerrainData3 : MonoBehaviour, IGridTerrain
+    public class GridTerrainData4 : MonoBehaviour, IGridTerrain
     {
-        // Grid square game object
-        private struct Grid
-        {
-            // grid mesh
-            public Mesh mesh;
-            public Vector3[] vertices;
-            public static Vector2[] uv;
-            public static int[] triangles;
-
-            // convenience shortcuts for location of vertices
-            public static readonly int BottomLeft = 0;
-            public static readonly int BottomRight = 1;
-            public static readonly int TopRight = 2;
-            public static readonly int TopLeft = 3;
-            public static readonly int Center = 4;
-
-            // grid collider
-            public MeshCollider collider;
-
-            // grid renderer
-            public MeshRenderer renderer;
-            public Material material;
-        }
-
         // This is trying to counteract floating point errors. No guarantees though.
         private const float ep = 0.001f;
 
-        /// <summary>The default material on the terrain.</summary>
-        public Material DefaultMaterial;
+        /// <summary>The materials to use on the terrain.</summary>
+        public Material[] Materials;
 
         /// <summary>Size of the grid squares.</summary>
         public float GridSize = 1.0f;
@@ -63,9 +39,6 @@ namespace GridTerrain
         /// <summary>Whether or not this terrain is runtime editable.</summary>
         public bool Editable = true;
 
-        /// <summary>Whether or not to surround the terrain with a skirt.</summary>
-        public bool Skirt = false;
-
         // World Unit minimum for the terrain height.
         private float MinTerrainHeight;
 
@@ -87,7 +60,8 @@ namespace GridTerrain
         // World Unit minimum for the terrain Z-axis.
         private float MinTerrainZ;
 
-        private Grid[,] _gridData;
+        // The custom mesh used to shape the terrain.
+        private GridMesh _mesh;
 
         /// <summary>
         /// Unity's Start
@@ -99,7 +73,15 @@ namespace GridTerrain
             MinTerrainZ = transform.position.z;
             MinTerrainHeight = GridStepsDown * -GridStepSize;
 
-            InitializeGrid();
+            var filter = gameObject.AddComponent<MeshFilter>();
+            var collider = gameObject.AddComponent<MeshCollider>();
+            var renderer = gameObject.AddComponent<MeshRenderer>();
+
+            filter.mesh = new Mesh();
+            filter.mesh.name = "grid-terrain";
+
+            _mesh = new GridMesh(filter.mesh, collider, renderer);
+            _mesh.Initialize(GridSize, CountX, CountZ, Materials);
 
             if (Editable)
             {
@@ -115,12 +97,9 @@ namespace GridTerrain
         /// </summary>
         protected void OnDestroy()
         {
-            if (_gridData != null)
+            if (_mesh != null)
             {
-                foreach (var square in _gridData)
-                {
-                    square.mesh.Clear();
-                }
+                _mesh.Dispose();
             }
         }
 
@@ -135,8 +114,7 @@ namespace GridTerrain
             if (x < 0 || x >= GridXCount || z < 0 || z >= GridZCount)
                 GameLogger.FatalError("Attempted to GetWorldHeight out of range. ({0},{1})", x, z);
 
-            // return the height of the middle vertex of the square
-            return _gridData[x, z].vertices[Grid.Center].y;
+            return _mesh.GetHeight(x, z);
         }
 
         /// <summary>
@@ -150,7 +128,7 @@ namespace GridTerrain
             if (x < 0 || x > GridXCount || z < 0 || z > GridZCount)
                 GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
 
-            return ConvertWorldHeightToGrid(_gridData[x, z].vertices[Grid.Center].y);
+            return ConvertWorldHeightToGrid(_mesh.GetHeight(x, z));
         }
 
         /// <summary>
@@ -182,74 +160,22 @@ namespace GridTerrain
             if (xBase < 0 || xBase + xLength > CountX + 1 || zBase < 0 || zBase + zLength > CountZ + 1)
                 GameLogger.FatalError("Attempted to set points height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, CountX + 1, CountZ + 1);
 
-            // 1st pass: set the corner vertices
+            float[,] heightsf = new float[xLength, zLength];
             for (int x = 0; x < xLength; ++x)
-            {
                 for (int z = 0; z < zLength; ++z)
-                {
-                    float newHeight = ConvertGridHeightToWorld(heights[x, z]);
+                    heightsf[x, z] = ConvertGridHeightToWorld(heights[x, z]);
 
-                    // there are potentially 4 overlaps for each corner vertex.
-                    // keep them all in sync!
-                    int leftX = xBase + x - 1;
-                    int rightX = xBase + x;
-                    int downZ = zBase + z - 1;
-                    int upZ = zBase + z;
-
-                    if (leftX >= 0 && downZ >= 0)
-                    {
-                        _gridData[leftX, downZ].vertices[Grid.TopRight].y = newHeight;
-                    }
-
-                    if (leftX >= 0 && upZ < GridZCount)
-                    {
-                        _gridData[leftX, upZ].vertices[Grid.BottomRight].y = newHeight;
-                    }
-
-                    if (rightX < GridXCount && downZ >= 0)
-                    {
-                        _gridData[rightX, downZ].vertices[Grid.TopLeft].y = newHeight;
-                    }
-
-                    if (rightX < GridXCount && upZ < GridZCount)
-                    {
-                        _gridData[rightX, upZ].vertices[Grid.BottomLeft].y = newHeight;
-                    }
-                }
-            }
-
-            // 2nd pass: set the center vertices & update grid mesh/collider/renderer
-            for (int x = -1; x < xLength + 1; ++x)
-            {
-                for (int z = -1; z < zLength + 1; ++z)
-                {
-                    int gridX = xBase + x;
-                    int gridZ = zBase + z;
-
-                    if (gridX >= 0 && gridX < GridXCount && gridZ >= 0 && gridZ < GridZCount)
-                    {
-                        float newHeight = Utils.GetMajorityOrAverage(
-                            _gridData[gridX, gridZ].vertices[Grid.BottomLeft].y,
-                            _gridData[gridX, gridZ].vertices[Grid.BottomRight].y,
-                            _gridData[gridX, gridZ].vertices[Grid.TopRight].y,
-                            _gridData[gridX, gridZ].vertices[Grid.TopLeft].y);
-
-                        _gridData[gridX, gridZ].vertices[Grid.Center].y = newHeight;
-
-                        UpdateGrid(_gridData[gridX, gridZ]);
-                    }
-                }
-            }
+            _mesh.SetHeights(xBase, zBase, heightsf);
         }
 
         public int GetMaterial(int x, int z)
         {
-            throw new NotImplementedException();
+            return _mesh.GetMaterial(x, z);
         }
 
         public void SetMaterial(int x, int z, int materialId)
         {
-            throw new NotImplementedException();
+            _mesh.SetMaterial(x, z, materialId);
         }
 
         /// <summary>
@@ -275,23 +201,7 @@ namespace GridTerrain
         /// <returns>True if the collission occurred, false otherwise.</returns>
         public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance)
         {
-            hit = new RaycastHit();
-            hit.distance = float.MaxValue;
-
-            bool hasHit = false;
-            RaycastHit testHit = new RaycastHit();
-
-            foreach (var grid in _gridData)
-            {
-                if (grid.collider.Raycast(ray, out testHit, maxDistance) &&
-                    testHit.distance < hit.distance)
-                {
-                    hasHit = true;
-                    hit = testHit;
-                }
-            }
-
-            return hasHit;
+            return _mesh.Collider.Raycast(ray, out hit, maxDistance);
         }
 
         /// <summary>
@@ -351,86 +261,6 @@ namespace GridTerrain
         public float ConvertGridHeightToWorld(int grid)
         {
             return grid * GridStepSize + MinTerrainHeight;
-        }
-
-        /// <summary>
-        /// Generates the terrain plane.
-        /// </summary>
-        /// <param name="mesh"></param>
-        private void InitializeGrid()
-        {
-            // Create terrain skirt if requested
-            if (Skirt)
-            {
-                var skirt = Resources.Load<GameObject>("terrain_skirt");
-                Instantiate(skirt);
-            }
-
-            // Triangle and UV coordinates are the same for each square
-            Grid.triangles = new int[] 
-            {
-                Grid.BottomLeft, Grid.Center, Grid.BottomRight,
-                Grid.BottomRight, Grid.Center, Grid.TopRight,
-                Grid.TopRight, Grid.Center, Grid.TopLeft,
-                Grid.TopLeft, Grid.Center, Grid.BottomLeft
-            };
-
-            Grid.uv = new Vector2[]
-            {
-                new Vector2(0.0f, 0.0f), // bottom left
-                new Vector2(1.0f, 0.0f), // bottom right
-                new Vector2(1.0f, 1.0f), // top right
-                new Vector2(0.0f, 1.0f), // top left
-                new Vector2(0.5f, 0.5f)  // center
-            };
-
-            _gridData = new Grid[GridXCount, GridZCount];
-
-            for (int x = 0; x < GridXCount; ++x)
-            {
-                for (int z = 0; z < GridZCount; ++z)
-                {
-                    var squareObject = new GameObject("grid");
-                    squareObject.transform.parent = gameObject.transform;
-
-                    var filter = squareObject.AddComponent<MeshFilter>();
-                    _gridData[x, z].mesh = filter.mesh = new Mesh();
-                    _gridData[x, z].collider = squareObject.AddComponent<MeshCollider>();
-                    _gridData[x, z].renderer = squareObject.AddComponent<MeshRenderer>();
-
-                    _gridData[x, z].vertices = new Vector3[]
-                    {
-                        new Vector3(x * GridSize, 0.0f, z * GridSize), // bottom left
-                        new Vector3((x + 1) * GridSize, 0.0f, z * GridSize), // bottom right
-                        new Vector3((x + 1) * GridSize, 0.0f, (z + 1) * GridSize), // top right
-                        new Vector3(x * GridSize, 0.0f, (z + 1) * GridSize), // top left
-                        new Vector3(x * GridSize + HalfGridSize, 0.0f, z * GridSize + HalfGridSize), // center
-                    };
-
-                    _gridData[x, z].material = DefaultMaterial;
-
-                    UpdateGrid(_gridData[x, z]);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Update the dynamic mesh with the new vertices, uvs and triangles.
-        /// Update the normals, bounds and collider.
-        /// </summary>
-        private void UpdateGrid(Grid grid)
-        {
-            grid.mesh.Clear();
-            grid.mesh.vertices = grid.vertices;
-            grid.mesh.uv = Grid.uv;
-            grid.mesh.triangles = Grid.triangles;
-
-            grid.mesh.RecalculateNormals();
-            grid.mesh.RecalculateBounds();
-
-            grid.collider.sharedMesh = grid.mesh;
-
-            grid.renderer.material = grid.material;
         }
     }
 }

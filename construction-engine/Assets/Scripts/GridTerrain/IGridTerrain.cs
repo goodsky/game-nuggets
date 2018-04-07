@@ -55,6 +55,10 @@ namespace GridTerrain
         /// <param name="heights">Grid heights to set</param>
         void SetPointHeights(int xBase, int zBase, int[,] heights);
 
+        int GetMaterial(int x, int z);
+
+        void SetMaterial(int x, int z, int materialId);
+
         /// <summary>
         /// Flatten the entire terrain to a certain height
         /// </summary>

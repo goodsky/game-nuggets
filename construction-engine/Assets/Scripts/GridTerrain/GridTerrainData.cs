@@ -264,6 +264,16 @@ namespace GridTerrain
             _terrainData.SetHeights(heightmapXBase, heightmapZBase, heightmapHeights);
         }
 
+        public int GetMaterial(int x, int z)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetMaterial(int x, int z, int materialId)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Flatten the entire terrain to a certain height
         /// </summary>
