@@ -14,15 +14,15 @@ namespace GridTerrain
         private readonly int[] dx = new[] { -1, 0, 1, 0 };
         private readonly int[] dy = new[] { 0, -1, 0, 1 };
 
-        private GridTerrainData _terrain;
+        private IGridTerrain _terrain;
         private bool[,] _gridAnchored;
 
-        public SafeTerrainEditor(GridTerrainData terrain)
+        public SafeTerrainEditor(IGridTerrain terrain)
         {
             _terrain = terrain;
 
-            var width = _terrain.GridCountX + 1;
-            var height = _terrain.GridCountZ + 1;
+            var width = _terrain.CountX + 1;
+            var height = _terrain.CountZ + 1;
             _gridAnchored = new bool[width, height];
 
             // Anchor all corners, otherwise start unanchored

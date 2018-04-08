@@ -85,7 +85,15 @@ namespace UI
             Description = WriteDescription(buildingData);
             ConstructionImage.sprite = buildingData.Icon.Value;
 
-            BuildButton.OnSelect = () => { Debug.Log("Selected!"); };
+            BuildButton.OnSelect = () => { GameLogger.Info("Selected!"); };
+        }
+
+        /// <summary>
+        /// Close the window.
+        /// </summary>
+        public override void Close()
+        {
+            
         }
 
         /// <summary>

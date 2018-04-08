@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Common;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -46,8 +47,8 @@ namespace UI
         /// </summary>
         protected void Start()
         {
-            ScrollButtonLeft.GetComponent<Button>().OnMouseDown = ScrollLeft;
-            ScrollButtonRight.GetComponent<Button>().OnMouseDown = ScrollRight;
+            ScrollButtonLeft.GetComponent<Button>().WhileMouseDown = ScrollLeft;
+            ScrollButtonRight.GetComponent<Button>().WhileMouseDown = ScrollRight;
 
             var buttonGroupRect = GetComponent<RectTransform>();
             _contentRect = Content.GetComponent<RectTransform>();
@@ -126,9 +127,9 @@ namespace UI
                 // When you start scrolling, set the focus to the parent of the scroll bar buttons.
                 // This will be the button that popped up the scroll bar.
                 var button = Content.GetComponentInChildren<Button>();
-                if (button != null && Selectable.SelectionManager.Selected != button.SelectionParent)
+                if (button != null && SelectionManager.Selected != button.SelectionParent)
                 {
-                    Selectable.SelectionManager.UpdateSelection(button.SelectionParent);
+                    SelectionManager.UpdateSelection(button.SelectionParent);
                 }
             }
             else
@@ -163,9 +164,9 @@ namespace UI
                 // When you start scrolling, set the focus to the parent of the scroll bar buttons.
                 // This will be the button that popped up the scroll bar.
                 var button = Content.GetComponentInChildren<Button>();
-                if (button != null && Selectable.SelectionManager.Selected != button.SelectionParent)
+                if (button != null && SelectionManager.Selected != button.SelectionParent)
                 {
-                    Selectable.SelectionManager.UpdateSelection(button.SelectionParent);
+                    SelectionManager.UpdateSelection(button.SelectionParent);
                 }
             }
             else

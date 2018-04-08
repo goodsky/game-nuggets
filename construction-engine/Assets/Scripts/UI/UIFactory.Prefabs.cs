@@ -62,13 +62,13 @@ namespace UI
         }
 
         /// <summary>
-        /// Load the Unity EventSystem component to forward events to our UI.
+        /// Load the Unity EventSystem component to forward events to Selectables.
         /// </summary>
         /// <param name="parent">The parent</param>
         /// <returns>The UI EventSystem.</returns>
-        public static GameObject LoadUIEventSystem(GameObject parent)
+        public static GameObject LoadEventSystem(GameObject parent)
         {
-            string UIEventSystem = "UI EventSystem";
+            string UIEventSystem = "EventSystem";
 
             return InstantiatePrefab(UIEventSystem, UIEventSystem, parent.transform);
         }

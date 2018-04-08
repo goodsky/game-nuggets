@@ -47,7 +47,7 @@ namespace UI
         {
             // Fire and forget the selection root object.
             // This will catch click events on the screen that are not on a UI element.
-            UIFactory.LoadSelectionRoot(gameObject);
+            // UIFactory.LoadSelectionRoot(gameObject); skyler: Removing this concept so we can use the event system for campus objects
 
             // Create the manager for opening and closing windows
             WindowManager = UIFactory.GenerateEmptyUI("Window Manager", transform).AddComponent<WindowManager>();
@@ -106,6 +106,11 @@ namespace UI
                     else if (buttonData.OnSelect is OpenWindowAction)
                     {
                         var openWindowAction = buttonData.OnSelect as OpenWindowAction;
+                        button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, null);
+                    }
+                    else if (buttonData.OnSelect is OpenWindowWithDataAction)
+                    {
+                        var openWindowAction = buttonData.OnSelect as OpenWindowWithDataAction;
                         button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, openWindowAction.DataType, openWindowAction.DataName);
                     }
 

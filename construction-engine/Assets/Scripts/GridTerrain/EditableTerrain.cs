@@ -6,56 +6,77 @@ namespace GridTerrain
     /// <summary>
     /// Unity Behavior for terrain that can be edited.
     /// </summary>
-    public class EditableTerrain : MonoBehaviour
+    public class EditableTerrain : SelectableTerrain
     {
-        /// <summary>Object to place at the cursor's position.</summary>
-        public GameObject CursorPrefab;
+        /// <summary>Singleton Terrain in the scene.</summary>
+        public static EditableTerrain Singleton { get; private set; }
 
-        private GameObject _cursor;
+        /// <summary>
+        /// The Grid Terrain
+        /// </summary>
+        public IGridTerrain _terrain;
 
-        private GridTerrainData _terrain;
         private SafeTerrainEditor _editor;
-        private TerrainCollider _collider;
 
         // Editing State  -----------
         private EditingStates _state;
 
-        Point3 _gridSelection;
+        private GridCursor _cursor;
+        private Point3 _gridSelection;
 
-        float _mouseDragStartY;
-        int _mouseDragHeightChange;
+        private float _mouseDragStartY;
+        private int _mouseDragHeightChange;
 
         /// <summary>
         /// Unity Start method
         /// </summary>
-        protected void Start()
+        protected override void Start()
         {
-            var terrainComponent = GetComponent<Terrain>();
+            base.Start();
 
-            _terrain = new GridTerrainData(
-                terrainComponent, 
-                new GridTerrainArgs()
-                {
-                    GridSize = 10.0f,
-                    GridHeightSize = 4.0f,
-                    UndergroundGridCount = 4
-                });
+            Singleton = this;
+            OnMouseDown = Clicked;
+
+            var terrainComponent = GetComponent<Terrain>();
+            if (terrainComponent != null)
+            {
+                // deprecated
+                _terrain = new GridTerrainData(
+                    terrainComponent,
+                    new GridTerrainArgs()
+                    {
+                        GridSize = 1.0f,
+                        GridHeightSize = 0.4f,
+                        UndergroundGridCount = 4
+                    });
+            }
+
+            var terrainData2 = GetComponent<GridTerrainData2>();
+            if (terrainData2 != null)
+                _terrain = terrainData2;
+
+            var terrainData3 = GetComponent<GridTerrainData3>();
+            if (terrainData3 != null)
+                _terrain = terrainData3;
+
+            var terrainData4 = GetComponent<GridTerrainData4>();
+            if (terrainData4 != null)
+                _terrain = terrainData4;
 
             _editor = new SafeTerrainEditor(_terrain);
 
-            _collider = GetComponent<TerrainCollider>();
-
-            _state = EditingStates.Selecting;
+            _cursor = GridCursor.Create(_terrain, Resources.Load<Material>("Terrain/cursor"), transform);
+            _cursor.Deactivate();
             _gridSelection = Point3.Null;
-
-            _cursor = Instantiate(CursorPrefab);
         }
 
         /// <summary>
         /// Unity Update method
         /// </summary>
-        protected void Update()
+        protected override void Update()
         {
+            base.Update();
+
             if (_state == EditingStates.Selecting)
             {
                 UpdateCursorSelection();
@@ -67,51 +88,86 @@ namespace GridTerrain
         }
 
         /// <summary>
+        /// Start editing the terrain.
+        /// </summary>
+        public void StartEditing()
+        {
+            _state = EditingStates.Editing;
+        }
+
+        /// <summary>
+        /// Stop editing the terrain.
+        /// </summary>
+        public void StopEditing()
+        {
+            _state = EditingStates.None;
+            _gridSelection = Point3.Null;
+
+            if (_cursor != null)
+            {
+                _cursor.Deactivate();
+            }
+        }
+
+        /// <summary>
+        /// Called when the terrain is clicked.
+        /// </summary>
+        /// <param name="mouse"></param>
+        private void Clicked(MouseButton mouse)
+        {
+            if (_state == EditingStates.Selecting)
+            {
+                if (mouse == MouseButton.Left)
+                {
+                    _state = EditingStates.Editing;
+                    _mouseDragStartY = Input.mousePosition.y;
+                    _mouseDragHeightChange = 0;
+                }
+                else if (mouse == MouseButton.Right)
+                {
+                    GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
+                       _gridSelection,
+                       _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
+                       _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
+                       _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
+                       _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
+
+                    GridTerrainData4 test = _terrain as GridTerrainData4;
+                    if (Input.GetKey(KeyCode.LeftControl) && test != null)
+                    {
+                        int material = _terrain.GetMaterial(_gridSelection.x, _gridSelection.z);
+                        _terrain.SetMaterial(_gridSelection.x, _gridSelection.z, (material + 1) % GridMaterials.GetAll().Length);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Move the terrain editing cursor.
         /// </summary>
-        void UpdateCursorSelection()
+        private void UpdateCursorSelection()
         {
-            if (_cursor.activeSelf && Input.GetMouseButton(0))
-            {
-                _state = EditingStates.Editing;
-                _mouseDragStartY = Input.mousePosition.y;
-                _mouseDragHeightChange = 0;
-
-                return;
-            }
-
-            // Debug Print Data
-            if (_cursor.activeSelf && Input.GetMouseButtonDown(1))
-            {
-                Debug.Log(string.Format("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
-                    _gridSelection,
-                    _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
-                    _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
-                    _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
-                    _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1)));
-            }
-
             var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
-            if (_collider.Raycast(mouseRay, out hit, float.MaxValue))
+            if (_terrain.Raycast(mouseRay, out hit, float.MaxValue))
             {
-                var newGridSelection = _terrain.ConvertWorldToGrid(hit.point);
+                var newGridSelection = _terrain.Convert.WorldToGrid(hit.point);
 
                 if (newGridSelection != _gridSelection)
                 {
-                    if (!_cursor.activeSelf)
-                        _cursor.SetActive(true);
+                    if (!_cursor.IsActive)
+                        _cursor.Activate();
 
                     _gridSelection = newGridSelection;
-                    _cursor.transform.position = _terrain.ConvertGridCenterToWorld(newGridSelection);
+                    _cursor.Place(_gridSelection.x, _gridSelection.z);
                 }
             }
             else
             {
-                if (_cursor.activeSelf)
+                if (_cursor.IsActive)
                 {
-                    _cursor.SetActive(false);
+                    _cursor.Deactivate();
                     _gridSelection = Point3.Null;
                 }
             }
@@ -120,7 +176,7 @@ namespace GridTerrain
         /// <summary>
         /// Move terrain up and down.
         /// </summary>
-        void UpdateTerrainHeight()
+        private void UpdateTerrainHeight()
         {
             if (!Input.GetMouseButton(0))
             {
@@ -133,15 +189,11 @@ namespace GridTerrain
             {
                 _mouseDragHeightChange = newHeightChange;
 
-                var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.GridCountY);
+                var gridHeight = Utils.Clamp(_gridSelection.y + _mouseDragHeightChange, 0, _terrain.CountY);
 
                 if (_editor.SafeSetHeight(_gridSelection.x, _gridSelection.z, gridHeight))
                 {
-                    _cursor.transform.position = _terrain.ConvertGridCenterToWorld(
-                        new Point3(
-                            _gridSelection.x,
-                            gridHeight,
-                            _gridSelection.z));
+                    _cursor.Place(_gridSelection.x, _gridSelection.z);
                 }
             }
         }
@@ -159,6 +211,7 @@ namespace GridTerrain
         /// </summary>
         private enum EditingStates
         {
+            None,
             Selecting,
             Editing
         }

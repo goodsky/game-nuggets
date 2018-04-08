@@ -71,7 +71,7 @@ public class Game : MonoBehaviour
     /// </summary>
     private void InitGameObjects()
     {
-        UIFactory.LoadUIEventSystem(gameObject);
+        UIFactory.LoadEventSystem(gameObject);
 
         var ui = UIFactory.LoadUICanvas(gameObject);
 
