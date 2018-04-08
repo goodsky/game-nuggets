@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GridTerrain
 {
     public interface IGridTerrain
     {
+        /// <summary>
+        /// Gets the length of a side of the grid squares.
+        /// </summary>
+        float Size { get; }
+
         /// <summary>
         /// Gets the count of grid squares along the x-axis.
         /// </summary>
@@ -24,20 +25,36 @@ namespace GridTerrain
         int CountY { get; }
 
         /// <summary>
+        /// Gets the grid height of a square.
+        /// </summary>
+        /// <param name="x">Grid x position</param>
+        /// <param name="z">Grid y position</param>
+        /// <returns>The grid y position of the grid square</returns>
+        int GetSquareHeight(int x, int z);
+
+        /// <summary>
         /// Gets the world height of a square.
         /// </summary>
         /// <param name="x">Grid x position</param>
         /// <param name="z">Grid y position</param>
         /// <returns>The world y position of the grid square</returns>
-        float GetWorldHeight(int x, int z);
+        float GetSquareWorldHeight(int x, int z);
 
         /// <summary>
-        /// Gets the grid height of a control point.
+        /// Gets the grid height of a vertex.
         /// </summary>
         /// <param name="x">Point x position</param>
         /// <param name="z">Point z position</param>
-        /// <returns>The grid y position of the grid square</returns>
+        /// <returns>The grid y position of the vertex</returns>
         int GetPointHeight(int x, int z);
+
+        /// <summary>
+        /// Gets the world height of a vertex.
+        /// </summary>
+        /// <param name="x">Point x position</param>
+        /// <param name="z">Point z position</param>
+        /// <returns>The world y position of the vertex</returns>
+        float GetPointWorldHeight(int x, int z);
 
         /// <summary>
         /// Set a grid square to a grid height.

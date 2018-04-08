@@ -17,6 +17,9 @@ namespace GridTerrain
         // This is trying to counteract floating point errors. No guarantees though.
         private const float ep = 0.001f;
 
+        /// <summary>Size of a grid square</summary>
+        public float Size { get { return GridSize; } }
+
         // Size of the grid in each direction
         public int CountX { get; private set; }
         public int CountY { get; private set; }
@@ -104,6 +107,16 @@ namespace GridTerrain
             }
         }
 
+        public int GetSquareHeight(int x, int z)
+        {
+            throw new NotImplementedException();
+        }
+
+        public float GetPointWorldHeight(int x, int z)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Gets the world height of a square.
         /// NOTE: This averages the 4 control points to get the 'center'. It isn't totally accurate.
@@ -111,7 +124,7 @@ namespace GridTerrain
         /// <param name="x">Grid x position</param>
         /// <param name="z">Grid y position</param>
         /// <returns>The world y position of the grid square</returns>
-        public float GetWorldHeight(int x, int z)
+        public float GetSquareWorldHeight(int x, int z)
         {
             var selectedHeights = _terrainData.GetHeights(x * 2, z * 2, 3, 3);
 

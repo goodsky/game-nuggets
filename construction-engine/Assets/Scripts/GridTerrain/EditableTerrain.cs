@@ -8,35 +8,24 @@ namespace GridTerrain
     /// </summary>
     public class EditableTerrain : Selectable
     {
+        /// <summary>Singleton Terrain in the scene.</summary>
         public static EditableTerrain Singleton { get; private set; }
 
-        /// <summary>Object to place at the cursor's position.</summary>
-        public GameObject CursorPrefab;
+        /// <summary>
+        /// The Grid Terrain
+        /// </summary>
+        public IGridTerrain _terrain;
 
-        /// <summary>Size of each grid square in world units.</summary>
-        public float GridSize = 1.0f;
-
-        /// <summary>Size of each vertical grid square in world units.</summary>
-        public float GridHeight = 0.4f;
-
-        /// <summary>Count of grid tiles you can dig down from the start.</summary>
-        public int UndergroundGridCount = 5;
-
-        /// <summary>Should the terrain be editable at start.</summary>
-        public bool EditingAtStart = false;
-
-        private GameObject _cursor;
-
-        private IGridTerrain _terrain;
         private SafeTerrainEditor _editor;
 
         // Editing State  -----------
         private EditingStates _state;
 
-        Point3 _gridSelection;
+        private GridCursor _cursor;
+        private Point3 _gridSelection;
 
-        float _mouseDragStartY;
-        int _mouseDragHeightChange;
+        private float _mouseDragStartY;
+        private int _mouseDragHeightChange;
 
         /// <summary>
         /// Unity Start method
@@ -51,41 +40,34 @@ namespace GridTerrain
             var terrainComponent = GetComponent<Terrain>();
             if (terrainComponent != null)
             {
+                // deprecated
                 _terrain = new GridTerrainData(
                     terrainComponent,
                     new GridTerrainArgs()
                     {
-                        GridSize = GridSize,
-                        GridHeightSize = GridHeight,
-                        UndergroundGridCount = UndergroundGridCount
+                        GridSize = 1.0f,
+                        GridHeightSize = 0.4f,
+                        UndergroundGridCount = 4
                     });
             }
 
-            var customTerrainComponent2 = GetComponent<GridTerrainData2>();
-            if (customTerrainComponent2 != null)
-            {
-                _terrain = customTerrainComponent2;
-            }
+            var terrainData2 = GetComponent<GridTerrainData2>();
+            if (terrainData2 != null)
+                _terrain = terrainData2;
 
-            var customTerrainComponent3 = GetComponent<GridTerrainData3>();
-            if (customTerrainComponent3 != null)
-            {
-                _terrain = customTerrainComponent3;
-            }
+            var terrainData3 = GetComponent<GridTerrainData3>();
+            if (terrainData3 != null)
+                _terrain = terrainData3;
 
-            var customTerrainComponent4 = GetComponent<GridTerrainData4>();
-            if (customTerrainComponent4 != null)
-            {
-                _terrain = customTerrainComponent4;
-            }
+            var terrainData4 = GetComponent<GridTerrainData4>();
+            if (terrainData4 != null)
+                _terrain = terrainData4;
 
             _editor = new SafeTerrainEditor(_terrain);
 
-            _cursor = Instantiate(CursorPrefab);
-
-            _state = EditingAtStart ? EditingStates.Editing : EditingStates.None;
+            _cursor = GridCursor.Create(_terrain, Resources.Load<Material>("Terrain/cursor"), transform);
+            _cursor.Deactivate();
             _gridSelection = Point3.Null;
-            _cursor.SetActive(false);
         }
 
         /// <summary>
@@ -123,7 +105,7 @@ namespace GridTerrain
 
             if (_cursor.gameObject != null)
             {
-                _cursor.SetActive(false);
+                _cursor.Deactivate();
             }
         }
 
@@ -154,7 +136,7 @@ namespace GridTerrain
                     if (Input.GetKey(KeyCode.LeftControl) && test != null)
                     {
                         int material = _terrain.GetMaterial(_gridSelection.x, _gridSelection.z);
-                        _terrain.SetMaterial(_gridSelection.x, _gridSelection.z, (material + 1) % test.Materials.Length);
+                        _terrain.SetMaterial(_gridSelection.x, _gridSelection.z, (material + 1) % GridMaterials.GetAll().Length);
                     }
                 }
             }
@@ -174,18 +156,18 @@ namespace GridTerrain
 
                 if (newGridSelection != _gridSelection)
                 {
-                    if (!_cursor.activeSelf)
-                        _cursor.SetActive(true);
+                    if (!_cursor.IsActive)
+                        _cursor.Activate();
 
                     _gridSelection = newGridSelection;
-                    _cursor.transform.position = _terrain.ConvertGridCenterToWorld(newGridSelection);
+                    _cursor.Place(_gridSelection.x, _gridSelection.z);
                 }
             }
             else
             {
-                if (_cursor.activeSelf)
+                if (_cursor.IsActive)
                 {
-                    _cursor.SetActive(false);
+                    _cursor.Deactivate();
                     _gridSelection = Point3.Null;
                 }
             }
@@ -211,11 +193,7 @@ namespace GridTerrain
 
                 if (_editor.SafeSetHeight(_gridSelection.x, _gridSelection.z, gridHeight))
                 {
-                    _cursor.transform.position = _terrain.ConvertGridCenterToWorld(
-                        new Point3(
-                            _gridSelection.x,
-                            gridHeight,
-                            _gridSelection.z));
+                    _cursor.Place(_gridSelection.x, _gridSelection.z);
                 }
             }
         }

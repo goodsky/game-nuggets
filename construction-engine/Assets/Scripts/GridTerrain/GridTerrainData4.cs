@@ -15,9 +15,6 @@ namespace GridTerrain
         // This is trying to counteract floating point errors. No guarantees though.
         private const float ep = 0.001f;
 
-        /// <summary>The materials to use on the terrain.</summary>
-        public Material[] Materials;
-
         /// <summary>Size of the grid squares.</summary>
         public float GridSize = 1.0f;
 
@@ -44,6 +41,9 @@ namespace GridTerrain
 
         // World Unit minimum for the terrain height.
         private float MinTerrainHeight;
+
+        /// <summary>Size of a grid square</summary>
+        public float Size { get { return GridSize; } }
 
         /// <summary>Number of grid squares along the x-axis.</summary>
         public int CountX { get { return GridXCount; } }
@@ -84,7 +84,7 @@ namespace GridTerrain
             filter.mesh.name = "grid-terrain";
 
             _mesh = new GridMesh(filter.mesh, collider, renderer);
-            _mesh.Initialize(GridSize, CountX, CountZ, Materials);
+            _mesh.Initialize(GridSize, CountX, CountZ, GridMaterials.GetAll());
 
             if (Skirt)
             {
@@ -97,8 +97,7 @@ namespace GridTerrain
 
             if (Editable)
             {
-                var editableTerrain = gameObject.AddComponent<EditableTerrain>();
-                editableTerrain.CursorPrefab = Resources.Load<GameObject>("cursor");
+                gameObject.AddComponent<EditableTerrain>();
             }
 
             Flatten(GridStepsDown);
@@ -116,12 +115,26 @@ namespace GridTerrain
         }
 
         /// <summary>
+        /// Gets the grid height of a square.
+        /// </summary>
+        /// <param name="x">Grid x position</param>
+        /// <param name="z">Grid y position</param>
+        /// <returns>The grid y position of the grid square</returns>
+        public int GetSquareHeight(int x, int z)
+        {
+            if (x < 0 || x >= GridXCount || z < 0 || z >= GridZCount)
+                GameLogger.FatalError("Attempted to GetWorldHeight out of range. ({0},{1})", x, z);
+
+            return ConvertWorldHeightToGrid(_mesh.GetHeight(x, z));
+        }
+
+        /// <summary>
         /// Get the height of the center of a square in world coordinates.
         /// </summary>
         /// <param name="x">Grid x position.</param>
         /// <param name="z">Grid z position.</param>
         /// <returns>The coordinates of the center of the grid.</returns>
-        public float GetWorldHeight(int x, int z)
+        public float GetSquareWorldHeight(int x, int z)
         {
             if (x < 0 || x >= GridXCount || z < 0 || z >= GridZCount)
                 GameLogger.FatalError("Attempted to GetWorldHeight out of range. ({0},{1})", x, z);
@@ -142,6 +155,20 @@ namespace GridTerrain
                 GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
 
             return ConvertWorldHeightToGrid(_mesh.GetVertexHeight(x, z));
+        }
+
+        /// <summary>
+        /// Gets the world height of a vertex.
+        /// </summary>
+        /// <param name="x">Point x position</param>
+        /// <param name="z">Point z position</param>
+        /// <returns>The world y position of the vertex</returns>
+        public float GetPointWorldHeight(int x, int z)
+        {
+            if (x < 0 || x > GridXCount || z < 0 || z > GridZCount)
+                GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
+
+            return _mesh.GetVertexHeight(x, z);
         }
 
         /// <summary>
