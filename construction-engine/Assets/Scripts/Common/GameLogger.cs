@@ -26,6 +26,28 @@ namespace Common
         private static string[] LogLevelStrings = Enum.GetNames(typeof(LogLevel));
 
         /// <summary>
+        /// Hook up with Unity at startup.
+        /// </summary>
+        static GameLogger()
+        {
+            Application.logMessageReceived += HandleUnityLog;
+        }
+
+        /// <summary>
+        /// Route the Unity Exception and Assert feed to the log.
+        /// </summary>
+        /// <param name="logString">The Unity log string.</param>
+        /// <param name="stackTrace">The Unity stack trace.</param>
+        /// <param name="type">The type of log.</param>
+        private static void HandleUnityLog(string logString, string stackTrace, LogType type)
+        {
+            if (type == LogType.Exception || type == LogType.Assert)
+            {
+                Error("Unity Exception: {0} {1}", logString, stackTrace);
+            }
+        }
+
+        /// <summary>
         /// Create a stream in the My Documents directory of a Windows machine.
         /// </summary>
         /// <param name="fileprefix">File prefix</param>

@@ -39,6 +39,9 @@ namespace GridTerrain
         /// <summary>Whether or not this terrain is runtime editable.</summary>
         public bool Editable = true;
 
+        /// <summary>Whether or not to surround the terrain with a skirt.</summary>
+        public bool Skirt = false;
+
         // World Unit minimum for the terrain height.
         private float MinTerrainHeight;
 
@@ -72,7 +75,7 @@ namespace GridTerrain
             MinTerrainX = transform.position.x;
             MinTerrainZ = transform.position.z;
             MinTerrainHeight = GridStepsDown * -GridStepSize;
-
+            
             var filter = gameObject.AddComponent<MeshFilter>();
             var collider = gameObject.AddComponent<MeshCollider>();
             var renderer = gameObject.AddComponent<MeshRenderer>();
@@ -82,6 +85,15 @@ namespace GridTerrain
 
             _mesh = new GridMesh(filter.mesh, collider, renderer);
             _mesh.Initialize(GridSize, CountX, CountZ, Materials);
+
+            if (Skirt)
+            {
+                var skirtPrefab = Resources.Load<GameObject>("terrain_skirt");
+                var skirtObject = Instantiate(skirtPrefab);
+
+                // the skirt prefab is rotated 90 degrees, so scale y-axis instead of z
+                skirtObject.transform.localScale = new Vector3(CountX * GridSize, CountZ * GridSize, 1.0f);
+            }
 
             if (Editable)
             {
