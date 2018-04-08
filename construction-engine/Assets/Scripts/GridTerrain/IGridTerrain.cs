@@ -2,6 +2,10 @@
 
 namespace GridTerrain
 {
+    /// <summary>
+    /// Represents a square gridded terrain object.
+    /// Can edit and change materials at runtime.
+    /// </summary>
     public interface IGridTerrain
     {
         /// <summary>
@@ -23,6 +27,11 @@ namespace GridTerrain
         /// Gets the maximum number of grid steps along the y-axis.
         /// </summary>
         int CountY { get; }
+
+        /// <summary>
+        /// Gets a converter for switching between grid and world units.
+        /// </summary>
+        IGridTerrainConverter Convert { get; }
 
         /// <summary>
         /// Gets the grid height of a square.
@@ -72,8 +81,20 @@ namespace GridTerrain
         /// <param name="heights">Grid heights to set</param>
         void SetPointHeights(int xBase, int zBase, int[,] heights);
 
+        /// <summary>
+        /// Gets the material id at a grid square.
+        /// </summary>
+        /// <param name="x">Grid x position.</param>
+        /// <param name="z">Grid z position.</param>
+        /// <returns>The id of the material on this square.</returns>
         int GetMaterial(int x, int z);
 
+        /// <summary>
+        /// Sets the material id at a grid square.
+        /// </summary>
+        /// <param name="x">Grid x position.</param>
+        /// <param name="z">Grid z position.</param>
+        /// <param name="materialId">The material id to set on this square. The id is determined by the order in the MeshRenderer.</param>
         void SetMaterial(int x, int z, int materialId);
 
         /// <summary>
@@ -90,28 +111,5 @@ namespace GridTerrain
         /// <param name="maxDistance">Max distance to cast along the ray.</param>
         /// <returns>True if the collission occurred, false otherwise.</returns>
         bool Raycast(Ray ray, out RaycastHit hit, float maxDistance);
-
-        /// <summary>
-        /// Convert a world coordinate to a grid coordinate on this terrain.
-        /// </summary>
-        /// <param name="world">The world coordinate.</param>
-        /// <returns>The grid coordinate.</returns>
-        Point3 ConvertWorldToGrid(Vector3 world);
-
-        /// <summary>
-        /// Convert a grid coordinate to a world coordinate.
-        /// Points to the origin of the grid.
-        /// </summary>
-        /// <param name="grid">The grid coordinate.</param>
-        /// <returns>The world coordinate.</returns>
-        Vector3 ConvertGridToWorld(Point3 grid);
-
-        /// <summary>
-        /// Convert a grid coordinate to a world coordinate.
-        /// Points to the center of the grid.
-        /// </summary>
-        /// <param name="grid">The grid coordinate.</param>
-        /// <returns>The world coordinate.</returns>
-        Vector3 ConvertGridCenterToWorld(Point3 grid);
     }
 }

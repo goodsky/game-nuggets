@@ -25,6 +25,9 @@ namespace GridTerrain
         public int CountY { get; private set; }
         public int CountZ { get; private set; }
 
+        /// <summary>Gets the unit converter.</summary>
+        public IGridTerrainConverter Convert { get; private set; }
+
         // World Unit size of each grid square.
         private readonly float GridSize;
         private readonly float HalfGridSize;
@@ -414,6 +417,7 @@ namespace GridTerrain
         }
 
         #region Conversions
+        // This version still uses the old conversions, since there was an extra unit for heightmaps.
         public Point3 ConvertWorldToGrid(Vector3 world)
         {
             return new Point3(

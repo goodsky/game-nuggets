@@ -4,6 +4,9 @@ namespace Common
 {
     public static class Utils
     {
+        // This is trying to counteract floating point errors. No guarantees though.
+        public const float Epsilon = 0.0001f;
+
         /// <summary>
         /// Camp a value between a low and high range.
         /// </summary>

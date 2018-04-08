@@ -36,9 +36,6 @@ namespace GridTerrain
             public Material material;
         }
 
-        // This is trying to counteract floating point errors. No guarantees though.
-        private const float ep = 0.001f;
-
         /// <summary>The default material on the terrain.</summary>
         public Material DefaultMaterial;
 
@@ -66,9 +63,6 @@ namespace GridTerrain
         /// <summary>Whether or not to surround the terrain with a skirt.</summary>
         public bool Skirt = false;
 
-        // World Unit minimum for the terrain height.
-        private float MinTerrainHeight;
-
         /// <summary>Size of a grid square</summary>
         public float Size { get { return GridSize; } }
 
@@ -81,14 +75,8 @@ namespace GridTerrain
         /// <summary>Number of grid squares along the z-axis.</summary>
         public int CountZ { get { return GridZCount; } }
 
-        /// <summary>Half the grid step size. Used in conversions.</summary>
-        private float HalfGridSize;
-
-        // World Unit minimum for the terrain X-axis.
-        private float MinTerrainX;
-
-        // World Unit minimum for the terrain Z-axis.
-        private float MinTerrainZ;
+        /// <summary>Gets the unit converter.</summary>
+        public IGridTerrainConverter Convert { get; private set; }
 
         private Grid[,] _gridData;
 
@@ -97,10 +85,12 @@ namespace GridTerrain
         /// </summary>
         protected void Start()
         {
-            HalfGridSize = GridSize / 2;
-            MinTerrainX = transform.position.x;
-            MinTerrainZ = transform.position.z;
-            MinTerrainHeight = GridStepsDown * -GridStepSize;
+            Convert = new GridTerrainConverter(
+                gridSize: GridSize,
+                gridStepSize: GridStepSize,
+                minTerrainX: transform.position.x,
+                minTerrainZ: transform.position.z,
+                minTerrainY: GridStepsDown * -GridStepSize);
 
             InitializeGrid();
 
@@ -138,7 +128,7 @@ namespace GridTerrain
             if (x < 0 || x >= GridXCount || z < 0 || z >= GridZCount)
                 GameLogger.FatalError("Attempted to GetWorldHeight out of range. ({0},{1})", x, z);
 
-            return ConvertWorldHeightToGrid(_gridData[x, z].vertices[Grid.Center].y);
+            return Convert.WorldHeightToGrid(_gridData[x, z].vertices[Grid.Center].y);
         }
 
         /// <summary>
@@ -167,7 +157,7 @@ namespace GridTerrain
             if (x < 0 || x > GridXCount || z < 0 || z > GridZCount)
                 GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
 
-            return ConvertWorldHeightToGrid(_gridData[x, z].vertices[Grid.Center].y);
+            return Convert.WorldHeightToGrid(_gridData[x, z].vertices[Grid.Center].y);
         }
 
         /// <summary>
@@ -218,7 +208,7 @@ namespace GridTerrain
             {
                 for (int z = 0; z < zLength; ++z)
                 {
-                    float newHeight = ConvertGridHeightToWorld(heights[x, z]);
+                    float newHeight = Convert.GridHeightToWorld(heights[x, z]);
 
                     // there are potentially 4 overlaps for each corner vertex.
                     // keep them all in sync!
@@ -326,65 +316,6 @@ namespace GridTerrain
         }
 
         /// <summary>
-        /// Convert a world point to grid coordinates.
-        /// </summary>
-        /// <param name="world">Point in Unity world space.</param>
-        /// <returns>The coorisponding grid coordinate.</returns>
-        public Point3 ConvertWorldToGrid(Vector3 world)
-        {
-            return new Point3(
-                Mathf.FloorToInt((world.x - MinTerrainX) / GridSize + ep),
-                Mathf.FloorToInt((world.y - MinTerrainHeight) / GridStepSize + ep),
-                Mathf.FloorToInt((world.z - MinTerrainZ) / GridSize + ep));
-        }
-
-        /// <summary>
-        /// Convert a grid coordinate into world point at the origin of the grid.
-        /// </summary>
-        /// <param name="grid">Grid point.</param>
-        /// <returns>The world coordinate.</returns>
-        public Vector3 ConvertGridToWorld(Point3 grid)
-        {
-            return new Vector3(
-                grid.x * GridSize + MinTerrainX,
-                grid.y * GridStepSize + MinTerrainHeight,
-                grid.z * GridSize + MinTerrainZ);
-        }
-
-        /// <summary>
-        /// Convert a grid coordinate into world point at the center of the grid.
-        /// </summary>
-        /// <param name="grid">Grid point.</param>
-        /// <returns>The world coordinate.</returns>
-        public Vector3 ConvertGridCenterToWorld(Point3 grid)
-        {
-            return new Vector3(
-                grid.x * GridSize + MinTerrainX + HalfGridSize,
-                grid.y * GridStepSize + MinTerrainHeight,
-                grid.z * GridSize + MinTerrainZ + HalfGridSize);
-        }
-
-        /// <summary>
-        /// Convert a world coordinate height into grid units.
-        /// </summary>
-        /// <param name="world"></param>
-        /// <returns></returns>
-        public int ConvertWorldHeightToGrid(float world)
-        {
-            return Mathf.FloorToInt((world - MinTerrainHeight) / GridStepSize + ep);
-        }
-
-        /// <summary>
-        /// Convert a grid height to world units.
-        /// </summary>
-        /// <param name="grid">The grid height step.</param>
-        /// <returns>World coordinate of the grid height.</returns>
-        public float ConvertGridHeightToWorld(int grid)
-        {
-            return grid * GridStepSize + MinTerrainHeight;
-        }
-
-        /// <summary>
         /// Generates the terrain plane.
         /// </summary>
         /// <param name="mesh"></param>
@@ -435,7 +366,7 @@ namespace GridTerrain
                         new Vector3((x + 1) * GridSize, 0.0f, z * GridSize), // bottom right
                         new Vector3((x + 1) * GridSize, 0.0f, (z + 1) * GridSize), // top right
                         new Vector3(x * GridSize, 0.0f, (z + 1) * GridSize), // top left
-                        new Vector3(x * GridSize + HalfGridSize, 0.0f, z * GridSize + HalfGridSize), // center
+                        new Vector3(x * GridSize + GridSize / 2, 0.0f, z * GridSize + GridSize / 2), // center
                     };
 
                     _gridData[x, z].material = DefaultMaterial;

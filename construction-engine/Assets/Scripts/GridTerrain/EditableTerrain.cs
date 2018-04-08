@@ -152,7 +152,7 @@ namespace GridTerrain
             RaycastHit hit;
             if (_terrain.Raycast(mouseRay, out hit, float.MaxValue))
             {
-                var newGridSelection = _terrain.ConvertWorldToGrid(hit.point);
+                var newGridSelection = _terrain.Convert.WorldToGrid(hit.point);
 
                 if (newGridSelection != _gridSelection)
                 {
