@@ -118,7 +118,8 @@ namespace GridTerrain
         }
 
         /// <summary>
-        /// Get the height of the grid.
+        /// Get the height of the grid point.
+        /// This method looks at vertices and not grid squares.
         /// </summary>
         /// <param name="x">Grid x position.</param>
         /// <param name="z">Grid z position.</param>
@@ -128,7 +129,7 @@ namespace GridTerrain
             if (x < 0 || x > GridXCount || z < 0 || z > GridZCount)
                 GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
 
-            return ConvertWorldHeightToGrid(_mesh.GetHeight(x, z));
+            return ConvertWorldHeightToGrid(_mesh.GetVertexHeight(x, z));
         }
 
         /// <summary>
@@ -165,7 +166,7 @@ namespace GridTerrain
                 for (int z = 0; z < zLength; ++z)
                     heightsf[x, z] = ConvertGridHeightToWorld(heights[x, z]);
 
-            _mesh.SetHeights(xBase, zBase, heightsf);
+            _mesh.SetVertexHeights(xBase, zBase, heightsf);
         }
 
         public int GetMaterial(int x, int z)

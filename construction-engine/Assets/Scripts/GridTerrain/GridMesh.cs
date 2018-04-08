@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace GridTerrain
 {
@@ -44,14 +45,22 @@ namespace GridTerrain
         /// <summary>
         /// Stores pointers into the mesh to locate a grid square.
         /// </summary>
-        private struct GridData
+        private class GridData
         {
             public int VertexIndex;
             public int TriangleIndex;
             public int MaterialIndex;
         }
 
+        // Stores information about the grid square at [X, Z]
         private GridData[,] _gridData;
+
+        // Stores the height of each vertex in the mesh.
+        private float[,] _vertexHeight;
+
+        // A reverse-lookup of grid data using the TriangleIndex
+        // Used during submesh rotations
+        private Dictionary<int, GridData>[] _gridDataTriLookup;
 
         /// <summary>Gets the number of grid squares along the x-axis.</summary>
         public int CountX { get { return _countX; } }
@@ -93,6 +102,8 @@ namespace GridTerrain
             _materialCount = materials.Length;
             _materials = materials;
             _gridData = new GridData[countX, countZ];
+            _vertexHeight = new float[countX + 1, countZ + 1];
+            _gridDataTriLookup = new Dictionary<int, GridData>[_materialCount];
 
             int gridCount = countX * countZ;
             int vertexCount = gridCount * Vertex.CountPerSquare;
@@ -103,7 +114,10 @@ namespace GridTerrain
 
             // 3 vertices per triangle
             for (int i = 0; i < _materialCount; ++i)
+            {
                 _triangles[i] = new List<int>(3 * Vertex.TrianglesPerSquare * gridCount);
+                _gridDataTriLookup[i] = new Dictionary<int, GridData>();
+            }
 
             List<int> defaultSubmesh = _triangles[defaultMaterial];
 
@@ -115,6 +129,7 @@ namespace GridTerrain
                 for (int z = 0; z < countZ; ++z)
                 {
                     // Keep pointer to start of square in vertices array
+                    _gridData[x, z] = new GridData();
                     _gridData[x, z].VertexIndex = vertexIndex;
 
                     // Generate Vertices
@@ -134,6 +149,7 @@ namespace GridTerrain
                     // Keep pointer to start of square in triangles array
                     _gridData[x, z].TriangleIndex = defaultSubmesh.Count;
                     _gridData[x, z].MaterialIndex = defaultMaterial;
+                    _gridDataTriLookup[defaultMaterial][_gridData[x, z].TriangleIndex] = _gridData[x, z];
 
                     // Generate Triangle triplets
                     int bottomLeft = triangleVertexIndex++;
@@ -165,14 +181,26 @@ namespace GridTerrain
         }
 
         /// <summary>
+        /// Gets the height of a mesh vertex in world units.
+        /// (Remember, there are one more of these than grid squares).
+        /// </summary>
+        /// <param name="x">X coordinate of the vertex.</param>
+        /// <param name="z">Z coordinates of the vertex.</param>
+        /// <returns>The height of the vertex in Unity world units.</returns>
+        public float GetVertexHeight(int x, int z)
+        {
+            return _vertexHeight[x, z];
+        }
+
+        /// <summary>
         /// Set the height of a grid square.
         /// </summary>
         /// <param name="x">X coordinate of the grid square.</param>
         /// <param name="z">Y coordinate of the grid square.</param>
         /// <param name="height">The height in Unity world units.</param>
-        public void SetHeight(int x, int z, float height)
+        public void SetSquareHeight(int x, int z, float height)
         {
-            SetHeights(x, z, new float[,] { { height, height }, { height, height } });
+            SetVertexHeights(x, z, new float[,] { { height, height }, { height, height } });
         }
 
         /// <summary>
@@ -181,8 +209,10 @@ namespace GridTerrain
         /// <param name="xBase">The starting x coordinate.</param>
         /// <param name="zBase">The starting z coordinate.</param>
         /// <param name="heights">The heights to set in Unity world units.</param>
-        public void SetHeights(int xBase, int zBase, float[,] heights)
+        public void SetVertexHeights(int xBase, int zBase, float[,] heights)
         {
+            // Reminder: vertices are one larger than square grid
+            //           the bounds of this method are [0, CountX] [0, CountZ] inclusive
             int xLength = heights.GetLength(0);
             int zLength = heights.GetLength(1);
 
@@ -191,6 +221,8 @@ namespace GridTerrain
             {
                 for (int z = 0; z < zLength; ++z)
                 {
+                    _vertexHeight[xBase + x, zBase + z] = heights[x, z];
+
                     // there are potentially 4 overlaps for each corner vertex.
                     // keep them all in sync!
                     int leftX = xBase + x - 1;
@@ -268,36 +300,59 @@ namespace GridTerrain
         /// <param name="materialId">The id of the material to use at the grid square.</param>
         public void SetMaterial(int x, int z, int materialId)
         {
-            int oldMaterialId = _gridData[x, z].MaterialIndex;
-            int oldTriangleIndex = _gridData[x, z].TriangleIndex;
-
-            if (oldMaterialId == materialId)
-                return;
-
-            List<int> oldSubmesh = _triangles[oldMaterialId];
-            List<int> newSubmesh = _triangles[materialId];
-            int newTriangleIndex = newSubmesh.Count;
-
-            // Move the triangles out of the old material submesh and into the end of the new material submesh.
-            int toMoveCount = Vertex.TrianglesPerSquare * 3;
-            for (int i = 0; i < toMoveCount; ++i)
+            try
             {
-                newSubmesh.Add(oldSubmesh[oldTriangleIndex + i]);
-            }
+                int oldMaterialId = _gridData[x, z].MaterialIndex;
+                int oldTriangleIndex = _gridData[x, z].TriangleIndex;
 
-            // Overwrite the old submesh triangle list with the last element.
-            // Remove elements only from the end of the List.
-            int oldSubmeshLength = _triangles[oldMaterialId].Count;
-            for (int i = 0; i < toMoveCount; ++i)
+                if (oldMaterialId == materialId)
+                    return;
+
+                List<int> oldSubmesh = _triangles[oldMaterialId];
+                List<int> newSubmesh = _triangles[materialId];
+                int newTriangleIndex = newSubmesh.Count;
+
+                // Move the triangles out of the old material sub mesh and into the end of the new material sub mesh.
+                int toMoveCount = Vertex.TrianglesPerSquare * 3;
+                for (int i = 0; i < toMoveCount; ++i)
+                {
+                    newSubmesh.Add(oldSubmesh[oldTriangleIndex + i]);
+                }
+
+                // Overwrite the old submesh triangle list with the last element.
+                // Remove elements only from the end of the List.
+                int oldSubmeshLength = oldSubmesh.Count;
+                for (int i = 0; i < toMoveCount; ++i)
+                {
+                    oldSubmesh[oldTriangleIndex + toMoveCount - 1 - i] = oldSubmesh[oldSubmeshLength - 1 - i];
+                    oldSubmesh.RemoveAt(oldSubmeshLength - 1 - i);
+                }
+
+                // keep our pointers state consistent
+                _gridDataTriLookup[materialId][newTriangleIndex] = _gridData[x, z];
+                _gridDataTriLookup[oldMaterialId].Remove(oldTriangleIndex);
+
+                _gridData[x, z].MaterialIndex = materialId;
+                _gridData[x, z].TriangleIndex = newTriangleIndex;
+
+                int displacedTriangleIndex = oldSubmeshLength - toMoveCount;
+                if (oldSubmesh.Count > 0 && displacedTriangleIndex != oldTriangleIndex)
+                {
+                    GridData displacedGrid = _gridDataTriLookup[oldMaterialId][displacedTriangleIndex];
+
+                    Assert.AreEqual(displacedTriangleIndex, displacedGrid.TriangleIndex, "Grid TriangleIndex reverse lookup is corrupt!!!");
+
+                    displacedGrid.TriangleIndex = oldTriangleIndex;
+                    _gridDataTriLookup[oldMaterialId][oldTriangleIndex] = displacedGrid;
+                    _gridDataTriLookup[oldMaterialId].Remove(displacedTriangleIndex);
+                }
+
+                UpdateMesh();
+            }
+            catch (Exception ex)
             {
-                oldSubmesh[oldTriangleIndex + toMoveCount - 1 - i] = oldSubmesh[oldSubmeshLength - 1 - i];
-                oldSubmesh.RemoveAt(oldSubmeshLength - 1 - i);
+                GameLogger.FatalError("Exception while updating terrain material! Ex = {0}", ex.ToString());
             }
-
-            _gridData[x, z].MaterialIndex = materialId;
-            _gridData[x, z].TriangleIndex = newTriangleIndex;
-
-            UpdateMesh();
         }
 
         /// <summary>
