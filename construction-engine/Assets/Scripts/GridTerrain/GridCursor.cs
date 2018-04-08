@@ -13,7 +13,7 @@ namespace GridTerrain
         private static readonly float FloatAmount = 0.05f;
 
         /// <summary>The grid terrain to curse over.</summary>
-        public IGridTerrain Terrain;
+        public GridMesh Terrain;
 
         /// <summary>The material for this cursor.</summary>
         public Material CursorMaterial;
@@ -30,14 +30,14 @@ namespace GridTerrain
         /// <summary>
         /// Static factory to correctly create a cursor game object.
         /// </summary>
-        /// <param name="terrain">The terrain to be a cursor over.</param>
+        /// <param name="terrain">The grid mesh to be a cursor over.</param>
         /// <param name="material">The material to use on the cursor.</param>
         /// <param name="parent">The parent game object of the cursor.</param>
         /// <returns>The newly minted cursor.</returns>
-        public static GridCursor Create(IGridTerrain terrain, Material material, Transform parent)
+        public static GridCursor Create(GridMesh terrain, Material material)
         {
             GameObject cursorObject = new GameObject("GridCursor");
-            cursorObject.transform.parent = parent;
+            cursorObject.transform.parent = terrain.GameObject.transform;
 
             var cursor = cursorObject.AddComponent<GridCursor>();
             cursor.Terrain = terrain;
@@ -59,13 +59,15 @@ namespace GridTerrain
             _renderer.receiveShadows = false;
             _renderer.shadowCastingMode = ShadowCastingMode.Off;
 
+            float squareSize = Terrain.GridSquareSize;
+
             _vertices = new Vector3[]
             {
                 new Vector3(0.0f, 0.0f, 0.0f),
-                new Vector3(Terrain.Size, 0.0f, 0.0f),
-                new Vector3(Terrain.Size, 0.0f, Terrain.Size),
-                new Vector3(0.0f, 0.0f, Terrain.Size),
-                new Vector3(Terrain.Size / 2.0f, 0.0f, Terrain.Size / 2.0f)
+                new Vector3(squareSize, 0.0f, 0.0f),
+                new Vector3(squareSize, 0.0f, squareSize),
+                new Vector3(0.0f, 0.0f, squareSize),
+                new Vector3(squareSize / 2.0f, 0.0f, squareSize / 2.0f)
             };
 
             _uv = new Vector2[]
@@ -119,12 +121,12 @@ namespace GridTerrain
         /// <param name="z">Z coordinate on the grid.</param>
         public void Place(int x, int z)
         {
-            transform.position = new Vector3(x * Terrain.Size, 0.0f /* Should be terrain height? */, z * Terrain.Size);
+            transform.position = new Vector3(x * Terrain.GridSquareSize, 0.0f, z * Terrain.GridSquareSize);
 
-            _vertices[0].y = Terrain.GetPointWorldHeight(x, z) + FloatAmount;
-            _vertices[1].y = Terrain.GetPointWorldHeight(x + 1, z) + FloatAmount;
-            _vertices[2].y = Terrain.GetPointWorldHeight(x + 1, z + 1) + FloatAmount;
-            _vertices[3].y = Terrain.GetPointWorldHeight(x, z + 1) + FloatAmount;
+            _vertices[0].y = Terrain.GetVertexWorldHeight(x, z) + FloatAmount;
+            _vertices[1].y = Terrain.GetVertexWorldHeight(x + 1, z) + FloatAmount;
+            _vertices[2].y = Terrain.GetVertexWorldHeight(x + 1, z + 1) + FloatAmount;
+            _vertices[3].y = Terrain.GetVertexWorldHeight(x, z + 1) + FloatAmount;
             _vertices[4].y = Terrain.GetSquareWorldHeight(x, z) + FloatAmount;
 
             _mesh.Clear();

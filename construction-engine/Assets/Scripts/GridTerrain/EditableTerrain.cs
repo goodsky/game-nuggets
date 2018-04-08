@@ -14,7 +14,7 @@ namespace GridTerrain
         /// <summary>
         /// The Grid Terrain
         /// </summary>
-        public IGridTerrain _terrain;
+        public GridMesh _terrain;
 
         private SafeTerrainEditor _editor;
 
@@ -28,22 +28,18 @@ namespace GridTerrain
         private int _mouseDragHeightChange;
 
         /// <summary>
-        /// Unity Start method
+        /// Initialize the editable terrain.
         /// </summary>
-        protected override void Start()
+        /// <param name="terrain">The world terrain.</param>
+        public void Initialize(GridMesh terrain)
         {
-            base.Start();
-
             Singleton = this;
             OnMouseDown = Clicked;
 
-            var terrainData = GetComponent<GridTerrainData>();
-            if (terrainData != null)
-                _terrain = terrainData;
-
+            _terrain = terrain;
             _editor = new SafeTerrainEditor(_terrain);
 
-            _cursor = GridCursor.Create(_terrain, Resources.Load<Material>("Terrain/cursor"), transform);
+            _cursor = GridCursor.Create(_terrain, Resources.Load<Material>("Terrain/cursor"));
             _cursor.Deactivate();
             _gridSelection = Point3.Null;
         }
@@ -105,13 +101,12 @@ namespace GridTerrain
                 {
                     GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
                        _gridSelection,
-                       _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z),
-                       _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z),
-                       _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
-                       _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
+                       _terrain.GetVertexHeight(_gridSelection.x, _gridSelection.z),
+                       _terrain.GetVertexHeight(_gridSelection.x + 1, _gridSelection.z),
+                       _terrain.GetVertexHeight(_gridSelection.x, _gridSelection.z + 1),
+                       _terrain.GetVertexHeight(_gridSelection.x + 1, _gridSelection.z + 1));
 
-                    GridTerrainData test = _terrain as GridTerrainData;
-                    if (Input.GetKey(KeyCode.LeftControl) && test != null)
+                    if (Input.GetKey(KeyCode.LeftControl))
                     {
                         int material = _terrain.GetMaterial(_gridSelection.x, _gridSelection.z);
                         _terrain.SetMaterial(_gridSelection.x, _gridSelection.z, (material + 1) % GridMaterials.GetAll().Length);
@@ -128,7 +123,7 @@ namespace GridTerrain
             var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
-            if (_terrain.Raycast(mouseRay, out hit, float.MaxValue))
+            if (_terrain.Collider.Raycast(mouseRay, out hit, float.MaxValue))
             {
                 var newGridSelection = _terrain.Convert.WorldToGrid(hit.point);
 

@@ -6,7 +6,7 @@ namespace GridTerrain
     /// <summary>
     /// Helpful class to convert units between grid squares and Unity world units.
     /// </summary>
-    public class GridConverter : IGridTerrainConverter
+    public class GridConverter
     {
         private float _gridSize;
         private float _halfGridSize;

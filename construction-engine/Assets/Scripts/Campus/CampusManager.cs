@@ -1,11 +1,18 @@
 ﻿using GameData;
+using GridTerrain;
 using System.Collections.Generic;
 
 namespace Campus
 {
+    /// <summary>
+    /// Root level object for the campus.
+    /// </summary>
     public class CampusManager : GameDataLoader<CampusData>
     {
         private Dictionary<string, BuildingData> _buildingRegistry = new Dictionary<string, BuildingData>();
+
+        /// <summary>Terrain grid mesh</summary>
+        public GridMesh Terrain { get; private set; }
 
         /// <summary>
         /// Gets the metadata about the requested building.
@@ -23,6 +30,20 @@ namespace Campus
         /// <param name="gameData">Campus game data.</param>
         protected override void LoadData(CampusData gameData)
         {
+            var gridMeshArgs = new GridMeshArgs()
+            {
+                GridSquareSize = 1.0f, // some values are hard-coded to keep consistent scale
+                GridStepSize = 0.4f,
+                CountX = gameData.Terrain.GridCountX,
+                CountZ = gameData.Terrain.GridCountZ,
+                CountY = gameData.Terrain.GridCountY,
+                StartingHeight = gameData.Terrain.StartingHeight,
+                Materials = GridMaterials.GetAll(),
+            };
+
+            Terrain = CampusFactory.GenerateTerrain(transform, gridMeshArgs);
+
+            // Load the buildings
             foreach (var buildingData in gameData.Buildings)
             {
                 _buildingRegistry[buildingData.Name] = buildingData;

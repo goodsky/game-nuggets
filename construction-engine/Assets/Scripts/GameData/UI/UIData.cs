@@ -4,7 +4,9 @@ using UnityEngine;
 
 namespace GameData
 {
-    /// <summary>Root element for UI game data.</summary>
+    /// <summary>
+    /// Root element for UI game data.
+    /// </summary>
     [XmlRoot("UIData")]
     public class UIData
     {
@@ -21,7 +23,9 @@ namespace GameData
         public List<WindowData> Windows { get; set; }
     }
 
-    /// <summary>Configuration values for the UI.</summary>
+    /// <summary>
+    /// Configuration values for the UI.
+    /// </summary>
     public class UIConfig
     {
         [XmlElement("HorizontalMargins")]
