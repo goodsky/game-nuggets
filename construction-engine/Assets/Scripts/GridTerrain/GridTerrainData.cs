@@ -1,299 +1,216 @@
 ﻿using Common;
-using System;
 using UnityEngine;
 
 namespace GridTerrain
 {
     /// <summary>
-    /// Unit's TerrainData stores heightmap data in floats normalized from 0.0 - 1.0.
-    /// This class takes heightmaps and maps them to integer grid points,
+    /// A Custom terrain mesh based using a runtime generated plane mesh instead of Unity's heavy Terrain component.
+    /// Splits squares using submeshes.
     /// 
-    /// GridTerrain 2.0:
-    /// Double the resolution of the underlying TerrainData. This hides some rendering weirdness.
-    /// This means that the gridData stored here is not 1:1 with the terrainData. Keep that in mind.
+    /// 'GridTerrain v3.2'
     /// </summary>
-    public class GridTerrainData : IGridTerrain
+    public class GridTerrainData : MonoBehaviour, IGridTerrain
     {
-        // This is trying to counteract floating point errors. No guarantees though.
-        private const float ep = 0.001f;
+        /// <summary>Size of the grid squares.</summary>
+        public float GridSize = 1.0f;
+
+        /// <summary>Size of a height change.</summary>
+        public float GridStepSize = 0.5f;
+
+        /// <summary>Number of grid squares along the X axis.</summary>
+        public int GridXCount = 64;
+
+        /// <summary>Number of grid squares along the Z axis.</summary>
+        public int GridZCount = 64;
+
+        /// <summary>Max number of grid steps you can go up.</summary>
+        public int GridStepsUp = 8;
+
+        /// <summary>Max number of grid steps you can go down.</summary>
+        public int GridStepsDown = 4;
+
+        /// <summary>Whether or not this terrain is runtime editable.</summary>
+        public bool Editable = true;
+
+        /// <summary>Whether or not to surround the terrain with a skirt.</summary>
+        public bool Skirt = false;
 
         /// <summary>Size of a grid square</summary>
         public float Size { get { return GridSize; } }
 
-        // Size of the grid in each direction
-        public int CountX { get; private set; }
-        public int CountY { get; private set; }
-        public int CountZ { get; private set; }
+        /// <summary>Number of grid squares along the x-axis.</summary>
+        public int CountX { get { return GridXCount; } }
+
+        /// <summary>Number of grid squares along the y-axis.</summary>
+        public int CountY { get { return GridStepsUp + GridStepsDown + 1; } }
+
+        /// <summary>Number of grid squares along the z-axis.</summary>
+        public int CountZ { get { return GridZCount; } }
 
         /// <summary>Gets the unit converter.</summary>
         public IGridTerrainConverter Convert { get; private set; }
 
-        // World Unit size of each grid square.
-        private readonly float GridSize;
-        private readonly float HalfGridSize;
-
-        // World Unit size of each grid height step.
-        private readonly float GridHeightSize;
-
-        // Count of height steps that exist below the start position.
-        private readonly int UndergroundGridCount;
-
-        // Heightmap Unit size of each heightmap step
-        private readonly float HeightmapStepSize;
-
-        // World Unit minimum for the terrain X-axis.
-        private readonly float MinTerrainX;
-
-        // World Unit minimum for the terrain Z-axis.
-        private readonly float MinTerrainZ;
-
-        // World Unit minimum for the terrain height.
-        private readonly float MinTerrainHeight;
-
-        // Unity's terrain data
-        private TerrainData _terrainData;
-
-        // Unity's terrain collider
-        private TerrainCollider _terrainCollider;
-
-        // My grid data mapped to integers
-        private int[,] _gridData;
+        // The custom mesh used to shape the terrain.
+        private GridMesh _mesh;
 
         /// <summary>
-        /// Create a grid-backed terrain object.
+        /// Unity's Start
         /// </summary>
-        /// <param name="terrain">Terrain to wrap.</param>
-        /// <param name="args">Grid configuration.</param>
-        public GridTerrainData(Terrain terrain, GridTerrainArgs args)
+        protected void Start()
         {
-            args.ValidateTerrain(terrain);
+            Convert = new GridConverter(
+                gridSize: GridSize,
+                gridStepSize: GridStepSize,
+                minTerrainX: transform.position.x,
+                minTerrainZ: transform.position.z,
+                minTerrainY: GridStepsDown * -GridStepSize);
 
-            _terrainData = terrain.terrainData;
-            _terrainCollider = terrain.gameObject.GetComponent<TerrainCollider>();
+            var filter = gameObject.AddComponent<MeshFilter>();
+            var collider = gameObject.AddComponent<MeshCollider>();
+            var renderer = gameObject.AddComponent<MeshRenderer>();
 
-            GridSize = args.GridSize;
-            HalfGridSize = GridSize / 2.0f;
-            GridHeightSize = args.GridHeightSize;
-            UndergroundGridCount = args.UndergroundGridCount;
+            filter.mesh = new Mesh();
+            filter.mesh.name = "grid-terrain";
 
-            CountX = Mathf.RoundToInt(_terrainData.size.x / GridSize);
-            CountY = Mathf.RoundToInt(_terrainData.size.y / GridHeightSize);
-            CountZ = Mathf.RoundToInt(_terrainData.size.z / GridSize);
+            _mesh = new GridMesh(filter.mesh, collider, renderer);
+            _mesh.Initialize(GridSize, CountX, CountZ, GridMaterials.GetAll());
 
-            _gridData = new int[CountX + 1, CountZ + 1];
-
-            HeightmapStepSize = 1.0f / CountY;
-
-            // Minimum values are needed for conversion base-lines
-            var parent = terrain.gameObject;
-            var position = parent.transform.position;
-
-            MinTerrainX = position.x;
-            MinTerrainZ = position.z;
-            MinTerrainHeight = position.y - (UndergroundGridCount * GridHeightSize);
-
-            // Adjust the actual y-position to match underground grid count 
-            parent.transform.position = new Vector3(position.x, MinTerrainHeight, position.z);
-            Flatten(UndergroundGridCount); // this initializes the _gridData
-
-            if (Debug.isDebugBuild)
+            if (Skirt)
             {
-                string summaryLog = string.Empty;
-                summaryLog += "GridTerrain Initialized.\n";
-                summaryLog += string.Format("Voxel Size {0}x{1}x{0}\n", GridSize, GridHeightSize);
-                summaryLog += string.Format("Grid Size {0}x{1}x{2}\n", CountX, CountY, CountZ);
-                summaryLog += string.Format("Origin Position {0}, {1}, {2}\n", MinTerrainX, MinTerrainHeight, MinTerrainZ);
-                summaryLog += string.Format("Heightmap Step: {0}\n", HeightmapStepSize);
-                summaryLog += string.Format("\n");
+                var skirtPrefab = Resources.Load<GameObject>("terrain_skirt");
+                var skirtObject = Instantiate(skirtPrefab);
 
-                GameLogger.Info(summaryLog);
+                // the skirt prefab is rotated 90 degrees, so scale y-axis instead of z
+                skirtObject.transform.localScale = new Vector3(CountX * GridSize, CountZ * GridSize, 1.0f);
+            }
+
+            if (Editable)
+            {
+                gameObject.AddComponent<EditableTerrain>();
+            }
+
+            Flatten(GridStepsDown);
+        }
+
+        /// <summary>
+        /// Unity's Destroy
+        /// </summary>
+        protected void OnDestroy()
+        {
+            if (_mesh != null)
+            {
+                _mesh.Dispose();
             }
         }
 
-        public int GetSquareHeight(int x, int z)
-        {
-            throw new NotImplementedException();
-        }
-
-        public float GetPointWorldHeight(int x, int z)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
-        /// Gets the world height of a square.
-        /// NOTE: This averages the 4 control points to get the 'center'. It isn't totally accurate.
+        /// Gets the grid height of a square.
         /// </summary>
         /// <param name="x">Grid x position</param>
         /// <param name="z">Grid y position</param>
-        /// <returns>The world y position of the grid square</returns>
-        public float GetSquareWorldHeight(int x, int z)
+        /// <returns>The grid y position of the grid square</returns>
+        public int GetSquareHeight(int x, int z)
         {
-            var selectedHeights = _terrainData.GetHeights(x * 2, z * 2, 3, 3);
+            if (x < 0 || x >= GridXCount || z < 0 || z >= GridZCount)
+                GameLogger.FatalError("Attempted to GetWorldHeight out of range. ({0},{1})", x, z);
 
-            // average of 4 points in the square snapped to a grid height
-            // note: added a small number to  avoid inprecision caused by truncation
-            return ConvertHeightmapToWorld((selectedHeights[0, 0] + selectedHeights[0, 2] + selectedHeights[2, 0] + selectedHeights[2, 2]) / 4.0f + ep);
+            return Convert.WorldHeightToGrid(_mesh.GetHeight(x, z));
         }
 
         /// <summary>
-        /// Gets the grid height of a control point.
+        /// Get the height of the center of a square in world coordinates.
+        /// </summary>
+        /// <param name="x">Grid x position.</param>
+        /// <param name="z">Grid z position.</param>
+        /// <returns>The coordinates of the center of the grid.</returns>
+        public float GetSquareWorldHeight(int x, int z)
+        {
+            if (x < 0 || x >= GridXCount || z < 0 || z >= GridZCount)
+                GameLogger.FatalError("Attempted to GetWorldHeight out of range. ({0},{1})", x, z);
+
+            return _mesh.GetHeight(x, z);
+        }
+
+        /// <summary>
+        /// Get the height of the grid point.
+        /// This method looks at vertices and not grid squares.
+        /// </summary>
+        /// <param name="x">Grid x position.</param>
+        /// <param name="z">Grid z position.</param>
+        /// <returns>The grid height.</returns>
+        public int GetPointHeight(int x, int z)
+        {
+            if (x < 0 || x > GridXCount || z < 0 || z > GridZCount)
+                GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
+
+            return Convert.WorldHeightToGrid(_mesh.GetVertexHeight(x, z));
+        }
+
+        /// <summary>
+        /// Gets the world height of a vertex.
         /// </summary>
         /// <param name="x">Point x position</param>
         /// <param name="z">Point z position</param>
-        /// <returns>The grid y position of the grid square</returns>
-        public int GetPointHeight(int x, int z)
+        /// <returns>The world y position of the vertex</returns>
+        public float GetPointWorldHeight(int x, int z)
         {
-            return _gridData[x, z];
+            if (x < 0 || x > GridXCount || z < 0 || z > GridZCount)
+                GameLogger.FatalError("Attempted to GetPointHeight out of range. ({0},{1})", x, z);
+
+            return _mesh.GetVertexHeight(x, z);
         }
 
         /// <summary>
-        /// Set a grid square to a grid height.
+        /// Set the height of a grid coordinate.
+        /// NOTE: This is an unsafe set. Use the SafeTerrainEditor instead.
         /// </summary>
-        /// <param name="x">Grid x position</param>
-        /// <param name="z">Grid z position</param>
-        /// <param name="gridHeight">Grid y height</param>
+        /// <param name="x">Grid x position.</param>
+        /// <param name="z">Grid z position.</param>
+        /// <param name="gridHeight">The height to set.</param>
         public void SetHeight(int x, int z, int gridHeight)
         {
             if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
-                throw new ArgumentOutOfRangeException(string.Format("Attempted to set a square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ));
+                GameLogger.FatalError("Attempted to set a square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             SetPointHeights(x, z, new int[,] { { gridHeight, gridHeight }, { gridHeight, gridHeight } });
         }
 
         /// <summary>
-        /// Set an area of points to a grid height.
+        /// Set the heights of several points in the grid.
         /// </summary>
-        /// <param name="xBase">Starting x point</param>
-        /// <param name="zBase">Starting z point</param>
-        /// <param name="heights">Grid heights to set</param>
+        /// <param name="xBase">The starting point x position.</param>
+        /// <param name="zBase">The starting point z position.</param>
+        /// <param name="heights">The heights to set.</param>
         public void SetPointHeights(int xBase, int zBase, int[,] heights)
         {
             int xLength = heights.GetLength(0);
             int zLength = heights.GetLength(1);
 
             if (xBase < 0 || xBase + xLength > CountX + 1 || zBase < 0 || zBase + zLength > CountZ + 1)
-                throw new ArgumentOutOfRangeException(string.Format("Attempted to set points height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, CountX + 1, CountZ + 1));
+                GameLogger.FatalError("Attempted to set points height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, CountX + 1, CountZ + 1);
 
-            int heightmapXBase; // read the comments on CreateDoubleResolutionArray to try to understand this headache.
-            int heightmapXOriginAdjust; // no seriously. I had to take a break and play guitar while writing this.
-            int heightmapXSizeAdjust;
-            int heightmapZBase;
-            int heightmapZOriginAdjust;
-            int heightmapZSizeAdjust;
-            var heightmapHeights = CreateDoubleResolutionArray(xBase, zBase, xLength, zLength, out heightmapXBase, out heightmapXOriginAdjust, out heightmapXSizeAdjust, out heightmapZBase, out heightmapZOriginAdjust, out heightmapZSizeAdjust);
-
-            int heightmapZLength = heightmapHeights.GetLength(0);
-            int heightmapXLength = heightmapHeights.GetLength(1);
-
-            // 1st pass: set the control nodes
+            float[,] heightsf = new float[xLength, zLength];
             for (int x = 0; x < xLength; ++x)
-            {
                 for (int z = 0; z < zLength; ++z)
-                {
-                    _gridData[xBase + x, zBase + z] = heights[x, z];
-                    heightmapHeights[z * 2 + heightmapZOriginAdjust, x * 2 + heightmapXOriginAdjust] = ConvertGridHeightToHeightmap(heights[x, z]);
-                }
-            }
+                    heightsf[x, z] = Convert.GridHeightToWorld(heights[x, z]);
 
-            // 2nd pass: set the x-axis edges
-            for (int x = 0; x < xLength + heightmapXOriginAdjust + heightmapXSizeAdjust; ++x)
-            {
-                for (int z = 0; z < zLength; ++z)
-                {
-                    int heightmapX = x * 2 + (1 - heightmapXOriginAdjust);
-                    int heightmapZ = z * 2 + heightmapZOriginAdjust;
-
-                    int leftX = heightmapX - 1;
-                    int rightX = heightmapX + 1;
-
-                    // random reminder: the heightmap array is in (Z, X) while the GetHeight call is (X, Z).
-                    //                  you know, exactly the way you would expect.
-                    float leftHeight = leftX < 0 ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + leftX, heightmapZBase + heightmapZ)) : 
-                        heightmapHeights[heightmapZ, leftX];
-
-                    float rightHeight = rightX >= heightmapXLength ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + rightX, heightmapZBase + heightmapZ)) :
-                        heightmapHeights[heightmapZ, rightX];
-
-                    heightmapHeights[heightmapZ, heightmapX] = (leftHeight + rightHeight) / 2;
-                }
-            }
-
-            // 3rd pass: set the z-axis edges
-            for (int x = 0; x < xLength; ++x)
-            {
-                for (int z = 0; z < zLength + heightmapZOriginAdjust + heightmapZSizeAdjust; ++z)
-                {
-                    int heightmapX = x * 2 + heightmapXOriginAdjust;
-                    int heightmapZ = z * 2 + (1 - heightmapZOriginAdjust);
-
-                    int upZ = heightmapZ - 1;
-                    int downZ = heightmapZ + 1;
-
-                    float upHeight = upZ < 0 ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + heightmapX, heightmapZBase + upZ)) :
-                        heightmapHeights[upZ, heightmapX];
-
-                    float downHeight = downZ >= heightmapZLength ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + heightmapX, heightmapZBase + downZ)) :
-                        heightmapHeights[downZ, heightmapX];
-
-                    heightmapHeights[heightmapZ, heightmapX] = (upHeight + downHeight) / 2;
-                }
-            }
-
-            // 4th pass: set the grid centers
-            for (int x = 0; x < xLength + heightmapXOriginAdjust + heightmapXSizeAdjust; ++x)
-            {
-                for (int z = 0; z < zLength + heightmapZOriginAdjust + heightmapZSizeAdjust; ++z)
-                {
-                    int heightmapX = x * 2 + (1 - heightmapXOriginAdjust);
-                    int heightmapZ = z * 2 + (1 - heightmapZOriginAdjust);
-
-                    int leftX = heightmapX - 1;
-                    int rightX = heightmapX + 1;
-                    int upZ = heightmapZ - 1;
-                    int downZ = heightmapZ + 1;
-
-                    float topLeftHeight = upZ < 0 || leftX < 0 ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + leftX, heightmapZBase + upZ)) :
-                        heightmapHeights[upZ, leftX];
-
-                    float topRightHeight = upZ < 0 || rightX >= heightmapXLength ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + rightX, heightmapZBase + upZ)) :
-                        heightmapHeights[upZ, rightX];
-
-                    float bottomLeftHeight = downZ >= heightmapZLength || leftX < 0 ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + leftX, heightmapZBase + downZ)) :
-                        heightmapHeights[downZ, leftX];
-
-                    float bottomRightHeight = downZ >= heightmapZLength || rightX >= heightmapXLength ?
-                        ConvertTerrainWorldToHeightmap(_terrainData.GetHeight(heightmapXBase + rightX, heightmapZBase + downZ)) :
-                        heightmapHeights[downZ, rightX];
-
-                    heightmapHeights[heightmapZ, heightmapX] = GetMajorityOrAverage(topLeftHeight, topRightHeight, bottomLeftHeight, bottomRightHeight);
-                }
-            }
-
-            _terrainData.SetHeights(heightmapXBase, heightmapZBase, heightmapHeights);
+            _mesh.SetVertexHeights(xBase, zBase, heightsf);
         }
 
         public int GetMaterial(int x, int z)
         {
-            throw new NotImplementedException();
+            return _mesh.GetMaterial(x, z);
         }
 
         public void SetMaterial(int x, int z, int materialId)
         {
-            throw new NotImplementedException();
+            _mesh.SetMaterial(x, z, materialId);
         }
 
         /// <summary>
-        /// Flatten the entire terrain to a certain height
+        /// Flatten the grid to a set height.
         /// </summary>
-        /// <param name="gridHeight">Grid y height</param>
+        /// <param name="gridHeight">The height to flatten to. Defaults to zero.</param>
         public void Flatten(int gridHeight = 0)
         {
             var resetHeights = new int[CountX + 1, CountZ + 1];
@@ -313,168 +230,7 @@ namespace GridTerrain
         /// <returns>True if the collission occurred, false otherwise.</returns>
         public bool Raycast(Ray ray, out RaycastHit hit, float maxDistance)
         {
-            return _terrainCollider.Raycast(ray, out hit, maxDistance);
+            return _mesh.Collider.Raycast(ray, out hit, maxDistance);
         }
-
-        /// <summary>
-        /// This adjustment is because an extra ring of points are needed to smooth out 
-        /// higher resolution heightmaps. But if this ring is outside the terrain then we 
-        /// don't need to adjust the resulting array to include it.
-        /// </summary>
-        /// <param name="xBase">The x origin of the grid resolution array.</param>
-        /// <param name="zBase">The z origin of the grid resolution array.</param>
-        /// <param name="xLength">The x length of the grid resolution array.</param>
-        /// <param name="zLength">The z length of the grid resolutio narray.</param>
-        /// <param name="heightmapXBase">The x origin in the high resolution array.</param>
-        /// <param name="heightmapXOriginAdjust">The x origin adjustment. (do we start at 0 or 1?)</param>
-        /// <param name="heightmapXSizeAdjust">The x size adjustment. (is the size of the array one less?)</param>
-        /// <param name="heightmapZBase">The z origin in the high resolution array.</param>
-        /// <param name="heightmapZOriginAdjust">The z  origin adjustment. (do we start at 0 or 1?)</param>
-        /// <param name="heightmapZSizeAdjust">The z size adjustment. (is the size of the array one less?)</param>
-        /// <returns>The higher resolution array.</returns>
-        private float[,] CreateDoubleResolutionArray(
-            int xBase, 
-            int zBase, 
-            int xLength, 
-            int zLength, 
-            out int heightmapXBase,
-            out int heightmapXOriginAdjust,
-            out int heightmapXSizeAdjust,
-            out int heightmapZBase,
-            out int heightmapZOriginAdjust,
-            out int heightmapZSizeAdjust)
-        {
-            heightmapXBase = xBase * 2 - 1;
-            heightmapZBase = zBase * 2 - 1;
-
-            heightmapXOriginAdjust = 1;
-            if (heightmapXBase < 0)
-            {
-                heightmapXBase = 0;
-                heightmapXOriginAdjust = 0;
-            }
-
-            heightmapZOriginAdjust = 1;
-            if (heightmapZBase < 0)
-            {
-                heightmapZBase = 0;
-                heightmapZOriginAdjust = 0;
-            }
-
-            heightmapXSizeAdjust = 0;
-            if (heightmapXBase + xLength * 2 + 1 > CountX * 2)
-            {
-                heightmapXSizeAdjust = -1;
-            }
-
-            heightmapZSizeAdjust = 0;
-            if (heightmapZBase + zLength * 2 + 1 > CountZ * 2)
-            {
-                heightmapZSizeAdjust = -1;
-            }
-
-            // NB: unity flips the X/Z axis for their SetHeights
-            return new float[zLength * 2 + heightmapZOriginAdjust + heightmapZSizeAdjust, xLength * 2 + heightmapXOriginAdjust + heightmapXSizeAdjust];
-        }
-
-        /// <summary>
-        /// Return either the majority or the average (if there is a tie).
-        /// I think this is optimizing this algorithm since we only have 4 floats.
-        /// Maybe I'm just being lazy and don't want to use a sort.
-        /// </summary>
-        /// <param name="f1">1st float</param>
-        /// <param name="f2">2nd float</param>
-        /// <param name="f3">3rd float</param>
-        /// <param name="f4">4th float</param>
-        /// <returns>The mode or the average (if there is not a above 50% average)</returns>
-        private float GetMajorityOrAverage(float f1, float f2, float f3, float f4)
-        {
-            // The logic here is if we find two who are equal then we need one more to make it a mode.
-            // However, if there is no other, then we are best case in a tie. So return the average.
-            if (Mathf.Approximately(f1, f2))
-            {
-                if (Mathf.Approximately(f1, f3) || Mathf.Approximately(f1, f4))
-                {
-                    return f1;
-                }
-            }
-            else if (Mathf.Approximately(f1, f3))
-            {
-                if (Mathf.Approximately(f1, f4))
-                {
-                    return f1;
-                }
-            }
-            else if (Mathf.Approximately(f2, f3))
-            {
-                if (Mathf.Approximately(f2, f4))
-                {
-                    return f2;
-                }
-            }
-
-            return (f1 + f2 + f3 + f4) / 4;
-        }
-
-        #region Conversions
-        // This version still uses the old conversions, since there was an extra unit for heightmaps.
-        public Point3 ConvertWorldToGrid(Vector3 world)
-        {
-            return new Point3(
-                Mathf.FloorToInt((world.x - MinTerrainX) / GridSize + ep),
-                Mathf.FloorToInt((world.y - MinTerrainHeight) / GridHeightSize + ep),
-                Mathf.FloorToInt((world.z - MinTerrainZ) / GridSize + ep));
-        }
-
-        public Vector3 ConvertGridToWorld(Point3 grid)
-        {
-            return new Vector3(
-                grid.x * GridSize + MinTerrainX,
-                grid.y * GridHeightSize + MinTerrainHeight,
-                grid.z * GridSize + MinTerrainZ);
-        }
-
-        public Vector3 ConvertGridCenterToWorld(Point3 grid)
-        {
-            return new Vector3(
-                grid.x * GridSize + MinTerrainX + HalfGridSize,
-                grid.y * GridHeightSize + MinTerrainHeight,
-                grid.z * GridSize + MinTerrainZ + HalfGridSize);
-        }
-
-        public float ConvertGridHeightToWorld(int grid)
-        {
-            return grid * GridHeightSize + MinTerrainHeight;
-        }
-
-        public int ConvertTerrainWorldToGridHeight(float world)
-        {
-            // WARNING WARNING WARNING this convert does not remove the min height
-            //                         because apparently the terrain doesn't return actual world height.
-            // this round assumes world height is close to snapped values
-            return Mathf.RoundToInt(world / GridHeightSize + ep);
-        }
-
-        public int ConvertHeightmapToGridHeight(float heightmap)
-        {
-            // this round assumes heightmaps are all close to snapped values
-            return Mathf.RoundToInt(heightmap / HeightmapStepSize);
-        }
-
-        public float ConvertHeightmapToWorld(float heightmap)
-        {
-            return ConvertGridHeightToWorld(ConvertHeightmapToGridHeight(heightmap));
-        }
-
-        public float ConvertTerrainWorldToHeightmap(float world)
-        {
-            return ConvertGridHeightToHeightmap(ConvertTerrainWorldToGridHeight(world));
-        }
-
-        public float ConvertGridHeightToHeightmap(int gridHeight)
-        {
-            return gridHeight * HeightmapStepSize;
-        }
-        #endregion
     }
 }

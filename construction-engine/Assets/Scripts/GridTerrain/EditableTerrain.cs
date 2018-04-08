@@ -6,7 +6,7 @@ namespace GridTerrain
     /// <summary>
     /// Unity Behavior for terrain that can be edited.
     /// </summary>
-    public class EditableTerrain : SelectableTerrain
+    public class EditableTerrain : Selectable
     {
         /// <summary>Singleton Terrain in the scene.</summary>
         public static EditableTerrain Singleton { get; private set; }
@@ -37,31 +37,9 @@ namespace GridTerrain
             Singleton = this;
             OnMouseDown = Clicked;
 
-            var terrainComponent = GetComponent<Terrain>();
-            if (terrainComponent != null)
-            {
-                // deprecated
-                _terrain = new GridTerrainData(
-                    terrainComponent,
-                    new GridTerrainArgs()
-                    {
-                        GridSize = 1.0f,
-                        GridHeightSize = 0.4f,
-                        UndergroundGridCount = 4
-                    });
-            }
-
-            var terrainData2 = GetComponent<GridTerrainData2>();
-            if (terrainData2 != null)
-                _terrain = terrainData2;
-
-            var terrainData3 = GetComponent<GridTerrainData3>();
-            if (terrainData3 != null)
-                _terrain = terrainData3;
-
-            var terrainData4 = GetComponent<GridTerrainData4>();
-            if (terrainData4 != null)
-                _terrain = terrainData4;
+            var terrainData = GetComponent<GridTerrainData>();
+            if (terrainData != null)
+                _terrain = terrainData;
 
             _editor = new SafeTerrainEditor(_terrain);
 
@@ -132,7 +110,7 @@ namespace GridTerrain
                        _terrain.GetPointHeight(_gridSelection.x, _gridSelection.z + 1),
                        _terrain.GetPointHeight(_gridSelection.x + 1, _gridSelection.z + 1));
 
-                    GridTerrainData4 test = _terrain as GridTerrainData4;
+                    GridTerrainData test = _terrain as GridTerrainData;
                     if (Input.GetKey(KeyCode.LeftControl) && test != null)
                     {
                         int material = _terrain.GetMaterial(_gridSelection.x, _gridSelection.z);
