@@ -6,7 +6,7 @@ namespace GridTerrain
     /// <summary>
     /// Unity Behavior for terrain that can be edited.
     /// </summary>
-    public class EditableTerrain : Selectable
+    public class EditableTerrain : SelectableTerrain
     {
         /// <summary>Singleton Terrain in the scene.</summary>
         public static EditableTerrain Singleton { get; private set; }
@@ -103,7 +103,7 @@ namespace GridTerrain
             _state = EditingStates.None;
             _gridSelection = Point3.Null;
 
-            if (_cursor.gameObject != null)
+            if (_cursor != null)
             {
                 _cursor.Deactivate();
             }
