@@ -14,10 +14,14 @@ namespace GridTerrain
         private readonly int[] dx = new[] { -1, 0, 1, 0 };
         private readonly int[] dy = new[] { 0, -1, 0, 1 };
 
-        private IGridTerrain _terrain;
+        private GridMesh _terrain;
         private bool[,] _gridAnchored;
 
-        public SafeTerrainEditor(IGridTerrain terrain)
+        /// <summary>
+        /// Instantiates an instance of a SafeTerrainEditor.
+        /// </summary>
+        /// <param name="terrain">The terrain</param>
+        public SafeTerrainEditor(GridMesh terrain)
         {
             _terrain = terrain;
 
@@ -86,7 +90,7 @@ namespace GridTerrain
                         continue;
 
                     // we are okay with grid difference up to 1 step
-                    var heightDiff = _terrain.GetPointHeight(test.x, test.y) - setHeights[cur];
+                    var heightDiff = _terrain.GetVertexHeight(test.x, test.y) - setHeights[cur];
 
                     if (heightDiff < -1)
                     {
@@ -118,11 +122,11 @@ namespace GridTerrain
                 for (int j = 0; j < sizeY; ++j)
                 {
                     var p = new Point2(minX + i, minY + j);
-                    newGridHeights[i, j] = setHeights.ContainsKey(p) ? setHeights[p] : _terrain.GetPointHeight(minX + i, minY + j);
+                    newGridHeights[i, j] = setHeights.ContainsKey(p) ? setHeights[p] : _terrain.GetVertexHeight(minX + i, minY + j);
                 }
             }
 
-            _terrain.SetPointHeights(minX, minY, newGridHeights);
+            _terrain.SetVertexHeights(minX, minY, newGridHeights);
             return true;
         }
 

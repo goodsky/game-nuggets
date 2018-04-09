@@ -1,5 +1,13 @@
 ﻿<CampusData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
 
+  <!-- Size of the campus terrain -->
+  <Terrain>
+    <GridCountX>64</GridCountX>
+    <GridCountZ>64</GridCountZ>
+    <GridCountY>8</GridCountY>
+    <StartingHeight>3</StartingHeight>
+  </Terrain>
+
   <!-- Registry of buildings that can be built. -->
   <Buildings>
     <Building name="Test Building">

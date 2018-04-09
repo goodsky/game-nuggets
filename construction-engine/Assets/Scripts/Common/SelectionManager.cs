@@ -21,6 +21,9 @@ namespace Common
         {
             lock (globalSelectionLock)
             {
+                if (selection == globalSelection)
+                    return;
+
                 var oldSelection = globalSelection;
                 globalSelection = selection;
 

@@ -1,5 +1,4 @@
 ﻿using Common;
-using GridTerrain;
 using System.Collections.Generic;
 
 namespace UI
@@ -26,11 +25,8 @@ namespace UI
         /// <param name="data">not used.</param>
         public override void Open(object data)
         {
-            // Set the terrain to be the child of this window.
-            EditableTerrain.Singleton.SelectionParent = this;
-
-            // Set the game state.
-            GameStateMachine.SetState(GameState.EditingTerrain);
+            Game.Campus.Terrain.Selectable.SelectionParent = this;
+            Game.State.StartDoing(GameState.SelectingTerrain);
 
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.SelectionParent); };
         }
@@ -40,8 +36,8 @@ namespace UI
         /// </summary>
         public override void Close()
         {
-            EditableTerrain.Singleton.SelectionParent = null;
-            GameStateMachine.SetState(GameState.Selecting);
+            Game.Campus.Terrain.Selectable.SelectionParent = null;
+            Game.State.StopDoing();
         }
     }
 }

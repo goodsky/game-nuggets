@@ -6,7 +6,7 @@ namespace GridTerrain
     /// <summary>
     /// Helpful class to convert units between grid squares and Unity world units.
     /// </summary>
-    public class GridTerrainConverter : IGridTerrainConverter
+    public class GridConverter
     {
         private float _gridSize;
         private float _halfGridSize;
@@ -24,7 +24,7 @@ namespace GridTerrain
         /// <param name="minTerrainX">Minimum terrain position on the x-axis.</param>
         /// <param name="minTerrainZ">Minimum terrain position on the z-azis.</param>
         /// <param name="minTerrainY">Minimum terrain position on the y-axis.</param>
-        public GridTerrainConverter(float gridSize, float gridStepSize, float minTerrainX, float minTerrainZ, float minTerrainY)
+        public GridConverter(float gridSize, float gridStepSize, float minTerrainX, float minTerrainZ, float minTerrainY)
         {
             _gridSize = gridSize;
             _halfGridSize = gridSize / 2.0f;
