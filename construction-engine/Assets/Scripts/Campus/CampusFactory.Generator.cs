@@ -10,8 +10,9 @@ namespace Campus
         /// </summary>
         /// <param name="parent">Parent of the terrain.</param>
         /// <param name="args">GridMesh arguments to generate a terrain.</param>
-        /// <returns>The terrain grid mesh.</returns>
-        public static GridMesh GenerateTerrain(Transform parent, GridMeshArgs args)
+        /// <param name="mesh">Returns the grid mesh that manages the terrain.</param>
+        /// <returns>The terrain game object.</returns>
+        public static GameObject GenerateTerrain(Transform parent, GridMeshArgs args, out GridMesh mesh)
         {
             var terrain = new GameObject("Campus Terrain");
             terrain.transform.SetParent(parent, false);
@@ -19,16 +20,17 @@ namespace Campus
             var filter = terrain.AddComponent<MeshFilter>();
             var collider = terrain.AddComponent<MeshCollider>();
             var renderer = terrain.AddComponent<MeshRenderer>();
+            var selectable = terrain.AddComponent<SelectableTerrain>();
 
             filter.mesh = new Mesh();
             filter.mesh.name = "grid-mesh";
 
-            var gridMesh =  new GridMesh(filter.mesh, collider, renderer, args);
+            mesh = new GridMesh(filter.mesh, collider, renderer, args);
 
-            var editableTerrain = terrain.AddComponent<EditableTerrain>();
-            editableTerrain.Initialize(gridMesh);
+            selectable.Terrain = mesh;
+            mesh.Selectable = selectable;
 
-            return gridMesh;
+            return terrain;
         }
     }
 }

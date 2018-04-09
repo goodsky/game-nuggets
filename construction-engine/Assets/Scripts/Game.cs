@@ -8,20 +8,23 @@ using UnityEngine;
 /// </summary>
 public class Game : MonoBehaviour
 {
-    /// <summary>Singleton reference to the root Game object.</summary>
-    public static Game Instance { get; private set; }
-
     [Header("UI Configuration")]
     public TextAsset UIConfig;
 
     [Header("Campus Configuration")]
     public TextAsset CampusConfig;
 
+    /// <summary>The global game state machine</summary>
+    public static GameStateMachine State { get; private set; }
+
     /// <summary>The User Interface Manager</summary>
-    public UIManager UI { get; private set; }
+    public static UIManager UI { get; private set; }
 
     /// <summary>The Campus Manager</summary>
-    public CampusManager Campus { get; private set; }
+    public static CampusManager Campus { get; private set; }
+
+    private static object _singletonLock = new object();
+    private static Game _singleton = null;
 
     /// <summary>
     /// Bootstrap the game state and data.
@@ -31,12 +34,15 @@ public class Game : MonoBehaviour
         InitLogging();
         GameLogger.Info("Game started.");
 
-        if (Instance != null)
+        lock (_singletonLock)
         {
-            GameLogger.Warning("It appears there are multiple root Game objects.");
-        }
+            if (_singleton != null)
+            {
+                GameLogger.FatalError("It appears there are multiple root Game objects.");
+            }
 
-        Instance = this;
+            _singleton = this;
+        }
 
         GameLogger.Info("Creating game objects.");
         InitGameObjects();
@@ -72,6 +78,8 @@ public class Game : MonoBehaviour
     private void InitGameObjects()
     {
         UIFactory.LoadEventSystem(gameObject);
+
+        State = gameObject.AddComponent<GameStateMachine>();
 
         var ui = UIFactory.LoadUICanvas(gameObject);
 

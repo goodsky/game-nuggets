@@ -37,7 +37,7 @@ namespace GameData
             {
                 case GameDataType.ButtonGroup:
                     ButtonGroup buttonGroup;
-                    if (Game.Instance.UI.TryGetButtonGroup(dataName, out buttonGroup))
+                    if (Game.UI.TryGetButtonGroup(dataName, out buttonGroup))
                     {
                         data = buttonGroup;
                     }
@@ -45,7 +45,7 @@ namespace GameData
 
                 case GameDataType.Window:
                     Window window;
-                    if (Game.Instance.UI.WindowManager.TryGetWindow(dataName, out window))
+                    if (Game.UI.WindowManager.TryGetWindow(dataName, out window))
                     {
                         data = window;
                     }
@@ -53,7 +53,7 @@ namespace GameData
 
                 case GameDataType.Building:
                     BuildingData buildingData;
-                    if (Game.Instance.Campus.TryGetBuildingData(dataName, out buildingData))
+                    if (Game.Campus.TryGetBuildingData(dataName, out buildingData))
                     {
                         data = buildingData;
                     }

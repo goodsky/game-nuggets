@@ -76,6 +76,9 @@ namespace GridTerrain
         /// <summary>Gets the Unity game object that the mesh behaviours are attached to.</summary>
         public GameObject GameObject { get; private set; }
 
+        /// <summary>Gets the selectable component of the grid. (Note: set after the constructor)</summary>
+        public Selectable Selectable { get; set; }
+
         /// <summary>
         /// Stores pointers into the mesh to locate a grid square.
         /// </summary>

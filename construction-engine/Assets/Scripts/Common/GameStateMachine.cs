@@ -1,9 +1,12 @@
 ﻿using GridTerrain;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Common
 {
     /// <summary>
-    /// Enumeration of possible top-level game states.
+    /// Enumeration of possible game states.
     /// </summary>
     public enum GameState
     {
@@ -11,44 +14,148 @@ namespace Common
         Selecting,
 
         /// <summary>Constructing a new entity on the campus.</summary>
-        Constructing,
+        SelectingConstruction,
+
+        /// <summary>Construct the new entity.</summary>
+        ConfirmConstruction,
+
+        /// <summary>Selecting campus terrain to modify.</summary>
+        SelectingTerrain,
 
         /// <summary>Modifying the campus terrain.</summary>
-        EditingTerrain
+        EditingTerrain,
     }
 
     /// <summary>
-    /// Storage for the global game state.
+    /// State machine of possible campus interaction modes.
+    /// Methods represent edges between states in the machine.
+    /// States can register controller actions to happen during a state.
     /// </summary>
-    public static class GameStateMachine
+    public class GameStateMachine : MonoBehaviour
     {
-        public static GameState Current { get; private set; }
+        /// <summary>The current campus game state.</summary>
+        public GameState Current { get; private set; }
 
-        public static void SetState(GameState next)
+        // Mapping of possible game states with controllers to execute during their turn.
+        private static readonly List<GameStateController> EmptyControllers = new List<GameStateController>(0);
+        private readonly Dictionary<GameState, List<GameStateController>> _stateControllers = new Dictionary<GameState, List<GameStateController>>();
+        private List<GameStateController> _currentStateControllers = EmptyControllers;
+
+        private readonly object _setLock = new object();
+
+        /// <summary>
+        /// Unity start method.
+        /// </summary>
+        protected void Start()
         {
-            GameState old = Current;
+            Current = GameState.Selecting;
+        }
 
-            if (Current == next)
+        /// <summary>
+        /// Unity update method.
+        /// </summary>
+        protected void Update()
+        {
+            foreach (var controller in _currentStateControllers)
             {
-                return;
+                controller.Update();
+            }
+        }
+
+        /// <summary>
+        /// Register a new state controller with the state machine.
+        /// </summary>
+        /// <param name="state">The state to activate the controller for.</param>
+        /// <param name="controller">The controller to register.</param>
+        public void RegisterController(GameState state, GameStateController controller)
+        {
+            if (!_stateControllers.ContainsKey(state))
+            {
+                _stateControllers[state] = new List<GameStateController>();
             }
 
-            // there could be a lot more logic here
-            // but I haven't decided how much is helpful
-            Current = next;
+            _stateControllers[state].Add(controller);
+        }
 
-            switch (old)
+        /// <summary>
+        /// Transition into a new initial state.
+        /// If you pass me a non-initial state I'll scream.
+        /// </summary>
+        public void StartDoing(GameState newState)
+        {
+            if (newState != GameState.SelectingTerrain &&
+                newState != GameState.SelectingConstruction)
             {
-                case GameState.EditingTerrain:
-                    EditableTerrain.Singleton.StopEditing();
-                    break;
+                throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
             }
 
-            switch (next)
+            Transition(newState);
+        }
+
+        /// <summary>
+        /// Stop doing what you're doing.
+        /// </summary>
+        public void StopDoing()
+        {
+            if (Current == GameState.EditingTerrain)
             {
-                case GameState.EditingTerrain:
-                    EditableTerrain.Singleton.StartEditing();
-                    break;
+                Transition(GameState.SelectingTerrain);
+            }
+            else if (Current == GameState.ConfirmConstruction)
+            {
+                Transition(GameState.SelectingConstruction);
+            }
+            else
+            {
+                Transition(GameState.Selecting);
+            }
+        }
+
+        /// <summary>
+        /// The terrain was clicked.
+        /// </summary>
+        /// <param name="button">The mouse button.</param>
+        /// <param name="clickLocation">Location on the grid that was clicked.</param>
+        public void ClickedTerrain(MouseButton button, Point3 clickLocation)
+        {
+            if (Current == GameState.SelectingTerrain)
+            {
+                if (button == MouseButton.Left)
+                {
+                    Transition(GameState.EditingTerrain, clickLocation);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set the current state of the campus editor.
+        /// </summary>
+        /// <param name="next">The next state for the game to transition to.</param>
+        /// <param name="context">Optional context object to pass to controllers upon transition.</param>
+        private void Transition(GameState next, object context = null)
+        {
+            lock (_setLock)
+            {
+                if (Current == next)
+                    return;
+
+                GameState old = Current;
+                Current = next;
+
+                foreach (var controller in _currentStateControllers)
+                {
+                    controller.TransitionOut();
+                }
+
+                if (!_stateControllers.TryGetValue(next, out _currentStateControllers))
+                {
+                    _currentStateControllers = EmptyControllers;
+                }
+
+                foreach (var controller in _currentStateControllers)
+                {
+                    controller.TransitionIn(context);
+                }
             }
         }
     }

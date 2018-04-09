@@ -1,4 +1,5 @@
-﻿using GameData;
+﻿using Common;
+using GameData;
 using GridTerrain;
 using System.Collections.Generic;
 
@@ -11,7 +12,7 @@ namespace Campus
     {
         private Dictionary<string, BuildingData> _buildingRegistry = new Dictionary<string, BuildingData>();
 
-        /// <summary>Terrain grid mesh</summary>
+        /// <summary>Terrain grid mesh.</summary>
         public GridMesh Terrain { get; private set; }
 
         /// <summary>
@@ -41,7 +42,13 @@ namespace Campus
                 Materials = GridMaterials.GetAll(),
             };
 
-            Terrain = CampusFactory.GenerateTerrain(transform, gridMeshArgs);
+            GridMesh terrain;
+            CampusFactory.GenerateTerrain(transform, gridMeshArgs, out terrain);
+
+            Terrain = terrain;
+
+            Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
+            Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
 
             // Load the buildings
             foreach (var buildingData in gameData.Buildings)
