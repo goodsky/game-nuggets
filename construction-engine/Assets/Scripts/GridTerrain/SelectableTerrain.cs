@@ -1,4 +1,5 @@
 ﻿using Common;
+using System;
 using UnityEngine;
 
 namespace GridTerrain
@@ -40,7 +41,23 @@ namespace GridTerrain
                 clickLocation = new Point3(-1, -1, -1);
             }
 
-            Game.State.ClickedTerrain(mouse, clickLocation);
+            var args = new TerrainClickedArgs(mouse, clickLocation);
+            Game.State.ClickedTerrain(args);
+        }
+    }
+
+    /// <summary>
+    /// Terrain clicked event argument.
+    /// </summary>
+    public class TerrainClickedArgs : EventArgs
+    {
+        public MouseButton Button { get; private set; }
+        public Point3 ClickLocation { get; private set; }
+
+        public TerrainClickedArgs(MouseButton button, Point3 clickLocation)
+        {
+            Button = button;
+            ClickLocation = clickLocation;
         }
     }
 }

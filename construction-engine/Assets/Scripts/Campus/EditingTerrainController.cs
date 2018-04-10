@@ -1,6 +1,5 @@
 ﻿using Common;
 using GridTerrain;
-using System;
 using UnityEngine;
 
 namespace Campus
@@ -36,10 +35,11 @@ namespace Campus
         /// <param name="context">The grid coordinate to edit.</param>
         public override void TransitionIn(object context)
         {
-            if (!(context is Point3))
-                GameLogger.Error("EditingTerrainController was given incorrect context.");
+            var args = context as TerrainClickedArgs;
+            if (args == null)
+                GameLogger.FatalError("EditingTerrainController was given incorrect context.");
 
-            _editingGridLocation = (Point3)context;
+            _editingGridLocation = args.ClickLocation;
 
             _cursor.Activate();
             _cursor.Place(_editingGridLocation.x, _editingGridLocation.z);

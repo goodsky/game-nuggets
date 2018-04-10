@@ -1,6 +1,5 @@
 ﻿using Common;
 using GridTerrain;
-using System;
 using UnityEngine;
 
 namespace Campus
@@ -24,6 +23,8 @@ namespace Campus
             _terrain = terrain;
             _cursor = GridCursor.Create(terrain, Resources.Load<Material>("Terrain/cursor"));
             _cursor.Deactivate();
+
+            OnTerrainClicked += PrintDebugging;
         }
 
         /// <summary>
@@ -78,21 +79,28 @@ namespace Campus
                     _mouseLocation = Point3.Null;
                 }
             }
+        }
 
-            // Debugging
-            if (Application.isEditor && Input.GetMouseButtonDown(1))
+        /// <summary>
+        /// Debug stuff on clicks.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="args">The terrain click arguments</param>
+        private void PrintDebugging(object sender, TerrainClickedArgs args)
+        {
+            if (Application.isEditor)
             {
                 GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
-                       _mouseLocation,
-                       _terrain.GetVertexHeight(_mouseLocation.x, _mouseLocation.z),
-                       _terrain.GetVertexHeight(_mouseLocation.x + 1, _mouseLocation.z),
-                       _terrain.GetVertexHeight(_mouseLocation.x, _mouseLocation.z + 1),
-                       _terrain.GetVertexHeight(_mouseLocation.x + 1, _mouseLocation.z + 1));
+                       args.ClickLocation,
+                       _terrain.GetVertexHeight(args.ClickLocation.x, args.ClickLocation.z),
+                       _terrain.GetVertexHeight(args.ClickLocation.x + 1, args.ClickLocation.z),
+                       _terrain.GetVertexHeight(args.ClickLocation.x, args.ClickLocation.z + 1),
+                       _terrain.GetVertexHeight(args.ClickLocation.x + 1, args.ClickLocation.z + 1));
 
                 if (Input.GetKey(KeyCode.LeftControl))
                 {
-                    int material = _terrain.GetMaterial(_mouseLocation.x, _mouseLocation.z);
-                    _terrain.SetMaterial(_mouseLocation.x, _mouseLocation.z, (material + 1) % _terrain.MaterialCount);
+                    int material = _terrain.GetMaterial(args.ClickLocation.x, args.ClickLocation.z);
+                    _terrain.SetMaterial(args.ClickLocation.x, args.ClickLocation.z, (material + 1) % _terrain.MaterialCount);
                 }
             }
         }

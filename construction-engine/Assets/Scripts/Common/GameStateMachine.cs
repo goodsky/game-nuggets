@@ -116,13 +116,24 @@ namespace Common
         /// </summary>
         /// <param name="button">The mouse button.</param>
         /// <param name="clickLocation">Location on the grid that was clicked.</param>
-        public void ClickedTerrain(MouseButton button, Point3 clickLocation)
+        public void ClickedTerrain(TerrainClickedArgs args)
         {
+            GameState startingState = Current;
+
             if (Current == GameState.SelectingTerrain)
             {
-                if (button == MouseButton.Left)
+                if (args.Button == MouseButton.Left)
                 {
-                    Transition(GameState.EditingTerrain, clickLocation);
+                    Transition(GameState.EditingTerrain, args);
+                }
+            }
+            
+            if (startingState == Current)
+            {
+                // runoff of unused events are sent into the active controllers
+                foreach (var controller in _currentStateControllers)
+                {
+                    controller.TerrainClicked(args);
                 }
             }
         }
