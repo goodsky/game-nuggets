@@ -14,10 +14,7 @@ namespace Common
         Selecting,
 
         /// <summary>Constructing a new entity on the campus.</summary>
-        SelectingConstruction,
-
-        /// <summary>Construct the new entity.</summary>
-        ConfirmConstruction,
+        PlacingConstruction,
 
         /// <summary>Selecting campus terrain to modify.</summary>
         SelectingTerrain,
@@ -84,7 +81,7 @@ namespace Common
         public void StartDoing(GameState newState)
         {
             if (newState != GameState.SelectingTerrain &&
-                newState != GameState.SelectingConstruction)
+                newState != GameState.PlacingConstruction)
             {
                 throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
             }
@@ -100,10 +97,6 @@ namespace Common
             if (Current == GameState.EditingTerrain)
             {
                 Transition(GameState.SelectingTerrain);
-            }
-            else if (Current == GameState.ConfirmConstruction)
-            {
-                Transition(GameState.SelectingConstruction);
             }
             else
             {

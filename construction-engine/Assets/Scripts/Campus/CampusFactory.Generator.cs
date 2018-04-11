@@ -25,6 +25,8 @@ namespace Campus
             filter.mesh = new Mesh();
             filter.mesh.name = "grid-mesh";
 
+            renderer.receiveShadows = true;
+
             mesh = new GridMesh(filter.mesh, collider, renderer, args);
 
             selectable.Terrain = mesh;

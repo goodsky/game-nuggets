@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
@@ -12,7 +11,7 @@ namespace UI
     /// <summary>
     /// Companion behavior for the New Construction UI window.
     /// </summary>
-    public class NewConstructionWindow : Window
+    public class ConstructionInfoWindow : Window
     {
         private string _title;
         private string _description;
@@ -78,14 +77,14 @@ namespace UI
             var buildingData = data as BuildingData;
             if (buildingData == null)
             {
-                GameLogger.FatalError("New Construction Window was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
+                GameLogger.FatalError("ConstructionInfoWindow was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
             }
 
             Title = buildingData.Name;
             Description = WriteDescription(buildingData);
             ConstructionImage.sprite = buildingData.Icon.Value;
 
-            BuildButton.OnSelect = () => { GameLogger.Info("Selected!"); };
+            BuildButton.OnSelect = () => { Game.UI.WindowManager.OpenWindow("ConstructionPlacing", buildingData); };
         }
 
         /// <summary>

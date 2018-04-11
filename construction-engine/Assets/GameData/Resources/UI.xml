@@ -34,7 +34,7 @@
         <Button name="BuildTest">
           <Tooltip>Build Test Building</Tooltip>
           <IconImage>Toolbar/icon-test1</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="NewConstruction" dataType="Building" data="Test Building"/>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Test Building"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
         
@@ -50,7 +50,8 @@
     
   <!-- Windows that display information in the UI -->
   <Windows>
-    <Window name="NewConstruction" prefab="NewConstructionWindow" />
+    <Window name="ConstructionInfo" prefab="ConstructionInfoWindow" />
+    <Window name="ConstructionPlacing" prefab="ConstructionPlacingWindow" />
     <Window name="EditingTerrain" prefab="TerrainEditingWindow" />
   </Windows>
   

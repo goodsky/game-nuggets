@@ -49,6 +49,7 @@ namespace Campus
 
             Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
             Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
+            Game.State.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
 
             // Load the buildings
             foreach (var buildingData in gameData.Buildings)
