@@ -16,6 +16,16 @@
       <Classrooms>10</Classrooms>
       <Icon>Building/TestBuildingIcon</Icon>
       <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
+      <Mesh>test-building-small</Mesh>
+    </Building>
+    
+    <Building name="Weird Building">
+      <ConstructionCost>1</ConstructionCost>
+      <MaintenanceCost>1</MaintenanceCost>
+      <Classrooms>1</Classrooms>
+      <Icon>Building/TestBuildingIcon</Icon>
+      <Description>This building has a weird footprint. It's just two buildings diagonally adjacent. Not that weird really.</Description>
+      <Mesh>test-building-weird</Mesh>
     </Building>
   </Buildings>
   

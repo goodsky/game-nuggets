@@ -1,9 +1,6 @@
 ﻿using Common;
 using GameData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine.UI;
 
 namespace UI
@@ -41,7 +38,7 @@ namespace UI
             Game.Campus.Terrain.Selectable.SelectionParent = this;
             Game.State.StartDoing(GameState.PlacingConstruction);
 
-            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.SelectionParent); };
+            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
         }
 
         /// <summary>

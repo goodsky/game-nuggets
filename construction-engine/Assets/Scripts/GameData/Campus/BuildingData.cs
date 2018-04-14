@@ -31,6 +31,9 @@ namespace GameData
         [XmlElement("Description")]
         public string Description { get; set; }
 
+        [XmlElement("Mesh")]
+        public string MeshName { get; set; }
+
         [XmlIgnore]
         public Mesh Mesh { get; set; }
 

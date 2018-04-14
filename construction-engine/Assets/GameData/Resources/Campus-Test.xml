@@ -16,6 +16,7 @@
       <Classrooms>10</Classrooms>
       <Icon>Building/TestBuildingIcon</Icon>
       <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
+      <Mesh>test-building-small</Mesh>
     </Building>
   </Buildings>
   

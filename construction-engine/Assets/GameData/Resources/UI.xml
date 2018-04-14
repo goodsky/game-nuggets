@@ -37,6 +37,13 @@
           <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Test Building"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+
+        <Button name="BuildWeird">
+          <Tooltip>Build Weird Building</Tooltip>
+          <IconImage>Toolbar/icon-test1</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Weird Building"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
         
         <Button name="EditTerrain">
           <Tooltip>Edit Terrain</Tooltip>
