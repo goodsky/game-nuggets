@@ -4,8 +4,8 @@
   <Terrain>
     <GridCountX>64</GridCountX>
     <GridCountZ>64</GridCountZ>
-    <GridCountY>8</GridCountY>
-    <StartingHeight>3</StartingHeight>
+    <GridCountY>16</GridCountY>
+    <StartingHeight>6</StartingHeight>
   </Terrain>
 
   <!-- Registry of buildings that can be built. -->

@@ -25,7 +25,7 @@ namespace Campus
         {
             _editor = new SafeTerrainEditor(terrain);
             _terrain = terrain;
-            _cursor = GridCursor.Create(terrain, Resources.Load<Material>("Terrain/cursor"));
+            _cursor = GridCursor.Create(terrain, Resources.Load<Material>("Terrain/cursor_terrain2"));
             _cursor.Deactivate();
         }
 

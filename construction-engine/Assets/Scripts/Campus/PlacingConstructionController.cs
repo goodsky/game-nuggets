@@ -11,11 +11,9 @@ namespace Campus
     public class PlacingConstructionController : GameStateController
     {
         private GridMesh _terrain;
-        private GridCursor[,] _cursors;
-        private Material _gridMaterial;
 
-        private Point3 _mouseLocation;
         private BuildingData _building;
+        private FootprintCursor _cursors;
 
         /// <summary>
         /// Instantiates an instance of the controller.
@@ -24,10 +22,13 @@ namespace Campus
         public PlacingConstructionController(GridMesh terrain)
         {
             _terrain = terrain;
-            _cursors = null;
-            _gridMaterial = Resources.Load<Material>("Terrain/cursor");
             _building = null;
+            _cursors = new FootprintCursor(
+                terrain,
+                Resources.Load<Material>("Terrain/cursor_valid"),
+                Resources.Load<Material>("Terrain/cursor_invalid"));
 
+            OnTerrainSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Build;
         }
 
@@ -41,22 +42,7 @@ namespace Campus
             if (_building == null)
                 GameLogger.FatalError("PlacingConstructionController was not given a building data!");
 
-            int xSize = _building.Footprint.GetLength(0);
-            int zSize = _building.Footprint.GetLength(1);
-
-            _cursors = new GridCursor[xSize, zSize];
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    if (_building.Footprint[x, z])
-                        _cursors[x, z] = GridCursor.Create(_terrain, _gridMaterial);
-                    else
-                        _cursors[x, z] = null;
-                }
-            }
-
-            _mouseLocation = Point3.Null;
+            _cursors.Create(_building.Footprint);
         }
 
         /// <summary>
@@ -64,73 +50,28 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
-            if (_cursors != null)
-            {
-                foreach (var cursor in _cursors)
-                {
-                    if (cursor != null)
-                    {
-                        cursor.Deactivate();
-                        UnityEngine.Object.Destroy(cursor);
-                    }
-                }
-            }
-
-            _mouseLocation = Point3.Null;
+            _cursors.Destroy();
         }
 
         /// <summary>
         /// Called each step of this state.
         /// </summary>
-        public override void Update()
+        public override void Update() { }
+
+        /// <summary>
+        /// Event handler for selection updates on the terrain.
+        /// </summary>
+        /// <param name="sender">not used.</param>
+        /// <param name="args">The terrain selection update args.</param>
+        private void PlacementUpdate(object sender, TerrainSelectionUpdateArgs args)
         {
-            var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            RaycastHit hit;
-            if (_terrain.Collider.Raycast(mouseRay, out hit, float.MaxValue))
+            if (args.SelectionLocation != Point3.Null)
             {
-                var newMouseLocation = _terrain.Convert.WorldToGrid(hit.point);
-
-                if (newMouseLocation != _mouseLocation)
-                {
-                    _mouseLocation = newMouseLocation;
-
-                    int xSize = _building.Footprint.GetLength(0);
-                    int zSize = _building.Footprint.GetLength(1);
-
-                    for (int x = 0; x < xSize; ++x)
-                    {
-                        for (int z = 0; z < zSize; ++z)
-                        {
-                            if (_cursors[x, z] != null)
-                            {
-                                int cursorX = _mouseLocation.x + x;
-                                int cursorZ = _mouseLocation.z + z;
-
-                                if (cursorX < _terrain.CountX && cursorZ < _terrain.CountZ)
-                                {
-                                    _cursors[x, z].Activate();
-                                    _cursors[x, z].Place(cursorX, cursorZ);
-                                }
-                                else
-                                {
-                                    _cursors[x, z].Deactivate();
-                                }
-                            }
-                        }
-                    }
-                }
+                _cursors.Place(args.SelectionLocation);
             }
             else
             {
-                if (_cursors[0, 0].IsActive)
-                {
-                    foreach (var cursor in _cursors)
-                        if (cursor != null)
-                            cursor.Deactivate();
-
-                    _mouseLocation = Point3.Null;
-                }
+                _cursors.Deactivate();
             }
         }
 
@@ -146,7 +87,7 @@ namespace Campus
                 CampusFactory.GenerateBuilding(
                     _building, 
                     Game.Campus.transform, 
-                    _terrain.Convert.GridToWorld(_mouseLocation) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/, 
+                    _terrain.Convert.GridToWorld(args.ClickLocation) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/, 
                     Quaternion.identity);
 
                 SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());

@@ -132,6 +132,18 @@ namespace Common
         }
 
         /// <summary>
+        /// The selection on the terrain was updated.
+        /// </summary>
+        /// <param name="args"></param>
+        public void SelectionUpdateTerrain(TerrainSelectionUpdateArgs args)
+        {
+            foreach (var controller in _currentStateControllers)
+            {
+                controller.TerrainSelectionUpdate(args);
+            }
+        }
+
+        /// <summary>
         /// Set the current state of the campus editor.
         /// </summary>
         /// <param name="next">The next state for the game to transition to.</param>

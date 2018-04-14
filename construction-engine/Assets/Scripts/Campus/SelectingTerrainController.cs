@@ -12,7 +12,7 @@ namespace Campus
         private GridMesh _terrain;
         private GridCursor _cursor;
 
-        private Point3 _mouseLocation;
+        private Point3 _lastPosition;
 
         /// <summary>
         /// Instantiates an instance of the controller.
@@ -21,9 +21,10 @@ namespace Campus
         public SelectingTerrainController(GridMesh terrain)
         {
             _terrain = terrain;
-            _cursor = GridCursor.Create(terrain, Resources.Load<Material>("Terrain/cursor"));
+            _cursor = GridCursor.Create(terrain, Resources.Load<Material>("Terrain/cursor_terrain"));
             _cursor.Deactivate();
 
+            OnTerrainSelectionUpdate += SelectionUpdate;
             OnTerrainClicked += PrintDebugging;
         }
 
@@ -34,7 +35,7 @@ namespace Campus
         public override void TransitionIn(object context)
         {
             _cursor.Activate();
-            _mouseLocation = Point3.Null;
+            _cursor.Place(_cursor.Position.x, _cursor.Position.y);
         }
 
         /// <summary>
@@ -46,46 +47,39 @@ namespace Campus
             {
                 _cursor.Deactivate();
             }
-
-            _mouseLocation = Point3.Null;
         }
 
         /// <summary>
         /// Update during the SelectingTerrain state.
         /// </summary>
-        public override void Update()
+        public override void Update() { }
+
+        /// <summary>
+        /// Update the cursor selection.
+        /// </summary>
+        /// <param name="sender">Not used.</param>
+        /// <param name="args">The terrain selection arguments.</param>
+        private void SelectionUpdate(object sender, TerrainSelectionUpdateArgs args)
         {
-            var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            RaycastHit hit;
-            if (_terrain.Collider.Raycast(mouseRay, out hit, float.MaxValue))
+            if (args.SelectionLocation != Point3.Null)
             {
-                var newMouseLocation = _terrain.Convert.WorldToGrid(hit.point);
+                if (!_cursor.IsActive)
+                    _cursor.Activate();
 
-                if (newMouseLocation != _mouseLocation)
-                {
-                    if (!_cursor.IsActive)
-                        _cursor.Activate();
-
-                    _mouseLocation = newMouseLocation;
-                    _cursor.Place(_mouseLocation.x, _mouseLocation.z);
-                }
+                _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
             }
             else
             {
                 if (_cursor.IsActive)
-                {
                     _cursor.Deactivate();
-                    _mouseLocation = Point3.Null;
-                }
             }
         }
 
         /// <summary>
         /// Debug stuff on clicks.
         /// </summary>
-        /// <param name="sender">Not used</param>
-        /// <param name="args">The terrain click arguments</param>
+        /// <param name="sender">Not used.</param>
+        /// <param name="args">The terrain click arguments.</param>
         private void PrintDebugging(object sender, TerrainClickedArgs args)
         {
             if (Application.isEditor)

@@ -18,6 +18,9 @@ namespace GridTerrain
         /// <summary>The material for this cursor.</summary>
         public Material CursorMaterial;
 
+        /// <summary>The position of the cursor (read only)</summary>
+        public Point2 Position { get; private set; }
+
         private Mesh _mesh;
         private MeshRenderer _renderer;
         private Vector3[] _vertices;
@@ -96,6 +99,8 @@ namespace GridTerrain
             _mesh.RecalculateNormals();
 
             _renderer.material = CursorMaterial;
+
+            Position = new Point2(0, 0);
         }
 
         /// <summary>
@@ -115,12 +120,23 @@ namespace GridTerrain
         }
 
         /// <summary>
+        /// Set the cursor's material.
+        /// </summary>
+        /// <param name="material">The new material</param>
+        public void SetMaterial(Material material)
+        {
+            CursorMaterial = material;
+            _renderer.material = CursorMaterial;
+        }
+
+        /// <summary>
         /// Place the cursor at the requested grid position.
         /// </summary>
         /// <param name="x">X coordinate on the grid.</param>
         /// <param name="z">Z coordinate on the grid.</param>
         public void Place(int x, int z)
         {
+            Position = new Point2(x, z);
             transform.position = new Vector3(x * Terrain.GridSquareSize, 0.0f, z * Terrain.GridSquareSize);
 
             _vertices[0].y = Terrain.GetVertexWorldHeight(x, z) + FloatAmount;

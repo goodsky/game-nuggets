@@ -33,5 +33,15 @@ namespace Common
                 OnTerrainClicked.Invoke(null, args);
             }
         }
+
+        /// <summary>Event handler for terrain selection moved events that don't transition the state.</summary>
+        protected event EventHandler<TerrainSelectionUpdateArgs> OnTerrainSelectionUpdate;
+        public void TerrainSelectionUpdate(TerrainSelectionUpdateArgs args)
+        {
+            if (OnTerrainSelectionUpdate != null)
+            {
+                OnTerrainSelectionUpdate.Invoke(null, args);
+            }
+        }
     }
 }

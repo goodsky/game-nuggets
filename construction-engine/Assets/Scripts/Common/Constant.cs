@@ -15,6 +15,6 @@
         /// <summary>
         /// The size of a step vertically on the grid in unity units.
         /// </summary>
-        public const float GridStepSize = 0.4f;
+        public const float GridStepSize = 0.25f;
     }
 }
