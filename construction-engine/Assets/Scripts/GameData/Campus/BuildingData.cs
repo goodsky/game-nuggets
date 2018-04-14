@@ -34,8 +34,14 @@ namespace GameData
         [XmlElement("Mesh")]
         public string MeshName { get; set; }
 
+        [XmlElement("Material")]
+        public string MaterialName { get; set; }
+
         [XmlIgnore]
         public Mesh Mesh { get; set; }
+
+        [XmlIgnore]
+        public Material Material { get; set; }
 
         [XmlIgnore]
         public bool[,] Footprint { get; set; }

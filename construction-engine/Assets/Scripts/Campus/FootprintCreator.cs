@@ -29,13 +29,13 @@ namespace Campus
 
             _meshCollider.sharedMesh = mesh;
 
-            // FYI: FBX files treat the z-axis as vertical. So all our meshes are on their side at this point.
+            // FYI: FBX need to be exported with Z-forward Y-up to make sense in our world.
             var bounds = mesh.bounds;
             Assert.AreApproximatelyEqual(0.0f, bounds.size.x % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. x-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.x));
-            Assert.AreApproximatelyEqual(0.0f, bounds.size.y % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. y-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.y));
+            Assert.AreApproximatelyEqual(0.0f, bounds.size.z % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. z-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.z));
 
             int gridSizeX = Mathf.RoundToInt(bounds.size.x / gridSize);
-            int gridSizeZ = Mathf.RoundToInt(bounds.size.y / gridSize);
+            int gridSizeZ = Mathf.RoundToInt(bounds.size.z / gridSize);
 
             var footprint = new bool[gridSizeX, gridSizeZ];
 
@@ -46,10 +46,10 @@ namespace Campus
                 for (int z = 0; z < gridSizeZ; ++z)
                 {
                     var ray = new Ray(new Vector3(
-                        x * gridSize + gridSize / 2 - bounds.size.x / 2, 
-                        z * gridSize + gridSize / 2 - bounds.size.y / 2, 
-                        height), 
-                        Vector3.back);
+                        x * gridSize + gridSize / 2, 
+                        height,
+                        z * gridSize + gridSize / 2), 
+                        Vector3.down);
 
                     RaycastHit hit;
                     bool isSolid = _meshCollider.Raycast(ray, out hit, castDistance);

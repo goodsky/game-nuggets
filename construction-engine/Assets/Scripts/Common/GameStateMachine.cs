@@ -78,7 +78,7 @@ namespace Common
         /// Transition into a new initial state.
         /// If you pass me a non-initial state I'll scream.
         /// </summary>
-        public void StartDoing(GameState newState)
+        public void StartDoing(GameState newState, object context = null)
         {
             if (newState != GameState.SelectingTerrain &&
                 newState != GameState.PlacingConstruction)
@@ -86,7 +86,7 @@ namespace Common
                 throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
             }
 
-            Transition(newState);
+            Transition(newState, context);
         }
 
         /// <summary>

@@ -36,7 +36,7 @@ namespace UI
             }
 
             Game.Campus.Terrain.Selectable.SelectionParent = this;
-            Game.State.StartDoing(GameState.PlacingConstruction);
+            Game.State.StartDoing(GameState.PlacingConstruction, data);
 
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
         }

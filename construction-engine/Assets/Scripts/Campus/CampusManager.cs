@@ -58,10 +58,16 @@ namespace Campus
                 // Load the buildings
                 foreach (var buildingData in gameData.Buildings)
                 {
-                    buildingData.Mesh = Resources.Load<Mesh>(string.Format("Buildings/{0}", buildingData.MeshName));
+                    if (buildingData.Icon.Value == null)
+                        GameLogger.FatalError("Could not load building icon '{0}'", buildingData.IconName);
 
+                    buildingData.Mesh = Resources.Load<Mesh>(string.Format("Buildings/{0}", buildingData.MeshName));
                     if (buildingData.Mesh == null)
                         GameLogger.FatalError("Could not load building mesh 'Buildings/{0}'", buildingData.MeshName);
+
+                    buildingData.Material = Resources.Load<Material>(string.Format("Buildings/{0}", buildingData.MaterialName));
+                    if (buildingData.Material == null)
+                        GameLogger.FatalError("Could not load building material 'Buildings/{0}'", buildingData.MaterialName);
 
                     buildingData.Footprint = footprintCreator.CalculateFootprint(buildingData.Mesh, Constant.GridSize);
 
