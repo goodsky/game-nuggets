@@ -38,6 +38,7 @@ namespace UI
             Game.Campus.Terrain.Selectable.SelectionParent = this;
             Game.State.StartDoing(GameState.PlacingConstruction, data);
 
+            TitleText.text = string.Format("Constructing {0}", buildingData.Name);
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
         }
 

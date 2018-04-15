@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
+using UnityEngine.Assertions;
 
 namespace GridTerrain
 {
@@ -8,14 +10,15 @@ namespace GridTerrain
     /// It checks on what moves are valid.
     /// It smooths out blocky changes.
     /// </summary>
-    internal class SafeTerrainEditor
+    public class SafeTerrainEditor
     {
         // Shortcut for BFS
         private readonly int[] dx = new[] { -1, 0, 1, 0 };
         private readonly int[] dy = new[] { 0, -1, 0, 1 };
 
         private GridMesh _terrain;
-        private bool[,] _gridAnchored;
+        private bool[,] _gridTaken;
+        private bool[,] _vertexAnchored;
 
         /// <summary>
         /// Instantiates an instance of a SafeTerrainEditor.
@@ -25,14 +28,115 @@ namespace GridTerrain
         {
             _terrain = terrain;
 
-            var width = _terrain.CountX + 1;
-            var height = _terrain.CountZ + 1;
-            _gridAnchored = new bool[width, height];
-
             // Anchor all corners, otherwise start unanchored
-            for (int i = 0; i < width; ++i)
-                for (int j = 0; j < height; ++j)
-                    _gridAnchored[i, j] = (i == 0 || j == 0 || i == width - 1 || j == height - 1) ? true : false;
+            _vertexAnchored = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
+            for (int i = 0; i <= _terrain.CountX; ++i)
+                for (int j = 0; j <= _terrain.CountZ; ++j)
+                    _vertexAnchored[i, j] = (i == 0 || j == 0 || i == _terrain.CountX - 1 || j == _terrain.CountZ - 1) ? true : false;
+
+            // All grid squares start untaken
+            _gridTaken = new bool[_terrain.CountX, _terrain.CountZ];
+            for (int i = 0; i < _terrain.CountX; ++i)
+                for (int j = 0; j < _terrain.CountZ; ++j)
+                    _gridTaken[i, j] = false;
+        }
+
+        /// <summary>
+        /// Check if the terrain is valid for construction.
+        /// i.e. flat and untaken.
+        /// </summary>
+        /// <param name="xBase">Grid x position.</param>
+        /// <param name="zBase">Grid z position.</param>
+        /// <param name="xSize">Width of the area to check.</param>
+        /// <param name="zSize">Height of the area to check.</param>
+        /// <returns>Array of booleans representing valid or invalid squares.</returns>
+        public bool[,] CheckValidTerrain(int xBase, int zBase, int xSize, int zSize)
+        {
+            bool[,] check = new bool[xSize, zSize];
+
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    int gridX = xBase + x;
+                    int gridZ = zBase + z;
+
+                    // grid is valid if it is inside the terrain
+                    // and not taken
+                    // and flat
+                    check[x, z] =
+                        gridX >= 0 &&
+                        gridX < _terrain.CountX &&
+                        gridZ >= 0 &&
+                        gridZ < _terrain.CountZ &&
+                        !_gridTaken[gridX, gridZ] &&
+                        _terrain.IsGridFlat(gridX, gridZ);
+                }
+            }
+
+            return check;
+        }
+
+        /// <summary>
+        /// Set grid squares as taken by construction.
+        /// </summary>
+        /// <param name="xBase">The starting x coordinate.</param>
+        /// <param name="zBase">The starting z coordinate.</param>
+        /// <param name="takenGrids">Array of grid squares to set as taken.</param>
+        public void SetTakenGrid(int xBase, int zBase, bool[,] takenGrids)
+        {
+            int xSize = takenGrids.GetLength(0);
+            int zSize = takenGrids.GetLength(1);
+
+            if (xBase < 0 || xBase + xSize > _terrain.CountX || zBase < 0 || zBase + zSize > _terrain.CountZ)
+                GameLogger.FatalError("Attempted to set grid taken outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xSize, zSize, _terrain.CountX, _terrain.CountZ);
+
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    int gridX = xBase + x;
+                    int gridZ = zBase + z;
+
+                    if (takenGrids[x, z])
+                    {
+                        Assert.IsFalse(_gridTaken[gridX, gridZ], "Trying to take a grid that is already taken!");
+                        _gridTaken[gridX, gridZ] = true;
+                        _vertexAnchored[gridX, gridZ] = _vertexAnchored[gridX, gridZ + 1] = _vertexAnchored[gridX + 1, gridZ] = _vertexAnchored[gridX + 1, gridZ + 1] = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Free taken grid squares.
+        /// </summary>
+        /// <param name="xBase">The starting x coordinate.</param>
+        /// <param name="zBase">The starting z coordinate.</param>
+        /// <param name="freeGrids">Array of grid squares to set as free.</param>
+        public void RemoveTakenGrid(int xBase, int zBase, bool[,] freeGrids)
+        {
+            int xSize = freeGrids.GetLength(0);
+            int zSize = freeGrids.GetLength(1);
+
+            if (xBase < 0 || xBase + xSize > _terrain.CountX || zBase < 0 || zBase + zSize > _terrain.CountZ)
+                GameLogger.FatalError("Attempted to free vertex taken outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xSize, zSize, _terrain.CountX, _terrain.CountZ);
+
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    int gridX = xBase + x;
+                    int gridZ = zBase + z;
+
+                    if (freeGrids[x, z])
+                    {
+                        Assert.IsFalse(!_gridTaken[gridX, gridZ], "Trying to free a grid that is already free!");
+                        _gridTaken[gridX, gridZ] = false;
+                        _vertexAnchored[gridX, gridZ] = _vertexAnchored[gridX, gridZ + 1] = _vertexAnchored[gridX + 1, gridZ] = _vertexAnchored[gridX + 1, gridZ + 1] = false;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -54,7 +158,7 @@ namespace GridTerrain
             var p3 = new Point2(x + 1, z);
             var p4 = new Point2(x + 1, z + 1);
 
-            if (_gridAnchored[p1.x, p1.y] || _gridAnchored[p2.x, p2.y] || _gridAnchored[p3.x, p3.y] || _gridAnchored[p4.x, p4.y])
+            if (_vertexAnchored[p1.x, p1.y] || _vertexAnchored[p2.x, p2.y] || _vertexAnchored[p3.x, p3.y] || _vertexAnchored[p4.x, p4.y])
                 return false;
 
             // bounding box around the changes
@@ -94,7 +198,7 @@ namespace GridTerrain
 
                     if (heightDiff < -1)
                     {
-                        if (_gridAnchored[test.x, test.y])
+                        if (_vertexAnchored[test.x, test.y])
                             return false;
 
                         setHeights[test] = setHeights[cur] - 1;
@@ -104,7 +208,7 @@ namespace GridTerrain
 
                     if (heightDiff > 1)
                     {
-                        if (_gridAnchored[test.x, test.y])
+                        if (_vertexAnchored[test.x, test.y])
                             return false;
 
                         setHeights[test] = setHeights[cur] + 1;

@@ -32,8 +32,8 @@ namespace GridTerrain
         /// </summary>
         protected override void Update()
         {
-            if (_mousePosition.Equals(Input.mousePosition))
-                return;
+            //if (_mousePosition.Equals(Input.mousePosition))
+            //    return;
 
             _mousePosition = Input.mousePosition;
             var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(_mousePosition);

@@ -68,6 +68,7 @@ namespace Campus
             if (args.SelectionLocation != Point3.Null)
             {
                 _cursors.Place(args.SelectionLocation);
+                _cursors.SetMaterials(GetValidTerrainUnderMouse());
             }
             else
             {
@@ -84,14 +85,39 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                CampusFactory.GenerateBuilding(
-                    _building, 
-                    Game.Campus.transform, 
-                    _terrain.Convert.GridToWorld(args.ClickLocation) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/, 
-                    Quaternion.identity);
+                var validTerrain = GetValidTerrainUnderMouse();
+                var footprint = _building.Footprint;
 
-                SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
+                bool isValid = true;
+                for (int x = 0; x < footprint.GetLength(0); ++x)
+                    for (int z = 0; z < footprint.GetLength(1); ++z)
+                        if (footprint[x, z] && !validTerrain[x, z])
+                            isValid = false;
+
+                if (isValid)
+                {
+                    CampusFactory.GenerateBuilding(
+                        _building,
+                        Game.Campus.transform,
+                        _terrain.Convert.GridToWorld(args.ClickLocation) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/,
+                        Quaternion.identity);
+
+                    _terrain.Editor.SetTakenGrid(_cursors.Position.x, _cursors.Position.y, footprint);
+
+                    SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
+                }
             }
+        }
+
+        /// <summary>
+        /// Get a boolean array representing valid construction terrain underneath the cursor.
+        /// </summary>
+        /// <returns>A boolean array representing the valid terrain beneath the cursor.</returns>
+        private bool[,] GetValidTerrainUnderMouse()
+        {
+            int footprintSizeX = _building.Footprint.GetLength(0);
+            int footprintSizeZ = _building.Footprint.GetLength(1);
+            return _terrain.Editor.CheckValidTerrain(_cursors.Position.x, _cursors.Position.y, footprintSizeX, footprintSizeZ);
         }
     }
 }

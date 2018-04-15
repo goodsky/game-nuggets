@@ -9,7 +9,6 @@ namespace Campus
     /// </summary>
     public class EditingTerrainController : GameStateController
     {
-        private SafeTerrainEditor _editor;
         private GridMesh _terrain;
         private GridCursor _cursor;
 
@@ -23,7 +22,6 @@ namespace Campus
         /// <param name="terrain">The terrain to edit.</param>
         public EditingTerrainController(GridMesh terrain)
         {
-            _editor = new SafeTerrainEditor(terrain);
             _terrain = terrain;
             _cursor = GridCursor.Create(terrain, Resources.Load<Material>("Terrain/cursor_terrain2"));
             _cursor.Deactivate();
@@ -77,7 +75,7 @@ namespace Campus
 
                 var gridHeight = Utils.Clamp(_editingGridLocation.y + _mouseDragHeightChange, 0, _terrain.CountY);
 
-                if (_editor.SafeSetHeight(_editingGridLocation.x, _editingGridLocation.z, gridHeight))
+                if (_terrain.Editor.SafeSetHeight(_editingGridLocation.x, _editingGridLocation.z, gridHeight))
                 {
                     _cursor.Place(_editingGridLocation.x, _editingGridLocation.z);
                 }

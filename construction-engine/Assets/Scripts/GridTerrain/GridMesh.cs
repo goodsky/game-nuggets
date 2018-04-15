@@ -70,6 +70,9 @@ namespace GridTerrain
         /// <summary>Gets the unit converter.</summary>
         public GridConverter Convert { get; private set; }
 
+        /// <summary>Gets the safe terrain editor.</summary>
+        public SafeTerrainEditor Editor { get; private set; }
+
         /// <summary>Gets the Unity collider for the terrain.</summary>
         public Collider Collider { get { return _collider; } }
 
@@ -162,6 +165,8 @@ namespace GridTerrain
                 minTerrainZ: GameObject.transform.position.z,
                 minTerrainY: args.StartingHeight * -GridStepSize);
 
+            Editor = new SafeTerrainEditor(this);
+
             if (args.Skirt)
             {
                 var skirtPrefab = Resources.Load<GameObject>("terrain_skirt");
@@ -234,6 +239,22 @@ namespace GridTerrain
                 GameLogger.FatalError("Attempted to GetVertexWorldHeight out of range. ({0},{1})", x, z);
 
             return Convert.GridHeightToWorld(_vertexHeight[x, z]);
+        }
+
+        /// <summary>
+        /// Gets if the grid square is flat or not.
+        /// </summary>
+        /// <param name="x">X coordinates of the grid square.</param>
+        /// <param name="z">Z coorindates of the grid square.</param>
+        /// <returns>True if the square is flat, false otherwise.</returns>
+        public bool IsGridFlat(int x, int z)
+        {
+            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+                GameLogger.FatalError("Attempted to get IsGridFlat out of range. ({0},{1})", x, z);
+
+            return _vertexHeight[x, z] == _vertexHeight[x + 1, z] &&
+                _vertexHeight[x, z] == _vertexHeight[x, z + 1] &&
+                _vertexHeight[x, z] == _vertexHeight[x + 1, z + 1];
         }
 
         /// <summary>

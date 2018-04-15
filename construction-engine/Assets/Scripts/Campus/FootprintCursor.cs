@@ -10,6 +10,8 @@ namespace Campus
     /// </summary>
     public class FootprintCursor
     {
+        public Point2 Position { get; private set; }
+
         private GridMesh _terrain;
         private Material _validMaterial;
         private Material _invalidMaterial;
@@ -138,6 +140,8 @@ namespace Campus
         /// <param name="location"></param>
         public void Place(Point3 location)
         {
+            Position = new Point2(location.x, location.z);
+
             int xSize = _cursors.GetLength(0);
             int zSize = _cursors.GetLength(1);
 
