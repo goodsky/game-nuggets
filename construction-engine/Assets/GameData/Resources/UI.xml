@@ -31,17 +31,31 @@
     <!-- Home Sub Menu Buttons -->
     <SubButtonGroup name="ConstructionMenu">
       <Buttons>
-        <Button name="BuildTest">
-          <Tooltip>Build Test Building</Tooltip>
-          <IconImage>Toolbar/icon-test1</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="NewConstruction" dataType="Building" data="Test Building"/>
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-        
         <Button name="EditTerrain">
           <Tooltip>Edit Terrain</Tooltip>
           <IconImage>Toolbar/icon-edit-terrain</IconImage>
           <OnSelect x:type="OpenWindowAction" windowName="EditingTerrain" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildTest">
+          <Tooltip>Build Test Building</Tooltip>
+          <IconImage>Toolbar/icon-test1</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Test Building"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildWeird">
+          <Tooltip>Build Weird Building</Tooltip>
+          <IconImage>Toolbar/icon-test1</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Weird Building"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildReallyWeird">
+          <Tooltip>Build Really Weird Building</Tooltip>
+          <IconImage>Toolbar/icon-test1</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Really Weird Building"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
@@ -50,7 +64,8 @@
     
   <!-- Windows that display information in the UI -->
   <Windows>
-    <Window name="NewConstruction" prefab="NewConstructionWindow" />
+    <Window name="ConstructionInfo" prefab="ConstructionInfoWindow" />
+    <Window name="ConstructionPlacing" prefab="ConstructionPlacingWindow" />
     <Window name="EditingTerrain" prefab="TerrainEditingWindow" />
   </Windows>
   

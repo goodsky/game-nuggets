@@ -2,6 +2,7 @@
 using GameData;
 using GridTerrain;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Campus
 {
@@ -33,8 +34,8 @@ namespace Campus
         {
             var gridMeshArgs = new GridMeshArgs()
             {
-                GridSquareSize = 1.0f, // some values are hard-coded to keep consistent scale
-                GridStepSize = 0.4f,
+                GridSquareSize = Constant.GridSize,
+                GridStepSize = Constant.GridStepSize,
                 CountX = gameData.Terrain.GridCountX,
                 CountZ = gameData.Terrain.GridCountZ,
                 CountY = gameData.Terrain.GridCountY,
@@ -49,11 +50,29 @@ namespace Campus
 
             Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
             Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
+            Game.State.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
 
-            // Load the buildings
-            foreach (var buildingData in gameData.Buildings)
+            var footprintCreatorObject = new GameObject("FootprintCreator");
+            using (var footprintCreator = footprintCreatorObject.AddComponent<FootprintCreator>())
             {
-                _buildingRegistry[buildingData.Name] = buildingData;
+                // Load the buildings
+                foreach (var buildingData in gameData.Buildings)
+                {
+                    if (buildingData.Icon.Value == null)
+                        GameLogger.FatalError("Could not load building icon '{0}'", buildingData.IconName);
+
+                    buildingData.Mesh = Resources.Load<Mesh>(string.Format("Buildings/{0}", buildingData.MeshName));
+                    if (buildingData.Mesh == null)
+                        GameLogger.FatalError("Could not load building mesh 'Buildings/{0}'", buildingData.MeshName);
+
+                    buildingData.Material = Resources.Load<Material>(string.Format("Buildings/{0}", buildingData.MaterialName));
+                    if (buildingData.Material == null)
+                        GameLogger.FatalError("Could not load building material 'Buildings/{0}'", buildingData.MaterialName);
+
+                    buildingData.Footprint = footprintCreator.CalculateFootprint(buildingData.Mesh, Constant.GridSize);
+
+                    _buildingRegistry[buildingData.Name] = buildingData;
+                }
             }
         }
 

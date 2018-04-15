@@ -1,4 +1,5 @@
 ﻿using Common;
+using System;
 using UnityEngine;
 
 namespace GridTerrain
@@ -10,6 +11,9 @@ namespace GridTerrain
     {
         public GridMesh Terrain;
 
+        private Vector3 _mousePosition;
+        private Point3 _mouseGridLocation;
+
         /// <summary>
         /// Unity's start method.
         /// </summary>
@@ -17,7 +21,45 @@ namespace GridTerrain
         {
             base.Start();
 
+            _mousePosition = Vector3.zero;
+            _mouseGridLocation = Point3.Null;
+
             OnMouseDown = Clicked;
+        }
+
+        /// <summary>
+        /// Unity's update method.
+        /// </summary>
+        protected override void Update()
+        {
+            //if (_mousePosition.Equals(Input.mousePosition))
+            //    return;
+
+            _mousePosition = Input.mousePosition;
+            var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(_mousePosition);
+
+            RaycastHit hit;
+            if (Terrain.Collider.Raycast(mouseRay, out hit, float.MaxValue))
+            {
+                var newMouseLocation = Terrain.Convert.WorldToGrid(hit.point);
+                if (newMouseLocation != _mouseGridLocation)
+                {
+                    _mouseGridLocation = newMouseLocation;
+
+                    var args = new TerrainSelectionUpdateArgs(_mouseGridLocation);
+                    Game.State.SelectionUpdateTerrain(args);
+                }
+            }
+            else
+            {
+                if (_mouseGridLocation != Point3.Null)
+                {
+                    _mouseGridLocation = Point3.Null;
+
+                    var args = new TerrainSelectionUpdateArgs(_mouseGridLocation);
+                    Game.State.SelectionUpdateTerrain(args);
+                }
+            }
         }
 
         /// <summary>
@@ -26,21 +68,36 @@ namespace GridTerrain
         /// <param name="mouse">The mouse button that was clicked.</param>
         private void Clicked(MouseButton mouse)
         {
-            var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
+            var args = new TerrainClickedArgs(mouse, _mouseGridLocation);
+            Game.State.ClickedTerrain(args);
+        }
+    }
 
-            RaycastHit hit;
-            Point3 clickLocation; 
-            if (Terrain.Collider.Raycast(mouseRay, out hit, float.MaxValue))
-            {
-                clickLocation = Terrain.Convert.WorldToGrid(hit.point);
-            }
-            else
-            {                
-                GameLogger.Warning("Raycast failed to hit terrain! {0}", mouseRay.ToString());
-                clickLocation = new Point3(-1, -1, -1);
-            }
+    /// <summary>
+    /// Terrain selection update event argument.
+    /// </summary>
+    public class TerrainSelectionUpdateArgs : EventArgs
+    {
+        public Point3 SelectionLocation { get; private set; }
 
-            Game.State.ClickedTerrain(mouse, clickLocation);
+        public TerrainSelectionUpdateArgs(Point3 selectionLocation)
+        {
+            SelectionLocation = selectionLocation;
+        }
+    }
+
+    /// <summary>
+    /// Terrain clicked event argument.
+    /// </summary>
+    public class TerrainClickedArgs : EventArgs
+    {
+        public MouseButton Button { get; private set; }
+        public Point3 ClickLocation { get; private set; }
+
+        public TerrainClickedArgs(MouseButton button, Point3 clickLocation)
+        {
+            Button = button;
+            ClickLocation = clickLocation;
         }
     }
 }

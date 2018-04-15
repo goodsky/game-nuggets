@@ -14,10 +14,7 @@ namespace Common
         Selecting,
 
         /// <summary>Constructing a new entity on the campus.</summary>
-        SelectingConstruction,
-
-        /// <summary>Construct the new entity.</summary>
-        ConfirmConstruction,
+        PlacingConstruction,
 
         /// <summary>Selecting campus terrain to modify.</summary>
         SelectingTerrain,
@@ -81,15 +78,15 @@ namespace Common
         /// Transition into a new initial state.
         /// If you pass me a non-initial state I'll scream.
         /// </summary>
-        public void StartDoing(GameState newState)
+        public void StartDoing(GameState newState, object context = null)
         {
             if (newState != GameState.SelectingTerrain &&
-                newState != GameState.SelectingConstruction)
+                newState != GameState.PlacingConstruction)
             {
                 throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
             }
 
-            Transition(newState);
+            Transition(newState, context);
         }
 
         /// <summary>
@@ -100,10 +97,6 @@ namespace Common
             if (Current == GameState.EditingTerrain)
             {
                 Transition(GameState.SelectingTerrain);
-            }
-            else if (Current == GameState.ConfirmConstruction)
-            {
-                Transition(GameState.SelectingConstruction);
             }
             else
             {
@@ -116,14 +109,37 @@ namespace Common
         /// </summary>
         /// <param name="button">The mouse button.</param>
         /// <param name="clickLocation">Location on the grid that was clicked.</param>
-        public void ClickedTerrain(MouseButton button, Point3 clickLocation)
+        public void ClickedTerrain(TerrainClickedArgs args)
         {
+            GameState startingState = Current;
+
             if (Current == GameState.SelectingTerrain)
             {
-                if (button == MouseButton.Left)
+                if (args.Button == MouseButton.Left)
                 {
-                    Transition(GameState.EditingTerrain, clickLocation);
+                    Transition(GameState.EditingTerrain, args);
                 }
+            }
+            
+            if (startingState == Current)
+            {
+                // runoff of unused events are sent into the active controllers
+                foreach (var controller in _currentStateControllers)
+                {
+                    controller.TerrainClicked(args);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The selection on the terrain was updated.
+        /// </summary>
+        /// <param name="args"></param>
+        public void SelectionUpdateTerrain(TerrainSelectionUpdateArgs args)
+        {
+            foreach (var controller in _currentStateControllers)
+            {
+                controller.TerrainSelectionUpdate(args);
             }
         }
 

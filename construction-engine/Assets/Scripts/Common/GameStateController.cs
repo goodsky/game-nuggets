@@ -1,4 +1,7 @@
-﻿namespace Common
+﻿using GridTerrain;
+using System;
+
+namespace Common
 {
     /// <summary>
     /// Base class for game state controllers.
@@ -20,5 +23,25 @@
         /// Called once as this state is ending.
         /// </summary>
         public abstract void TransitionOut();
+
+        /// <summary>Event handler for terrain clicked events that don't transition the state.</summary>
+        protected event EventHandler<TerrainClickedArgs> OnTerrainClicked;
+        public void TerrainClicked(TerrainClickedArgs args)
+        {
+            if (OnTerrainClicked != null)
+            {
+                OnTerrainClicked.Invoke(null, args);
+            }
+        }
+
+        /// <summary>Event handler for terrain selection moved events that don't transition the state.</summary>
+        protected event EventHandler<TerrainSelectionUpdateArgs> OnTerrainSelectionUpdate;
+        public void TerrainSelectionUpdate(TerrainSelectionUpdateArgs args)
+        {
+            if (OnTerrainSelectionUpdate != null)
+            {
+                OnTerrainSelectionUpdate.Invoke(null, args);
+            }
+        }
     }
 }

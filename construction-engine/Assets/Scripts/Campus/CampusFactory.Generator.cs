@@ -1,4 +1,6 @@
-﻿using GridTerrain;
+﻿using Common;
+using GameData;
+using GridTerrain;
 using UnityEngine;
 
 namespace Campus
@@ -14,23 +16,54 @@ namespace Campus
         /// <returns>The terrain game object.</returns>
         public static GameObject GenerateTerrain(Transform parent, GridMeshArgs args, out GridMesh mesh)
         {
-            var terrain = new GameObject("Campus Terrain");
-            terrain.transform.SetParent(parent, false);
+            var terrainObject = new GameObject("Campus Terrain");
+            terrainObject.transform.SetParent(parent, false);
 
-            var filter = terrain.AddComponent<MeshFilter>();
-            var collider = terrain.AddComponent<MeshCollider>();
-            var renderer = terrain.AddComponent<MeshRenderer>();
-            var selectable = terrain.AddComponent<SelectableTerrain>();
+            var filter = terrainObject.AddComponent<MeshFilter>();
+            var collider = terrainObject.AddComponent<MeshCollider>();
+            var renderer = terrainObject.AddComponent<MeshRenderer>();
+            var selectable = terrainObject.AddComponent<SelectableTerrain>();
 
             filter.mesh = new Mesh();
             filter.mesh.name = "grid-mesh";
+
+            renderer.receiveShadows = true;
 
             mesh = new GridMesh(filter.mesh, collider, renderer, args);
 
             selectable.Terrain = mesh;
             mesh.Selectable = selectable;
 
-            return terrain;
+            return terrainObject;
+        }
+
+        /// <summary>
+        /// Instantiates a campus building.
+        /// </summary>
+        /// <param name="buildingData">The building data.</param>
+        /// <param name="parent">The parent transform of the building.</param>
+        /// <param name="position">Position of the building to generate.</param>
+        /// <param name="rotation">Rotation of the building to generate.</param>
+        /// <returns>The campus building.</returns>
+        public static GameObject GenerateBuilding(BuildingData buildingData, Transform parent, Vector3 position, Quaternion rotation)
+        {
+            var buildingObject = new GameObject(buildingData.Name);
+            buildingObject.transform.SetParent(parent, false);
+
+            buildingObject.transform.position = position;
+            buildingObject.transform.rotation = rotation;
+
+            var filter = buildingObject.AddComponent<MeshFilter>();
+            var collider = buildingObject.AddComponent<MeshCollider>();
+            var renderer = buildingObject.AddComponent<MeshRenderer>();
+            var building = buildingObject.AddComponent<Building>();
+
+            filter.mesh = buildingData.Mesh;
+            collider.sharedMesh = buildingData.Mesh;
+            renderer.material = buildingData.Material;
+            building.Initialize(buildingData);
+
+            return buildingObject;
         }
     }
 }
