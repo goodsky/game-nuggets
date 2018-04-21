@@ -36,6 +36,9 @@ namespace GridTerrain
         /// <summary>The default material for the terrain.</summary>
         public int DefaultMaterial = 0;
 
+        /// <summary>The size of the grid squares on the material.</summary>
+        public int SubmaterialSize = 64;
+
         /// <summary>True if a skirt of non-gridmesh should be generated around the gridmesh.</summary>
         public bool Skirt = true;
     }
@@ -64,6 +67,9 @@ namespace GridTerrain
         /// <summary>Gets the number of materials available on this grid mesh.</summary>
         public int MaterialCount { get; private set; }
 
+        /// <summary>The size of submaterial squares.</summary>
+        public int SubmaterialSize { get; private set; }
+
         /// <summary>Gets the default material id used in this mesh.</summary>
         public int DefaultMaterial { get; private set; }
 
@@ -90,6 +96,7 @@ namespace GridTerrain
             public int VertexIndex;
             public int TriangleIndex;
             public int MaterialIndex;
+            public int SubmaterialIndex;
         }
 
         // Stores information about the grid square at [X, Z]
@@ -152,6 +159,20 @@ namespace GridTerrain
             CountZ = args.CountZ;
             CountY = args.CountY;
             MaterialCount = args.Materials.Length;
+            SubmaterialSize = args.SubmaterialSize;
+
+            foreach (var material in args.Materials)
+            {
+                if (material.mainTexture.width % SubmaterialSize != 0 ||
+                    material.mainTexture.height % SubmaterialSize != 0)
+                {
+                    throw new InvalidOperationException(string.Format("GridMesh material '{0}' is not a {1}x{1} grid sheet. [{2}x{3}]", 
+                        material.name, 
+                        SubmaterialSize,
+                        material.mainTexture.width,
+                        material.mainTexture.height));
+                }
+            }
 
             _materials = args.Materials;
             _gridData = new GridData[CountX, CountZ];
@@ -375,7 +396,24 @@ namespace GridTerrain
         /// <returns>Id of the material used at the grid square.</returns>
         public int GetMaterial(int x, int z)
         {
+            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+                GameLogger.FatalError("Attempted to get square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
+
             return _gridData[x, z].MaterialIndex;
+        }
+
+        /// <summary>
+        /// Gets the submaterial id of the grid square.
+        /// </summary>
+        /// <param name="x">X coordinate of the grid square.</param>
+        /// <param name="z">Z coordinate of the grid square.</param>
+        /// <returns>Id of the submaterial used at the grid square.</returns>
+        public int GetSubmaterial(int x, int z)
+        {
+            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+                GameLogger.FatalError("Attempted to get square submaterial outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
+
+            return _gridData[x, z].SubmaterialIndex;
         }
 
         /// <summary>
@@ -384,54 +422,83 @@ namespace GridTerrain
         /// <param name="x">X coordinate of the grid square.</param>
         /// <param name="z">Z coordinate of the grid square.</param>
         /// <param name="materialId">The id of the material to use at the grid square.</param>
-        public void SetMaterial(int x, int z, int materialId)
+        /// <param name="submaterialId">The id of the submaterial (the gridsheet on the material).</param>
+        public void SetMaterial(int x, int z, int materialId, int submaterialId = 0)
         {
+            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+                GameLogger.FatalError("Attempted to set square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
+
             try
             {
                 int oldMaterialId = _gridData[x, z].MaterialIndex;
+                int oldSubmaterialId = _gridData[x, z].SubmaterialIndex;
                 int oldTriangleIndex = _gridData[x, z].TriangleIndex;
 
-                if (oldMaterialId == materialId)
-                    return;
-
-                List<int> oldSubmesh = _triangles[oldMaterialId];
-                List<int> newSubmesh = _triangles[materialId];
-                int newTriangleIndex = newSubmesh.Count;
-
-                // Move the triangles out of the old material sub mesh and into the end of the new material sub mesh.
-                int toMoveCount = Vertex.TrianglesPerSquare * 3;
-                for (int i = 0; i < toMoveCount; ++i)
+                if (oldMaterialId != materialId)
                 {
-                    newSubmesh.Add(oldSubmesh[oldTriangleIndex + i]);
+                    List<int> oldSubmesh = _triangles[oldMaterialId];
+                    List<int> newSubmesh = _triangles[materialId];
+                    int newTriangleIndex = newSubmesh.Count;
+
+                    // Move the triangles out of the old material sub mesh and into the end of the new material sub mesh.
+                    int toMoveCount = Vertex.TrianglesPerSquare * 3;
+                    for (int i = 0; i < toMoveCount; ++i)
+                    {
+                        newSubmesh.Add(oldSubmesh[oldTriangleIndex + i]);
+                    }
+
+                    // Overwrite the old submesh triangle list with the last element.
+                    // Remove elements only from the end of the List.
+                    int oldSubmeshLength = oldSubmesh.Count;
+                    for (int i = 0; i < toMoveCount; ++i)
+                    {
+                        oldSubmesh[oldTriangleIndex + toMoveCount - 1 - i] = oldSubmesh[oldSubmeshLength - 1 - i];
+                        oldSubmesh.RemoveAt(oldSubmeshLength - 1 - i);
+                    }
+
+                    // keep our pointers state consistent
+                    _gridDataTriLookup[materialId][newTriangleIndex] = _gridData[x, z];
+                    _gridDataTriLookup[oldMaterialId].Remove(oldTriangleIndex);
+
+                    _gridData[x, z].MaterialIndex = materialId;
+                    _gridData[x, z].TriangleIndex = newTriangleIndex;
+
+                    int displacedTriangleIndex = oldSubmeshLength - toMoveCount;
+                    if (oldSubmesh.Count > 0 && displacedTriangleIndex != oldTriangleIndex)
+                    {
+                        GridData displacedGrid = _gridDataTriLookup[oldMaterialId][displacedTriangleIndex];
+
+                        Assert.AreEqual(displacedTriangleIndex, displacedGrid.TriangleIndex, "Grid TriangleIndex reverse lookup is corrupt!!!");
+
+                        displacedGrid.TriangleIndex = oldTriangleIndex;
+                        _gridDataTriLookup[oldMaterialId][oldTriangleIndex] = displacedGrid;
+                        _gridDataTriLookup[oldMaterialId].Remove(displacedTriangleIndex);
+                    }
                 }
 
-                // Overwrite the old submesh triangle list with the last element.
-                // Remove elements only from the end of the List.
-                int oldSubmeshLength = oldSubmesh.Count;
-                for (int i = 0; i < toMoveCount; ++i)
+                var material = _materials[materialId];
+                int submaterialCountX = material.mainTexture.width / SubmaterialSize;
+                int submaterialCountZ = material.mainTexture.height / SubmaterialSize;
+                int submaterialOffsetX = submaterialId % submaterialCountX;
+                int submaterialOffsetZ = submaterialId / submaterialCountX;
+
+                if (submaterialOffsetZ >= submaterialCountZ)
                 {
-                    oldSubmesh[oldTriangleIndex + toMoveCount - 1 - i] = oldSubmesh[oldSubmeshLength - 1 - i];
-                    oldSubmesh.RemoveAt(oldSubmeshLength - 1 - i);
+                    throw new InvalidOperationException(string.Format("Submaterial index '{0}' is out of range for material {1} ({2}x{3}).", submaterialId, material.name, submaterialCountX, submaterialCountZ));
                 }
 
-                // keep our pointers state consistent
-                _gridDataTriLookup[materialId][newTriangleIndex] = _gridData[x, z];
-                _gridDataTriLookup[oldMaterialId].Remove(oldTriangleIndex);
+                float stepX = (1.0f / submaterialCountX);
+                float stepZ = (1.0f / submaterialCountZ);
+                float bottomLeftX = submaterialOffsetX * (1.0f / submaterialCountX);
+                float bottomLeftZ = 1.0f - submaterialOffsetZ * (1.0f / submaterialCountZ);
 
-                _gridData[x, z].MaterialIndex = materialId;
-                _gridData[x, z].TriangleIndex = newTriangleIndex;
-
-                int displacedTriangleIndex = oldSubmeshLength - toMoveCount;
-                if (oldSubmesh.Count > 0 && displacedTriangleIndex != oldTriangleIndex)
-                {
-                    GridData displacedGrid = _gridDataTriLookup[oldMaterialId][displacedTriangleIndex];
-
-                    Assert.AreEqual(displacedTriangleIndex, displacedGrid.TriangleIndex, "Grid TriangleIndex reverse lookup is corrupt!!!");
-
-                    displacedGrid.TriangleIndex = oldTriangleIndex;
-                    _gridDataTriLookup[oldMaterialId][oldTriangleIndex] = displacedGrid;
-                    _gridDataTriLookup[oldMaterialId].Remove(displacedTriangleIndex);
-                }
+                var grid = _gridData[x, z];
+                _uv[grid.VertexIndex + Vertex.BottomLeft] = new Vector2(submaterialOffsetX * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
+                _uv[grid.VertexIndex + Vertex.BottomRight] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
+                _uv[grid.VertexIndex + Vertex.TopRight] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - submaterialOffsetZ * stepZ);
+                _uv[grid.VertexIndex + Vertex.TopLeft] = new Vector2(submaterialOffsetX * stepX, 1.0f - submaterialOffsetZ * stepZ);
+                _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
+                grid.SubmaterialIndex = submaterialId;
 
                 UpdateMesh();
             }
@@ -481,11 +548,11 @@ namespace GridTerrain
                     _vertices[vertexIndex++] = new Vector3(x * GridSquareSize + (GridSquareSize / 2), 0.0f, z * GridSquareSize + (GridSquareSize / 2)); // center
 
                     // Generate UV coordinates for textures
-                    _uv[uvIndex++] = new Vector2(0.0f, 0.0f); // bottom-left
-                    _uv[uvIndex++] = new Vector2(1.0f, 0.0f); // bottom-right
-                    _uv[uvIndex++] = new Vector2(1.0f, 1.0f); // top-right
+                    _uv[uvIndex++] = new Vector2(0.0f, 0.5f); // bottom-left
+                    _uv[uvIndex++] = new Vector2(0.25f, 0.5f); // bottom-right
+                    _uv[uvIndex++] = new Vector2(0.25f, 1.0f); // top-right
                     _uv[uvIndex++] = new Vector2(0.0f, 1.0f); // top-left
-                    _uv[uvIndex++] = new Vector2(0.5f, 0.5f); // center
+                    _uv[uvIndex++] = new Vector2(0.125f, 0.75f); // center
 
                     // Keep pointer to start of square in triangles array
                     _gridData[x, z].TriangleIndex = defaultSubmesh.Count;

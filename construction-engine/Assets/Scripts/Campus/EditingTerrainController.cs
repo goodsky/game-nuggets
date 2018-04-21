@@ -68,7 +68,7 @@ namespace Campus
                 return;
             }
 
-            int newHeightChange = (int)((Input.mousePosition.y - _mouseDragStartY) / 25.0f);
+            int newHeightChange = (int)((Input.mousePosition.y - _mouseDragStartY) / 10.0f);
             if (newHeightChange != _mouseDragHeightChange)
             {
                 _mouseDragHeightChange = newHeightChange;

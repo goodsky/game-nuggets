@@ -9,9 +9,7 @@ namespace GridTerrain
     public enum GridMaterialType
     {
         GridGrass,
-        GridGrassBlue,
-        GridGrassRed,
-        GridGrassYellow
+        GridPath
     }
 
     public static class GridMaterials
@@ -20,9 +18,7 @@ namespace GridTerrain
         private static readonly string[] s_materialNames = new string[]
         {
             "Terrain/grid-grass",
-            "Terrain/grid-grass-blue",
-            "Terrain/grid-grass-red",
-            "Terrain/grid-grass-yellow"
+            "Terrain/grid-path"
         };
 
         // Mapping of material types to index in the materials array. -1 if not loaded.
