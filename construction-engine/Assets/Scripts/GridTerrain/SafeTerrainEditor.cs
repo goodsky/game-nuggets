@@ -50,7 +50,7 @@ namespace GridTerrain
         /// <param name="xSize">Width of the area to check.</param>
         /// <param name="zSize">Height of the area to check.</param>
         /// <returns>Array of booleans representing valid or invalid squares.</returns>
-        public bool[,] CheckValidTerrain(int xBase, int zBase, int xSize, int zSize)
+        public bool[,] CheckFlatAndFree(int xBase, int zBase, int xSize, int zSize)
         {
             bool[,] check = new bool[xSize, zSize];
 
@@ -75,6 +75,68 @@ namespace GridTerrain
             }
 
             return check;
+        }
+
+        /// <summary>
+        /// Check if the terrain is valid for pathing.
+        /// i.e. smooth and untaken.
+        /// </summary>
+        /// <param name="xStart">Start x position.</param>
+        /// <param name="zStart">Start z position.</param>
+        /// <param name="xEnd">End x position.</param>
+        /// <param name="zEnd">End z position.</param>
+        /// <returns>Boolean array representing whether or not the square is smooth and free.</returns>
+        public bool[] CheckSmoothAndFree(int xStart, int zStart, int xEnd, int zEnd)
+        {
+            if (xStart != xEnd && zStart != zEnd)
+                throw new InvalidOperationException("Smooth line is not axis aligned.");
+
+            if (xStart != xEnd)
+            {
+                int dx = xStart < xEnd ? 1 : -1;
+                int length = Math.Abs(xStart - xEnd) + 1;
+                bool[] isValid = new bool[length];
+
+                for (int i = 0; i < length; ++i)
+                {
+                    int gridX = xStart + i * dx;
+                    int gridZ = zStart;
+
+                    isValid[i] =
+                        gridX >= 0 &&
+                        gridX < _terrain.CountX &&
+                        gridZ >= 0 &&
+                        gridZ < _terrain.CountZ &&
+                        !_gridTaken[gridX, gridZ] &&
+                        _terrain.GetVertexHeight(gridX, gridZ) == _terrain.GetVertexHeight(gridX, gridZ + 1) &&
+                        _terrain.GetVertexHeight(gridX + 1, gridZ) == _terrain.GetVertexHeight(gridX + 1, gridZ + 1);
+                }
+
+                return isValid;
+            }
+            else
+            {
+                int dz = zStart < zEnd ? 1 : -1;
+                int length = Math.Abs(zStart - zEnd) + 1;
+                bool[] isValid = new bool[length];
+
+                for (int i = 0; i < length; ++i)
+                {
+                    int gridX = xStart;
+                    int gridZ = zStart + i * dz;
+
+                    isValid[i] =
+                        gridX >= 0 &&
+                        gridX < _terrain.CountX &&
+                        gridZ >= 0 &&
+                        gridZ < _terrain.CountZ &&
+                        !_gridTaken[gridX, gridZ] &&
+                        _terrain.GetVertexHeight(gridX, gridZ) == _terrain.GetVertexHeight(gridX + 1, gridZ) &&
+                        _terrain.GetVertexHeight(gridX, gridZ + 1) == _terrain.GetVertexHeight(gridX + 1, gridZ + 1);
+                }
+
+                return isValid;
+            }
         }
 
         /// <summary>

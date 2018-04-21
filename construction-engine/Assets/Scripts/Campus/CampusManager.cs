@@ -16,6 +16,9 @@ namespace Campus
         /// <summary>Terrain grid mesh.</summary>
         public GridMesh Terrain { get; private set; }
 
+        /// <summary>Buildings on the campus.</summary>
+        public CampusBuildings Buildings { get; private set; }
+
         /// <summary>
         /// Gets the metadata about the requested building.
         /// </summary>
@@ -47,10 +50,13 @@ namespace Campus
             CampusFactory.GenerateTerrain(transform, gridMeshArgs, out terrain);
 
             Terrain = terrain;
+            Buildings = new CampusBuildings(terrain);
 
             Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
             Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
             Game.State.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
+            Game.State.RegisterController(GameState.SelectingPath, new SelectingPathController(terrain));
+            Game.State.RegisterController(GameState.PlacingPath, new PlacingPathController(terrain));
 
             var footprintCreatorObject = new GameObject("FootprintCreator");
             using (var footprintCreator = footprintCreatorObject.AddComponent<FootprintCreator>())

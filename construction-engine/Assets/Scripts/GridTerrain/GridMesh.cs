@@ -431,7 +431,6 @@ namespace GridTerrain
             try
             {
                 int oldMaterialId = _gridData[x, z].MaterialIndex;
-                int oldSubmaterialId = _gridData[x, z].SubmaterialIndex;
                 int oldTriangleIndex = _gridData[x, z].TriangleIndex;
 
                 if (oldMaterialId != materialId)
@@ -489,8 +488,6 @@ namespace GridTerrain
 
                 float stepX = (1.0f / submaterialCountX);
                 float stepZ = (1.0f / submaterialCountZ);
-                float bottomLeftX = submaterialOffsetX * (1.0f / submaterialCountX);
-                float bottomLeftZ = 1.0f - submaterialOffsetZ * (1.0f / submaterialCountZ);
 
                 var grid = _gridData[x, z];
                 _uv[grid.VertexIndex + Vertex.BottomLeft] = new Vector2(submaterialOffsetX * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
