@@ -1,6 +1,7 @@
 ﻿using Common;
 using GridTerrain;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Campus
@@ -29,6 +30,7 @@ namespace Campus
                 Resources.Load<Material>("Terrain/cursor_invalid"));
 
             OnTerrainSelectionUpdate += PlacementUpdate;
+            OnTerrainClicked += Clicked;
         }
 
         /// <summary>
@@ -60,6 +62,11 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
+                if (GetValidTerrainAlongLine().All(b => b))
+                {
+                    Game.Campus.Paths.BuildPath(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
+                }
+
                 Transition(GameState.SelectingPath);
                 return;
             }
@@ -94,6 +101,20 @@ namespace Campus
                 int length = Math.Abs(_pathStart.x - _pathEnd.x) + Math.Abs(_pathStart.z - _pathEnd.z);
                 bool[] allInvalid = new bool[length];
                 _cursors.Place(_pathStart, _pathEnd, allInvalid);
+            }
+        }
+
+        /// <summary>
+        /// Handle a click event on the terrain.
+        /// </summary>
+        /// <param name="sender">Not used.</param>
+        /// <param name="args">The terrain click arguments.</param>
+        private void Clicked(object sender, TerrainClickedArgs args)
+        {
+            if (args.Button == MouseButton.Right)
+            {
+                // Cancel placing path.
+                Transition(GameState.SelectingPath);
             }
         }
 

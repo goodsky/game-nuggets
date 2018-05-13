@@ -497,7 +497,7 @@ namespace GridTerrain
                 _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
                 grid.SubmaterialIndex = submaterialId;
 
-                UpdateMesh();
+                UpdateMesh(materialsOnly: true);
             }
             catch (Exception ex)
             {
@@ -577,7 +577,7 @@ namespace GridTerrain
         /// Update the dynamic mesh with the new vertices, uvs and triangles.
         /// Update the normals, bounds and collider.
         /// </summary>
-        private void UpdateMesh()
+        private void UpdateMesh(bool materialsOnly = false)
         {
             _mesh.Clear();
             _mesh.vertices = _vertices;
@@ -599,7 +599,11 @@ namespace GridTerrain
             }
 
             _mesh.RecalculateNormals();
-            _mesh.RecalculateBounds();
+
+            if (!materialsOnly)
+            {
+                _mesh.RecalculateBounds();
+            }
 
             _collider.sharedMesh = _mesh;
             _renderer.materials = activeMaterials;

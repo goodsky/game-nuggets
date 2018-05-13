@@ -19,6 +19,9 @@ namespace Campus
         /// <summary>Buildings on the campus.</summary>
         public CampusBuildings Buildings { get; private set; }
 
+        /// <summary>Paths on the campus.</summary>
+        public CampusPaths Paths { get; private set; }
+
         /// <summary>
         /// Gets the metadata about the requested building.
         /// </summary>
@@ -51,6 +54,7 @@ namespace Campus
 
             Terrain = terrain;
             Buildings = new CampusBuildings(terrain);
+            Paths = new CampusPaths(terrain);
 
             Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
             Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
