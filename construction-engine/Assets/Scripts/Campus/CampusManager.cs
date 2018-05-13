@@ -46,7 +46,7 @@ namespace Campus
                 CountZ = gameData.Terrain.GridCountZ,
                 CountY = gameData.Terrain.GridCountY,
                 StartingHeight = gameData.Terrain.StartingHeight,
-                Materials = GridMaterials.GetAll(),
+                Material = gameData.Terrain.TerrainMaterial.Value,
             };
 
             GridMesh terrain;

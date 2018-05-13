@@ -82,7 +82,7 @@ namespace Campus
 
         private void SetPathMaterial(int x, int z)
         {
-            _terrain.SetMaterial(x, z, 1, 0);
+            _terrain.SetSubmaterial(x, z, 1);
         }
     }
 }

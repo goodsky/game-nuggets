@@ -96,15 +96,8 @@ namespace Campus
 
                 if (Input.GetKey(KeyCode.LeftControl))
                 {
-                    int material = _terrain.GetMaterial(args.ClickLocation.x, args.ClickLocation.z);
                     int submaterial = _terrain.GetSubmaterial(args.ClickLocation.x, args.ClickLocation.z);
-                    _terrain.SetMaterial(args.ClickLocation.x, args.ClickLocation.z, material, (submaterial + 1) % 8);
-                }
-
-                if (Input.GetKey(KeyCode.LeftAlt))
-                {
-                    int material = _terrain.GetMaterial(args.ClickLocation.x, args.ClickLocation.z);
-                    _terrain.SetMaterial(args.ClickLocation.x, args.ClickLocation.z, (material + 1) % _terrain.MaterialCount);
+                    _terrain.SetSubmaterial(args.ClickLocation.x, args.ClickLocation.z, (submaterial + 1) % _terrain.SubmaterialCount);
                 }
             }
         }
