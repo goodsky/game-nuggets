@@ -110,7 +110,8 @@ namespace Campus
                 next.SetMaterial(isValid[cursorIndex] ? _validMaterial : _invalidMaterial);
                 next.Place(pos.x, pos.z);
 
-                pos = new Point3(pos.x + dx, pos.y, pos.z + dz);
+                if (cursorIndex < length - 1) // avoid making an invalid point
+                    pos = new Point3(pos.x + dx, pos.y, pos.z + dz);
             } 
 
             for (int cursorIndex = length; cursorIndex < _cursors.Length; ++cursorIndex)

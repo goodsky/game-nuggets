@@ -93,15 +93,22 @@ namespace Campus
                 {
                     _pathEnd = new Point3(_pathStart.x, args.SelectionLocation.y, args.SelectionLocation.z);
                 }
-
-                _cursors.Place(_pathStart, _pathEnd, GetValidTerrainAlongLine());
             }
             else
             {
-                int length = Math.Abs(_pathStart.x - _pathEnd.x) + Math.Abs(_pathStart.z - _pathEnd.z);
-                bool[] allInvalid = new bool[length];
-                _cursors.Place(_pathStart, _pathEnd, allInvalid);
+                // snap to the extreme option if moused out of bounds
+                if (_pathEnd.x < _pathStart.x)
+                    _pathEnd = new Point3(0, _pathEnd.y, _pathEnd.z);
+                else if (_pathEnd.x > _pathStart.x)
+                    _pathEnd = new Point3(_terrain.CountX - 1, _pathEnd.y, _pathEnd.z);
+                else if (_pathEnd.y < _pathStart.y)
+                    _pathEnd = new Point3(_pathEnd.x, _pathEnd.y, 0);
+                else if (_pathEnd.y > _pathStart.y)
+                    _pathEnd = new Point3(_pathEnd.x, _pathEnd.y, _terrain.CountZ - 1);
+
             }
+
+            _cursors.Place(_pathStart, _pathEnd, GetValidTerrainAlongLine());
         }
 
         /// <summary>
