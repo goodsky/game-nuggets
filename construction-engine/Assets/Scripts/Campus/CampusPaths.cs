@@ -60,8 +60,8 @@ namespace Campus
 
                 for (int z = 0; z < length; ++z)
                 {
-                    _path[start.z + z * dz, start.z] = true;
-                    _terrain.Editor.SetAnchored(start.z + z * dz, start.z);
+                    _path[start.x, start.z + z * dz] = true;
+                    _terrain.Editor.SetAnchored(start.x, start.z + z * dz);
                 }
             }
 
@@ -80,7 +80,14 @@ namespace Campus
         /// <param name="z"></param>
         private void SetPathMaterial(int x, int z)
         {
-            _terrain.SetSubmaterial(x, z, 1);
+            if (!_path[x, z])
+            {
+                _terrain.SetSubmaterial(x, z, 0);
+            }
+            else
+            {
+                _terrain.SetSubmaterial(x, z, 1);
+            }
         }
     }
 }

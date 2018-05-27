@@ -398,12 +398,12 @@ namespace GridTerrain
         }
 
         /// <summary>
-        /// Sets the material on a grid square.
+        /// Sets the submaterial on a grid square.
         /// </summary>
         /// <param name="x">X coordinate of the grid square.</param>
         /// <param name="z">Z coordinate of the grid square.</param>
         /// <param name="submaterialId">The id of the submaterial (the gridsheet on the material from left->right, top->bottom).</param>
-        public void SetSubmaterial(int x, int z, int submaterialId)
+        public void SetSubmaterial(int x, int z, int submaterialId, Rotation rotation = Rotation.deg0)
         {
             if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
                 GameLogger.FatalError("Attempted to set square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
@@ -419,11 +419,25 @@ namespace GridTerrain
             float stepX = (1.0f / _submaterialCountX);
             float stepZ = (1.0f / _submaterialCountZ);
 
+            int rotationOffset = 0;
+            switch (rotation)
+            {
+                case Rotation.deg90:
+                    rotationOffset = 3;
+                    break;
+                case Rotation.deg180:
+                    rotationOffset = 2;
+                    break;
+                case Rotation.deg270:
+                    rotationOffset = 1;
+                    break;
+            }
+
             var grid = _gridData[x, z];
-            _uv[grid.VertexIndex + Vertex.BottomLeft] = new Vector2(submaterialOffsetX * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
-            _uv[grid.VertexIndex + Vertex.BottomRight] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
-            _uv[grid.VertexIndex + Vertex.TopRight] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - submaterialOffsetZ * stepZ);
-            _uv[grid.VertexIndex + Vertex.TopLeft] = new Vector2(submaterialOffsetX * stepX, 1.0f - submaterialOffsetZ * stepZ);
+            _uv[grid.VertexIndex + (Vertex.BottomLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
+            _uv[grid.VertexIndex + (Vertex.BottomRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
+            _uv[grid.VertexIndex + (Vertex.TopRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - submaterialOffsetZ * stepZ);
+            _uv[grid.VertexIndex + (Vertex.TopLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX, 1.0f - submaterialOffsetZ * stepZ);
             _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
             grid.SubmaterialIndex = submaterialId;
 
@@ -527,5 +541,14 @@ namespace GridTerrain
             public const int CountPerSquare = 5;
             public const int TrianglesPerSquare = 4;
         }
+    }
+
+    // Rotation of a submaterial
+    public enum Rotation
+    {
+        deg0,
+        deg90,
+        deg180,
+        deg270
     }
 }
