@@ -91,18 +91,36 @@ namespace GridTerrain
             if (xStart != xEnd && zStart != zEnd)
                 throw new InvalidOperationException("Smooth line is not axis aligned.");
 
-            if (xStart != xEnd)
+            if (xStart == xEnd && zStart == zEnd)
             {
+                // Case: Checking a single square
+                return new bool[] {
+                    xStart >= 0 &&
+                    xStart < _terrain.CountX &&
+                    zStart >= 0 &&
+                    zStart < _terrain.CountZ &&
+                    !_gridTaken[xStart, zStart] &&
+                    (
+                        (_terrain.GetVertexHeight(xStart, zStart) == _terrain.GetVertexHeight(xStart, zStart + 1) &&
+                        _terrain.GetVertexHeight(xStart + 1, zStart) == _terrain.GetVertexHeight(xStart + 1, zStart + 1)) ||
+                        (_terrain.GetVertexHeight(xStart, zStart) == _terrain.GetVertexHeight(xStart + 1, zStart) &&
+                        _terrain.GetVertexHeight(xStart, zStart + 1) == _terrain.GetVertexHeight(xStart + 1, zStart + 1))
+                    )
+                };
+            }
+            else if (xStart != xEnd)
+            {
+                // Case: Checking a line along the x-axis
                 int dx = xStart < xEnd ? 1 : -1;
                 int length = Math.Abs(xStart - xEnd) + 1;
                 bool[] isValid = new bool[length];
 
-                for (int i = 0; i < length; ++i)
+                for (int x = 0; x < length; ++x)
                 {
-                    int gridX = xStart + i * dx;
+                    int gridX = xStart + x * dx;
                     int gridZ = zStart;
 
-                    isValid[i] =
+                    isValid[x] =
                         gridX >= 0 &&
                         gridX < _terrain.CountX &&
                         gridZ >= 0 &&
@@ -116,16 +134,17 @@ namespace GridTerrain
             }
             else
             {
+                // Case: Checking a line along the z-axis
                 int dz = zStart < zEnd ? 1 : -1;
                 int length = Math.Abs(zStart - zEnd) + 1;
                 bool[] isValid = new bool[length];
 
-                for (int i = 0; i < length; ++i)
+                for (int z = 0; z < length; ++z)
                 {
                     int gridX = xStart;
-                    int gridZ = zStart + i * dz;
+                    int gridZ = zStart + z * dz;
 
-                    isValid[i] =
+                    isValid[z] =
                         gridX >= 0 &&
                         gridX < _terrain.CountX &&
                         gridZ >= 0 &&

@@ -71,7 +71,7 @@ namespace Campus
 
                 _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
                 _cursor.SetMaterial(
-                    _terrain.Editor.CheckFlatAndFree(_cursor.Position.x, _cursor.Position.y, 1, 1)[0, 0] ?
+                    _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ?
                         _validMaterial :
                         _invalidMaterial);
             }
@@ -91,7 +91,7 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (_terrain.Editor.CheckFlatAndFree(_cursor.Position.x, _cursor.Position.y, 1, 1)[0, 0])
+                if (_terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0])
                 {
                     Transition(GameState.PlacingPath, args);
                 }

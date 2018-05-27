@@ -1,8 +1,5 @@
 ﻿using GridTerrain;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Campus
 {
@@ -20,66 +17,54 @@ namespace Campus
             _path = new bool[_terrain.CountX, _terrain.CountZ];
         }
 
-        public void BuildPath(int startx, int startz, int endx, int endz)
+        /// <summary>
+        /// Build a path between two points.
+        /// The path must be in a straight line.
+        /// </summary>
+        /// <param name="start">Starting location of the line.</param>
+        /// <param name="end">Ending location of the line.</param>
+        public void BuildPath(Point3 start, Point3 end)
         {
-            if (startx != endx && startz != endz)
+            if (start.x != end.x && start.z != end.z)
                 throw new InvalidOperationException("Path must be built along an axis-aligned line.");
 
-            int dx = 0;
-            int dz = 0;
-            int length = 1;
-
-            if (startx != endx)
+            if (start.x == end.x && start.z == end.z)
             {
-                dx = (startx < endx) ? 1 : -1;
-                length = Math.Abs(startx - endx) + 1;
+                // Case: Building a single square
+                _path[start.x, start.z] = true;
+            }
+            else if (start.x != end.x)
+            {
+                // Case: Building a line along the x-axis
+                int dx = start.x < end.x ? 1 : -1;
+                int length = Math.Abs(start.x - end.x) + 1;
+
+                for (int x = 0; x < length; ++x)
+                    _path[start.x + x * dx, start.z] = true;
+            }
+            else
+            {
+                // Case: Building a line along the z-axis
+                int dz = start.z < end.z ? 1 : -1;
+                int length = Math.Abs(start.z - end.z) + 1;
+
+                for (int z = 0; z < length; ++z)
+                    _path[start.z + z * dz, start.z] = true;
             }
 
-            if (startz != endz)
-            {
-                dz = (startz < endz) ? 1 : -1;
-                length = Math.Abs(startz - endz) + 1;
-            }
-
-            int posx = startx;
-            int posz = startz;
-            for (int cursorIndex = 0; cursorIndex < length; ++cursorIndex)
-            {
-                _path[posx, posz] = true;
-
-                posx += dx;
-                posz += dz;
-            }
-
-            posx = startx - dx;
-            posz = startz - dz;
-            for (int cursorIndex = 0; cursorIndex < length + 2; ++cursorIndex)
-            {
-                // this is a gross way to try to get the surrounding grids around the line we updated
-                if (dx == 0)
-                {
-                    for (int scanx = posx - 1; scanx <= posx + 1; ++scanx)
-                    {
-                        if (scanx >= 0 && scanx < _terrain.CountX &&
-                            posz >= 0 && posz < _terrain.CountZ)
-                            SetPathMaterial(scanx, posz);
-                    }
-                }
-                else
-                {
-                    for (int scanz = posz - 1; scanz <= posz + 1; ++scanz)
-                    {
-                        if (scanz >= 0 && scanz < _terrain.CountZ &&
-                            posx >= 0 && posx < _terrain.CountX)
-                            SetPathMaterial(posx, scanz);
-                    }
-                }
-                
-                posx += dx;
-                posz += dz;
-            }
+            // Set the updated materials
+            for (int scanX = Math.Min(start.x, end.x) - 1; scanX <= Math.Max(start.x, end.x) + 1; ++scanX)
+                for (int scanZ = Math.Min(start.z, end.z) - 1; scanZ <= Math.Max(start.z, end.z) + 1; ++scanZ)
+                    if (scanX >= 0 && scanX < _terrain.CountX &&
+                        scanZ >= 0 && scanZ < _terrain.CountZ)
+                        SetPathMaterial(scanX, scanZ);
         }
 
+        /// <summary>
+        /// Update the material of the grid to look like the path.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="z"></param>
         private void SetPathMaterial(int x, int z)
         {
             _terrain.SetSubmaterial(x, z, 1);

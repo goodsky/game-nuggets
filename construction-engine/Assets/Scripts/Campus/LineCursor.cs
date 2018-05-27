@@ -86,37 +86,46 @@ namespace Campus
             if (start.x != end.x && start.z != end.z)
                 throw new InvalidOperationException("LineCursor must be placed along an axis-aligned line.");
 
+            // note: this code could be shortened, but I kind of like the symmetry with other line editors
             int dx = 0;
             int dz = 0;
             int length = 1;
-
-            if (start.x != end.x)
+            if (start.x == end.x && start.z == end.z)
             {
-                dx = (start.x < end.x) ? 1 : -1;
+                // Case: Placing a single square
+            }
+            else if (start.x != end.x)
+            {
+                // Case: Placing a line along the x-axis
+                dx = start.x < end.x ? 1 : -1;
                 length = Math.Abs(start.x - end.x) + 1;
             }
-
-            if (start.z != end.z)
+            else
             {
-                dz = (start.z < end.z) ? 1 : -1;
+                // Case: Placing a line along the z-axis
+                dz = start.z < end.z ? 1 : -1;
                 length = Math.Abs(start.z - end.z) + 1;
             }
 
-            Point3 pos = start;
-            for (int cursorIndex = 0; cursorIndex < length; ++cursorIndex)
+            for (int i = 0; i < _cursors.Length; ++i)
             {
-                var next = _cursors[cursorIndex];
-                next.Activate();
-                next.SetMaterial(isValid[cursorIndex] ? _validMaterial : _invalidMaterial);
-                next.Place(pos.x, pos.z);
+                if (i >= length)
+                {
+                    if (!_cursors[i].IsActive)
+                        break;
 
-                if (cursorIndex < length - 1) // avoid making an invalid point
-                    pos = new Point3(pos.x + dx, pos.y, pos.z + dz);
-            } 
+                    // disable unused cursors
+                    _cursors[i].Deactivate();
+                    continue;
+                }
 
-            for (int cursorIndex = length; cursorIndex < _cursors.Length; ++cursorIndex)
-            {
-                _cursors[cursorIndex++].Deactivate();
+                int gridX = start.x + i * dx;
+                int gridZ = start.z + i * dz;
+
+                var cursor = _cursors[i];
+                cursor.Activate();
+                cursor.SetMaterial(isValid[i] ? _validMaterial : _invalidMaterial);
+                cursor.Place(gridX, gridZ);
             }
         }
     }

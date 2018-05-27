@@ -64,7 +64,7 @@ namespace Campus
             {
                 if (GetValidTerrainAlongLine().All(b => b))
                 {
-                    Game.Campus.Paths.BuildPath(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
+                    Game.Campus.Paths.BuildPath(_pathStart, _pathEnd);
                 }
 
                 Transition(GameState.SelectingPath);
