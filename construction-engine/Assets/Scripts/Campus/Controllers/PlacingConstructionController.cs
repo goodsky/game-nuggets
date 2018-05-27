@@ -8,7 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingContruction game state.
     /// </summary>
-    public class PlacingConstructionController : GameStateMachine.Controller
+    internal class PlacingConstructionController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
 

@@ -1,5 +1,8 @@
 ﻿using GridTerrain;
 using System;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Campus
 {
@@ -25,13 +28,17 @@ namespace Campus
         /// <param name="end">Ending location of the line.</param>
         public void BuildPath(Point3 start, Point3 end)
         {
-            if (start.x != end.x && start.z != end.z)
-                throw new InvalidOperationException("Path must be built along an axis-aligned line.");
+            if (Application.isEditor)
+            {
+                Assert.IsFalse(start.x != end.x && start.z != end.z, "Placing path in invalid location!");
+                Assert.IsTrue(_terrain.Editor.CheckSmoothAndFree(start.x, start.z, end.x, end.z).All(b => b), "Placing path in invalid location!");
+            }
 
             if (start.x == end.x && start.z == end.z)
             {
                 // Case: Building a single square
                 _path[start.x, start.z] = true;
+                _terrain.Editor.SetAnchored(start.x, start.z);
             }
             else if (start.x != end.x)
             {
@@ -40,7 +47,10 @@ namespace Campus
                 int length = Math.Abs(start.x - end.x) + 1;
 
                 for (int x = 0; x < length; ++x)
+                {
                     _path[start.x + x * dx, start.z] = true;
+                    _terrain.Editor.SetAnchored(start.x + x * dx, start.z);
+                }
             }
             else
             {
@@ -49,7 +59,10 @@ namespace Campus
                 int length = Math.Abs(start.z - end.z) + 1;
 
                 for (int z = 0; z < length; ++z)
+                {
                     _path[start.z + z * dz, start.z] = true;
+                    _terrain.Editor.SetAnchored(start.z + z * dz, start.z);
+                }
             }
 
             // Set the updated materials

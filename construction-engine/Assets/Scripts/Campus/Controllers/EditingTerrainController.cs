@@ -7,7 +7,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingTerrain game state.
     /// </summary>
-    public class EditingTerrainController : GameStateMachine.Controller
+    internal class EditingTerrainController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
         private GridCursor _cursor;

@@ -9,7 +9,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingPath game state.
     /// </summary>
-    class PlacingPathController : GameStateMachine.Controller
+    internal class PlacingPathController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
         private LineCursor _cursors;
