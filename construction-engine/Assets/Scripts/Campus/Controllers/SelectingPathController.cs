@@ -71,7 +71,7 @@ namespace Campus
 
                 _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
                 _cursor.SetMaterial(
-                    _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ?
+                    IsValidTerrain() ?
                         _validMaterial :
                         _invalidMaterial);
             }
@@ -91,11 +91,31 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (_terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0])
+                if (IsValidTerrain())
                 {
                     Transition(GameState.PlacingPath, args);
                 }
             }
+
+            // DEBUGGING:
+            if (args.Button == MouseButton.Right)
+            {
+                GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; IsPath: {2}", 
+                    IsValidTerrain(), 
+                    _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0],
+                    Game.Campus.Paths.IsPath(_cursor.Position.x, _cursor.Position.y));
+            }
+        }
+
+        /// <summary>
+        /// Gets a value representing whether or not the grid under the cursor is valid for path.
+        /// </summary>
+        /// <returns>True if the grid is valid, false otherwise.</returns>
+        private bool IsValidTerrain()
+        {
+            return
+                _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ||
+                Game.Campus.Paths.IsPath(_cursor.Position.x, _cursor.Position.y);
         }
     }
 }

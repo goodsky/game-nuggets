@@ -22,6 +22,20 @@ namespace Campus
         }
 
         /// <summary>
+        /// Gets a value representing whether or not there is a path at grid position.
+        /// </summary>
+        /// <param name="posx">The x position to check.</param>
+        /// <param name="posz">The z position to check.</param>
+        /// <returns>True if there is a path, false otherwise.</returns>
+        public bool IsPath(int posx, int posz)
+        {
+            return
+                posx >= 0 && posx < _terrain.CountX &&
+                posz >= 0 && posz < _terrain.CountZ &&
+                _path[posx, posz];
+        }
+
+        /// <summary>
         /// Build a path between two points.
         /// The path must be in a straight line.
         /// </summary>
@@ -32,37 +46,39 @@ namespace Campus
             if (Application.isEditor)
             {
                 Assert.IsFalse(start.x != end.x && start.z != end.z, "Placing path in invalid location!");
-                Assert.IsTrue(_terrain.Editor.CheckSmoothAndFree(start.x, start.z, end.x, end.z).All(b => b), "Placing path in invalid location!");
             }
+
+            int dx = 0;
+            int dz = 0;
+            int length = 1;
 
             if (start.x == end.x && start.z == end.z)
             {
                 // Case: Building a single square
-                _path[start.x, start.z] = true;
-                _terrain.Editor.SetAnchored(start.x, start.z);
             }
             else if (start.x != end.x)
             {
                 // Case: Building a line along the x-axis
-                int dx = start.x < end.x ? 1 : -1;
-                int length = Math.Abs(start.x - end.x) + 1;
-
-                for (int x = 0; x < length; ++x)
-                {
-                    _path[start.x + x * dx, start.z] = true;
-                    _terrain.Editor.SetAnchored(start.x + x * dx, start.z);
-                }
+                dx = start.x < end.x ? 1 : -1;
+                length = Math.Abs(start.x - end.x) + 1;
             }
             else
             {
                 // Case: Building a line along the z-axis
-                int dz = start.z < end.z ? 1 : -1;
-                int length = Math.Abs(start.z - end.z) + 1;
+                dz = start.z < end.z ? 1 : -1;
+                length = Math.Abs(start.z - end.z) + 1;
+            }
 
-                for (int z = 0; z < length; ++z)
+            // Set the paths
+            for (int i = 0; i < length; ++i)
+            {
+                int gridX = start.x + i * dx;
+                int gridZ = start.z + i * dz;
+
+                if (!_path[gridX, gridZ])
                 {
-                    _path[start.x, start.z + z * dz] = true;
-                    _terrain.Editor.SetAnchored(start.x, start.z + z * dz);
+                    _path[gridX, gridZ] = true;
+                    _terrain.Editor.SetAnchored(gridX, gridZ);
                 }
             }
 

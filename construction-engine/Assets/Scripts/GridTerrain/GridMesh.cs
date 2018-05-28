@@ -434,10 +434,10 @@ namespace GridTerrain
             }
 
             var grid = _gridData[x, z];
-            _uv[grid.VertexIndex + (Vertex.BottomLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
-            _uv[grid.VertexIndex + (Vertex.BottomRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - (submaterialOffsetZ + 1) * stepZ);
-            _uv[grid.VertexIndex + (Vertex.TopRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX, 1.0f - submaterialOffsetZ * stepZ);
-            _uv[grid.VertexIndex + (Vertex.TopLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX, 1.0f - submaterialOffsetZ * stepZ);
+            _uv[grid.VertexIndex + (Vertex.BottomLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
+            _uv[grid.VertexIndex + (Vertex.BottomRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
+            _uv[grid.VertexIndex + (Vertex.TopRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
+            _uv[grid.VertexIndex + (Vertex.TopLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
             _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
             grid.SubmaterialIndex = submaterialId;
 
@@ -475,11 +475,13 @@ namespace GridTerrain
                     _vertices[vertexIndex++] = new Vector3(x * GridSquareSize + (GridSquareSize / 2), 0.0f, z * GridSquareSize + (GridSquareSize / 2)); // center
 
                     // Generate UV coordinates for textures
-                    _uv[uvIndex++] = new Vector2(0.0f, 0.5f); // bottom-left
-                    _uv[uvIndex++] = new Vector2(0.25f, 0.5f); // bottom-right
-                    _uv[uvIndex++] = new Vector2(0.25f, 1.0f); // top-right
-                    _uv[uvIndex++] = new Vector2(0.0f, 1.0f); // top-left
-                    _uv[uvIndex++] = new Vector2(0.125f, 0.75f); // center
+                    float stepX = (1.0f / _submaterialCountX);
+                    float stepZ = (1.0f / _submaterialCountZ);
+                    _uv[uvIndex++] = new Vector2(0.0f + Constant.uvEpsilon, 1.0f - stepZ + Constant.uvEpsilon); // bottom-left
+                    _uv[uvIndex++] = new Vector2(stepX - Constant.uvEpsilon, 1.0f - stepZ + Constant.uvEpsilon); // bottom-right
+                    _uv[uvIndex++] = new Vector2(stepX - Constant.uvEpsilon, 1.0f - Constant.uvEpsilon); // top-right
+                    _uv[uvIndex++] = new Vector2(0.0f + Constant.uvEpsilon, 1.0f - Constant.uvEpsilon); // top-left
+                    _uv[uvIndex++] = new Vector2(stepX / 2, 1.0f - (stepZ / 2)); // center
 
                     // Generate Triangle triplets
                     int bottomLeft = triangleVertexIndex++;

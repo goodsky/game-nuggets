@@ -86,10 +86,10 @@ namespace Campus
             if (start.x != end.x && start.z != end.z)
                 throw new InvalidOperationException("LineCursor must be placed along an axis-aligned line.");
 
-            // note: this code could be shortened, but I kind of like the symmetry with other line editors
             int dx = 0;
             int dz = 0;
             int length = 1;
+
             if (start.x == end.x && start.z == end.z)
             {
                 // Case: Placing a single square

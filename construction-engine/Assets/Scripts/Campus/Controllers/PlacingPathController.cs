@@ -44,7 +44,7 @@ namespace Campus
                 GameLogger.FatalError("EditingTerrainController was given incorrect context.");
 
             _pathStart = _pathEnd = args.ClickLocation;
-            _cursors.Place(_pathStart, _pathEnd, GetValidTerrainAlongLine());
+            _cursors.Place(_pathStart, _pathEnd, IsValidTerrainAlongLine());
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (GetValidTerrainAlongLine().All(b => b))
+                if (IsValidTerrainAlongLine().All(b => b))
                 {
                     Game.Campus.Paths.BuildPath(_pathStart, _pathEnd);
                 }
@@ -108,7 +108,7 @@ namespace Campus
 
             }
 
-            _cursors.Place(_pathStart, _pathEnd, GetValidTerrainAlongLine());
+            _cursors.Place(_pathStart, _pathEnd, IsValidTerrainAlongLine());
         }
 
         /// <summary>
@@ -126,12 +126,44 @@ namespace Campus
         }
 
         /// <summary>
-        /// Get a boolean array representing valid construction terrain along the line.
+        /// Get a boolean array representing whether the grids selected are valid for path.
         /// </summary>
         /// <returns>A boolean array representing the valid terrain along the line.</returns>
-        private bool[] GetValidTerrainAlongLine()
+        private bool[] IsValidTerrainAlongLine()
         {
-            return _terrain.Editor.CheckSmoothAndFree(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
+            var gridcheck = _terrain.Editor.CheckSmoothAndFree(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
+
+            int dx = 0;
+            int dz = 0;
+
+            if (_pathStart.x == _pathEnd.x && _pathStart.z == _pathEnd.z)
+            {
+                // Case: Placing a single square
+            }
+            else if (_pathStart.x != _pathEnd.x)
+            {
+                // Case: Placing a line along the x-axis
+                dx = _pathStart.x < _pathEnd.x ? 1 : -1;
+            }
+            else
+            {
+                // Case: Placing a line along the z-axis
+                dz = _pathStart.z < _pathEnd.z ? 1 : -1;
+            }
+
+            for (int i = 0; i < gridcheck.Length; ++i)
+            {
+                if (!gridcheck[i])
+                {
+                    int checkx = _pathStart.x + i * dx;
+                    int checkz = _pathStart.z + i * dz;
+
+                    // We can build over existing path
+                    gridcheck[i] = Game.Campus.Paths.IsPath(checkx, checkz);
+                }
+            }
+
+            return gridcheck;
         }
     }
 }
