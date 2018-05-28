@@ -38,6 +38,13 @@
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
+        <Button name="Path">
+          <Tooltip>Build Paths</Tooltip>
+          <IconImage>Toolbar/icon-path</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="Pathing" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
         <Button name="BuildTest">
           <Tooltip>Build Test Building</Tooltip>
           <IconImage>Toolbar/icon-test1</IconImage>
@@ -67,6 +74,7 @@
     <Window name="ConstructionInfo" prefab="ConstructionInfoWindow" />
     <Window name="ConstructionPlacing" prefab="ConstructionPlacingWindow" />
     <Window name="EditingTerrain" prefab="TerrainEditingWindow" />
+    <Window name="Pathing" prefab="PathingWindow" />
   </Windows>
   
 </UIData>

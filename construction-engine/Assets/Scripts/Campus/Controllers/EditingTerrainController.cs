@@ -7,7 +7,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingTerrain game state.
     /// </summary>
-    public class EditingTerrainController : GameStateController
+    internal class EditingTerrainController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
         private GridCursor _cursor;
@@ -68,7 +68,7 @@ namespace Campus
                 return;
             }
 
-            int newHeightChange = (int)((Input.mousePosition.y - _mouseDragStartY) / 25.0f);
+            int newHeightChange = (int)((Input.mousePosition.y - _mouseDragStartY) / 10.0f);
             if (newHeightChange != _mouseDragHeightChange)
             {
                 _mouseDragHeightChange = newHeightChange;

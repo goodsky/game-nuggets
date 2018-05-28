@@ -7,12 +7,10 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingTerrain game state.
     /// </summary>
-    public class SelectingTerrainController : GameStateController
+    internal class SelectingTerrainController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
         private GridCursor _cursor;
-
-        private Point3 _lastPosition;
 
         /// <summary>
         /// Instantiates an instance of the controller.
@@ -25,7 +23,7 @@ namespace Campus
             _cursor.Deactivate();
 
             OnTerrainSelectionUpdate += SelectionUpdate;
-            OnTerrainClicked += PrintDebugging;
+            OnTerrainClicked += Clicked;
         }
 
         /// <summary>
@@ -76,12 +74,17 @@ namespace Campus
         }
 
         /// <summary>
-        /// Debug stuff on clicks.
+        /// Handle a click event on the terrain.
         /// </summary>
         /// <param name="sender">Not used.</param>
         /// <param name="args">The terrain click arguments.</param>
-        private void PrintDebugging(object sender, TerrainClickedArgs args)
+        private void Clicked(object sender, TerrainClickedArgs args)
         {
+            if (args.Button == MouseButton.Left)
+            {
+                Transition(GameState.EditingTerrain, args);
+            }
+
             if (Application.isEditor)
             {
                 GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
@@ -93,8 +96,8 @@ namespace Campus
 
                 if (Input.GetKey(KeyCode.LeftControl))
                 {
-                    int material = _terrain.GetMaterial(args.ClickLocation.x, args.ClickLocation.z);
-                    _terrain.SetMaterial(args.ClickLocation.x, args.ClickLocation.z, (material + 1) % _terrain.MaterialCount);
+                    int submaterial = _terrain.GetSubmaterial(args.ClickLocation.x, args.ClickLocation.z);
+                    _terrain.SetSubmaterial(args.ClickLocation.x, args.ClickLocation.z, (submaterial + 1) % _terrain.SubmaterialCount, Rotation.deg270);
                 }
             }
         }

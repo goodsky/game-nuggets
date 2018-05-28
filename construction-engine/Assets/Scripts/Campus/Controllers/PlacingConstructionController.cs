@@ -8,7 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingContruction game state.
     /// </summary>
-    public class PlacingConstructionController : GameStateController
+    internal class PlacingConstructionController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
 
@@ -96,14 +96,7 @@ namespace Campus
 
                 if (isValid)
                 {
-                    CampusFactory.GenerateBuilding(
-                        _building,
-                        Game.Campus.transform,
-                        _terrain.Convert.GridToWorld(args.ClickLocation) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/,
-                        Quaternion.identity);
-
-                    _terrain.Editor.SetTakenGrid(_cursors.Position.x, _cursors.Position.y, footprint);
-
+                    Game.Campus.Buildings.Build(_building, args.ClickLocation);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
             }
@@ -117,7 +110,7 @@ namespace Campus
         {
             int footprintSizeX = _building.Footprint.GetLength(0);
             int footprintSizeZ = _building.Footprint.GetLength(1);
-            return _terrain.Editor.CheckValidTerrain(_cursors.Position.x, _cursors.Position.y, footprintSizeX, footprintSizeZ);
+            return _terrain.Editor.CheckFlatAndFree(_cursors.Position.x, _cursors.Position.y, footprintSizeX, footprintSizeZ);
         }
     }
 }

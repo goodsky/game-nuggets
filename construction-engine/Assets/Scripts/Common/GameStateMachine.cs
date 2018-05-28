@@ -16,6 +16,12 @@ namespace Common
         /// <summary>Constructing a new entity on the campus.</summary>
         PlacingConstruction,
 
+        /// <summary>Selecting the start position of the path.</summary>
+        SelectingPath,
+
+        /// <summary>Creating the path.</summary>
+        PlacingPath,
+
         /// <summary>Selecting campus terrain to modify.</summary>
         SelectingTerrain,
 
@@ -28,17 +34,19 @@ namespace Common
     /// Methods represent edges between states in the machine.
     /// States can register controller actions to happen during a state.
     /// </summary>
-    public class GameStateMachine : MonoBehaviour
+    public partial class GameStateMachine : MonoBehaviour
     {
         /// <summary>The current campus game state.</summary>
         public GameState Current { get; private set; }
 
         // Mapping of possible game states with controllers to execute during their turn.
-        private static readonly List<GameStateController> EmptyControllers = new List<GameStateController>(0);
-        private readonly Dictionary<GameState, List<GameStateController>> _stateControllers = new Dictionary<GameState, List<GameStateController>>();
-        private List<GameStateController> _currentStateControllers = EmptyControllers;
+        private static readonly List<Controller> EmptyControllers = new List<Controller>(0);
+        private readonly Dictionary<GameState, List<Controller>> _stateControllers = new Dictionary<GameState, List<Controller>>();
+        private List<Controller> _currentStateControllers = EmptyControllers;
 
         private readonly object _setLock = new object();
+
+        private TerrainSelectionUpdateArgs _lastTerrainLocation = null;
 
         /// <summary>
         /// Unity start method.
@@ -64,11 +72,11 @@ namespace Common
         /// </summary>
         /// <param name="state">The state to activate the controller for.</param>
         /// <param name="controller">The controller to register.</param>
-        public void RegisterController(GameState state, GameStateController controller)
+        public void RegisterController(GameState state, Controller controller)
         {
             if (!_stateControllers.ContainsKey(state))
             {
-                _stateControllers[state] = new List<GameStateController>();
+                _stateControllers[state] = new List<Controller>();
             }
 
             _stateControllers[state].Add(controller);
@@ -81,7 +89,8 @@ namespace Common
         public void StartDoing(GameState newState, object context = null)
         {
             if (newState != GameState.SelectingTerrain &&
-                newState != GameState.PlacingConstruction)
+                newState != GameState.PlacingConstruction &&
+                newState != GameState.SelectingPath)
             {
                 throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
             }
@@ -111,23 +120,9 @@ namespace Common
         /// <param name="clickLocation">Location on the grid that was clicked.</param>
         public void ClickedTerrain(TerrainClickedArgs args)
         {
-            GameState startingState = Current;
-
-            if (Current == GameState.SelectingTerrain)
+            foreach (var controller in _currentStateControllers)
             {
-                if (args.Button == MouseButton.Left)
-                {
-                    Transition(GameState.EditingTerrain, args);
-                }
-            }
-            
-            if (startingState == Current)
-            {
-                // runoff of unused events are sent into the active controllers
-                foreach (var controller in _currentStateControllers)
-                {
-                    controller.TerrainClicked(args);
-                }
+                controller.TerrainClicked(args);
             }
         }
 
@@ -137,6 +132,8 @@ namespace Common
         /// <param name="args"></param>
         public void SelectionUpdateTerrain(TerrainSelectionUpdateArgs args)
         {
+            _lastTerrainLocation = args;
+
             foreach (var controller in _currentStateControllers)
             {
                 controller.TerrainSelectionUpdate(args);
@@ -171,6 +168,12 @@ namespace Common
                 foreach (var controller in _currentStateControllers)
                 {
                     controller.TransitionIn(context);
+
+                    // Primer events that the new state needs.
+                    if (_lastTerrainLocation != null)
+                    {
+                        controller.TerrainSelectionUpdate(_lastTerrainLocation);
+                    }
                 }
             }
         }
