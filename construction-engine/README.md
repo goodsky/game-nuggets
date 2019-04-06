@@ -4,7 +4,7 @@
 
 ## Getting Started
 
-Written using Unity 5.6.1f1 Personal Edition
+Written using Unity 2018.3.11f1 Personal Edition
 
 * Open the 'construction' scene
 * Run!

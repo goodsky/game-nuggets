@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Camera
+namespace Common
 {
     public class FlyingCamera : MonoBehaviour
     {
