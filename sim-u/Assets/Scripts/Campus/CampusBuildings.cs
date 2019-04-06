@@ -1,5 +1,5 @@
-﻿using GameData;
-using GridTerrain;
+﻿using Campus.GridTerrain;
+using GameData;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;

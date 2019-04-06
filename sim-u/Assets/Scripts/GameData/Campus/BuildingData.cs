@@ -18,15 +18,11 @@ namespace GameData
         [XmlElement("Classrooms")]
         public int Classrooms { get; set; }
 
-        [XmlIgnore]
-        public KeyValuePair<string, Sprite> Icon { get; set; }
-
         [XmlElement("Icon")]
-        public string IconName
-        {
-            get { return Icon.Key; }
-            set { Icon = new KeyValuePair<string, Sprite>(value, Resources.Load<Sprite>(value)); }
-        }
+        public string IconName { get; set; }
+
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Buildings, nameof(IconName))]
+        public Sprite Icon { get; set; }
 
         [XmlElement("Description")]
         public string Description { get; set; }
@@ -34,13 +30,13 @@ namespace GameData
         [XmlElement("Mesh")]
         public string MeshName { get; set; }
 
+        [ResourceLoader(ResourceType.Models, ResourceCategory.Buildings, nameof(MeshName))]
+        public Mesh Mesh { get; set; }
+
         [XmlElement("Material")]
         public string MaterialName { get; set; }
 
-        [XmlIgnore]
-        public Mesh Mesh { get; set; }
-
-        [XmlIgnore]
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Buildings, nameof(MaterialName))]
         public Material Material { get; set; }
 
         [XmlIgnore]

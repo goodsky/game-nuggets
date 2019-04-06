@@ -1,4 +1,4 @@
-﻿using GridTerrain;
+﻿using Campus.GridTerrain;
 using System;
 using UnityEngine;
 

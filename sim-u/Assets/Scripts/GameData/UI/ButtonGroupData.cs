@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Serialization;
+using UnityEngine;
 
 namespace GameData
 {
@@ -30,7 +31,10 @@ namespace GameData
         public string Tooltip { get; set; }
 
         [XmlElement("IconImage")]
-        public string IconImage { get; set; }
+        public string IconImageName { get; set; }
+
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Toolbar, nameof(IconImageName))]
+        public Sprite IconImage { get; set; }
 
         [XmlElement("OnSelect")]
         public ButtonAction OnSelect { get; set; }

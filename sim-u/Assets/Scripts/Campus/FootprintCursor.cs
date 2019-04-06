@@ -1,5 +1,5 @@
-﻿using Common;
-using GridTerrain;
+﻿using Campus.GridTerrain;
+using Common;
 using UnityEngine;
 
 namespace Campus

@@ -28,6 +28,12 @@ namespace GameData
     /// </summary>
     public class UIConfig
     {
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Toolbar, resourceName: "arrow-left")]
+        public Sprite ArrowLeftSprite { get; set; }
+
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Toolbar, resourceName: "arrow-right")]
+        public Sprite ArrowRightSprite { get; set; }
+
         [XmlElement("HorizontalMargins")]
         public float HorizontalMargins { get; set; }
 
@@ -38,73 +44,45 @@ namespace GameData
         public float ButtonHeight { get; set; }
 
         [XmlElement("MainMenuBackground")]
-        public string MainMenuBackground
-        {
-            get { return MainMenuBackgroundColor.Key; }
-            set { MainMenuBackgroundColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string MainMenuBackground { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> MainMenuBackgroundColor { get; set; }
+        [ColorPalette(nameof(MainMenuBackground))]
+        public Color MainMenuBackgroundColor { get; set; }
 
         [XmlElement("MainMenuSelected")]
-        public string MainMenuSelected
-        {
-            get { return MainMenuSelectedColor.Key; }
-            set { MainMenuSelectedColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string MainMenuSelected { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> MainMenuSelectedColor { get; set; }
+        [ColorPalette(nameof(MainMenuSelected))]
+        public Color MainMenuSelectedColor { get; set; }
 
         [XmlElement("MainMenuAccent")]
-        public string MainMenuAccent
-        {
-            get { return MainMenuAccentColor.Key; }
-            set { MainMenuAccentColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string MainMenuAccent { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> MainMenuAccentColor { get; set; }
+        [ColorPalette(nameof(MainMenuAccent))]
+        public Color MainMenuAccentColor { get; set; }
 
         [XmlElement("SubMenuBackground")]
-        public string SubMenuBackground
-        {
-            get { return SubMenuBackgroundColor.Key; }
-            set { SubMenuBackgroundColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string SubMenuBackground { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> SubMenuBackgroundColor { get; set; }
+        [ColorPalette(nameof(SubMenuBackground))]
+        public Color SubMenuBackgroundColor { get; set; }
 
         [XmlElement("SubMenuSelected")]
-        public string SubMenuSelected
-        {
-            get { return SubMenuSelectedColor.Key; }
-            set { SubMenuSelectedColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string SubMenuSelected { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> SubMenuSelectedColor { get; set; }
+        [ColorPalette(nameof(SubMenuSelected))]
+        public Color SubMenuSelectedColor { get; set; }
 
         [XmlElement("SubMenuAccent")]
-        public string SubMenuAccent
-        {
-            get { return SubMenuAccentColor.Key; }
-            set { SubMenuAccentColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string SubMenuAccent { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> SubMenuAccentColor { get; set; }
+        [ColorPalette(nameof(SubMenuAccent))]
+        public Color SubMenuAccentColor { get; set; }
 
         [XmlElement("WindowBackground")]
-        public string WindowBackground
-        {
-            get { return WindowBackgroundColor.Key; }
-            set { WindowBackgroundColor = new KeyValuePair<string, Color>(value, ColorPalette.GetColor(value)); }
-        }
+        public string WindowBackground { get; set; }
 
-        [XmlIgnore()]
-        public KeyValuePair<string, Color> WindowBackgroundColor { get; set; }
+        [ColorPalette(nameof(WindowBackground))]
+        public Color WindowBackgroundColor { get; set; }
     }
 }

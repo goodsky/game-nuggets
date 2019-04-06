@@ -1,6 +1,6 @@
-﻿using Common;
+﻿using Campus.GridTerrain;
+using Common;
 using GameData;
-using GridTerrain;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,7 +46,8 @@ namespace Campus
                 CountZ = gameData.Terrain.GridCountZ,
                 CountY = gameData.Terrain.GridCountY,
                 StartingHeight = gameData.Terrain.StartingHeight,
-                Material = gameData.Terrain.TerrainMaterial.Value,
+                GridMaterial = gameData.Terrain.TerrainMaterial,
+                SkirtPrefab = gameData.Terrain.TerrainSkirt,
             };
 
             GridMesh terrain;
@@ -68,19 +69,7 @@ namespace Campus
                 // Load the buildings
                 foreach (var buildingData in gameData.Buildings)
                 {
-                    if (buildingData.Icon.Value == null)
-                        GameLogger.FatalError("Could not load building icon '{0}'", buildingData.IconName);
-
-                    buildingData.Mesh = Resources.Load<Mesh>(string.Format("Buildings/{0}", buildingData.MeshName));
-                    if (buildingData.Mesh == null)
-                        GameLogger.FatalError("Could not load building mesh 'Buildings/{0}'", buildingData.MeshName);
-
-                    buildingData.Material = Resources.Load<Material>(string.Format("Buildings/{0}", buildingData.MaterialName));
-                    if (buildingData.Material == null)
-                        GameLogger.FatalError("Could not load building material 'Buildings/{0}'", buildingData.MaterialName);
-
                     buildingData.Footprint = footprintCreator.CalculateFootprint(buildingData.Mesh, Constant.GridSize);
-
                     _buildingRegistry[buildingData.Name] = buildingData;
                 }
             }

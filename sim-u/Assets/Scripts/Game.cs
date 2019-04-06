@@ -1,5 +1,6 @@
 ﻿using Campus;
 using Common;
+using GameData;
 using UI;
 using UnityEngine;
 
@@ -46,8 +47,6 @@ public class Game : MonoBehaviour
 
         GameLogger.Info("Creating game objects.");
         InitGameObjects();
-
-        Test();
     }
 
     /// <summary>
@@ -82,49 +81,11 @@ public class Game : MonoBehaviour
         State = gameObject.AddComponent<GameStateMachine>();
 
         var ui = UIFactory.LoadUICanvas(gameObject);
-
-        ui.SetActive(false);
-        UI = ui.AddComponent<UIManager>();
-        UI.SetConfig(UIConfig);
-        ui.SetActive(true);
+        UI = GameDataLoader<UIData>.SetGameData<UIManager>(ui, UIConfig);
 
         var campus = UIFactory.GenerateEmpty("Campus", transform);
-
-        campus.SetActive(false);
-        Campus = campus.AddComponent<CampusManager>();
-        Campus.SetConfig(CampusConfig);
-        campus.SetActive(true);
+        Campus = GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, CampusConfig);
 
         TooltipManager.Initialize(ui.gameObject.transform);
-    }
-
-    /// <summary>
-    /// For testing!
-    /// </summary>
-    private void Test()
-    {
-        //var ui = new UIData()
-        //{
-        //    ButtonGroups = new List<ButtonGroupData>()
-        //    {
-        //        new MainButtonGroupData()
-        //        {
-        //            Name = "Foo",
-        //            Buttons = new List<ButtonData>()
-        //            {
-        //                new ButtonData()
-        //                {
-        //                    Name = "Bar",
-        //                    OnSelect = new OpenWindowAction()
-        //                    {
-        //                        DataType = GameDataType.Building
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //};
-
-        //GameLogger.Info(GameDataSerializer.Save(ui));
     }
 }

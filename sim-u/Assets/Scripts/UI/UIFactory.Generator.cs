@@ -38,6 +38,8 @@ namespace UI
     public class ButtonGroupArgs
     {
         public string Name = "default";
+        public Sprite ArrowLeft;
+        public Sprite ArrowRight;
 
         // The buttons to put in a scrollable group.
         // The factory will overwrite positions & images to conform with the group
@@ -180,7 +182,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
-                    IconImage = Resources.Load<Sprite>("Toolbar/arrow-left"),
+                    IconImage = args.ArrowLeft,
                 });
 
             // Instantiate the Right Arrow
@@ -198,7 +200,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
-                    IconImage = Resources.Load<Sprite>("Toolbar/arrow-right"),
+                    IconImage = args.ArrowRight,
                 });
 
             // Instantiate ButtonGroup's Content Mask

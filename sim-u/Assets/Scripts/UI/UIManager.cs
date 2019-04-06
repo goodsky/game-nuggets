@@ -45,24 +45,20 @@ namespace UI
         /// <param name="data">UI GameData</param>
         protected override void LoadData(UIData data)
         {
-            // Fire and forget the selection root object.
-            // This will catch click events on the screen that are not on a UI element.
-            // UIFactory.LoadSelectionRoot(gameObject); skyler: Removing this concept so we can use the event system for campus objects
-
             // Create the manager for opening and closing windows
             WindowManager = UIFactory.GenerateEmptyUI("Window Manager", transform).AddComponent<WindowManager>();
             WindowManager.LoadData(data);
 
             // Create the status bar on the top
-            StatusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor.Value);
+            StatusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor);
 
             // Create the Main Menu Bar on the bottom
-            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, data.Config.MainMenuBackgroundColor.Value);
-            MainMenuPip = UIFactory.LoadPip(MainMenu, data.Config.SubMenuBackgroundColor.Value);
+            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, data.Config.MainMenuBackgroundColor);
+            MainMenuPip = UIFactory.LoadPip(MainMenu, data.Config.SubMenuBackgroundColor);
 
             // Create the second layer menu
             float mainMenuHeight = MainMenu.GetComponent<RectTransform>().sizeDelta.y;
-            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, data.Config.SubMenuBackgroundColor.Value);
+            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, data.Config.SubMenuBackgroundColor);
             SubMenu.SetActive(false);
 
             // Link the main and sub menus
@@ -142,17 +138,17 @@ namespace UI
             if (buttonGroup is MainButtonGroupData)
             {
                 menuTransform = MainMenu.transform;
-                background = config.MainMenuBackgroundColor.Value;
-                selected = config.MainMenuSelectedColor.Value;
-                accent = config.MainMenuAccentColor.Value;
+                background = config.MainMenuBackgroundColor;
+                selected = config.MainMenuSelectedColor;
+                accent = config.MainMenuAccentColor;
                 active = true;
             }
             else if (buttonGroup is SubButtonGroupData)
             {
                 menuTransform = SubMenu.transform;
-                background = config.SubMenuBackgroundColor.Value;
-                selected = config.SubMenuSelectedColor.Value;
-                accent = config.SubMenuAccentColor.Value;
+                background = config.SubMenuBackgroundColor;
+                selected = config.SubMenuSelectedColor;
+                accent = config.SubMenuAccentColor;
                 active = false;
             }
 
@@ -161,6 +157,8 @@ namespace UI
                 new ButtonGroupArgs()
                 {
                     Name = buttonGroup.Name,
+                    ArrowLeft = config.ArrowLeftSprite,
+                    ArrowRight = config.ArrowRightSprite,
                     Height = MainMenu.GetComponent<RectTransform>().rect.height,
                     PosY = 0,
                     Left = config.HorizontalMargins,
@@ -192,7 +190,7 @@ namespace UI
                 {
                     Name = button.Name,
                     Tooltip = button.Tooltip,
-                    IconImage = Resources.Load<Sprite>(button.IconImage),
+                    IconImage = button.IconImage,
                     // OnSelect and OnDeselect linked during second pass construction
                 };
             }

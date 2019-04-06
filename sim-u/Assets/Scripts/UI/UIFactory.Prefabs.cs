@@ -19,7 +19,7 @@ namespace UI
         /// </summary>
         static UIFactory()
         {
-            var uiPrefabs = Resources.LoadAll<GameObject>("UI");
+            var uiPrefabs = ResourceLoader.LoadAll<GameObject>(ResourceType.Prefabs, ResourceCategory.UI);
 
             foreach (var prefab in uiPrefabs)
             {
@@ -209,15 +209,15 @@ namespace UI
             rect.offsetMax = new Vector2(-config.HorizontalMargins, rect.offsetMax.y);
 
             var image = window.GetComponent<Image>();
-            image.color = config.WindowBackgroundColor.Value;
+            image.color = config.WindowBackgroundColor;
 
             var windowBehaviour = window.GetComponent<Window>();
 
             foreach (var button in windowBehaviour.Buttons)
             {
-                button.DefaultColor = config.SubMenuBackgroundColor.Value;
-                button.SelectedColor = config.SubMenuSelectedColor.Value;
-                button.MouseOverColor = config.SubMenuSelectedColor.Value;
+                button.DefaultColor = config.SubMenuBackgroundColor;
+                button.SelectedColor = config.SubMenuSelectedColor;
+                button.MouseOverColor = config.SubMenuSelectedColor;
             }
 
             window.SetActive(false);

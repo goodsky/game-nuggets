@@ -1,6 +1,6 @@
 ﻿using Common;
-using System;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 
 namespace GameData
@@ -34,21 +34,23 @@ namespace GameData
             Color color = Color.magenta; // default to a garish color
             if (!Palette.TryGetValue(name, out color))
             {
-                GameLogger.Warning("Configuration attempted to load unrecognized color name '{0}'", name);
+                GameLogger.FatalError("Configuration attempted to load unrecognized color name '{0}'", name);
             }
 
             return color;
         }
+    }
 
-        /// <summary>
-        /// Try to load a palette color by name.
-        /// </summary>
-        /// <param name="name">Name of the color</param>
-        /// <param name="color">Returns the color if found</param>
-        /// <returns>True if the color is found, false otherwise</returns>
-        public static bool TryGetColor(string name, out Color color)
+    /// <summary>
+    /// Attribute to allow the <see cref="GameDataLoader{T}"/> to load colors from the palette.
+    /// </summary>
+    public class ColorPaletteAttribute : XmlIgnoreAttribute
+    {
+        public ColorPaletteAttribute(string propertyName)
         {
-            return Palette.TryGetValue(name, out color);
+            PropertyName = propertyName;
         }
+
+        public string PropertyName { get; set; }
     }
 }

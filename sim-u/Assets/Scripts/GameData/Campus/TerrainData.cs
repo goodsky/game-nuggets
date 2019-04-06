@@ -1,20 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 using UnityEngine;
 
 namespace GameData
 {
     public class TerrainData
     {
-        [XmlIgnore]
-        public KeyValuePair<string, Material> TerrainMaterial { get; set; }
-
         [XmlElement("TerrainMaterial")]
-        public string TerrainMaterialName
-        {
-            get { return TerrainMaterial.Key; }
-            set { TerrainMaterial = new KeyValuePair<string, Material>(value, Resources.Load<Material>(value)); }
-        }
+        public string TerrainMaterialName { get; set; }
+
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Terrain, nameof(TerrainMaterialName))]
+        public Material TerrainMaterial { get; set; }
+
+        [ResourceLoader(ResourceType.Prefabs, ResourceCategory.Terrain, resourceName: "terrain-skirt")]
+        public GameObject TerrainSkirt { get; set; }
 
         [XmlElement("GridCountX")]
         public int GridCountX { get; set; }
