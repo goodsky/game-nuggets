@@ -15,6 +15,6 @@ Repository for unpolished or half completed video games
 | online-battleship    | 11/07/2012 - 11/07/2012 | GoodSky, COP4331C class   | Battleship game written for Processes of Object Oriented Programming  |
 | rogue-bot            | 12/30/2012 - 01/03/2013 | GoodSky, DrDenn           | Barely started Mars Rover roguelike using XNA                         |
 | game-of-sounds       | 12/30/2013 - 01/05/2014 | GoodSky                   | Diplomacy-like Windows Phone application in the Puget Sound           |
-| sim-u                | 04/13/2014 - 01/13/2015 | GoodSky, DrDenn           | 'Sim-City' like University Sim using XNA                              |
+| sim-u-old            | 04/13/2014 - 01/13/2015 | GoodSky, DrDenn           | 'Sim-City' like University Sim using XNA                              |
 | robopoker            | 03/25/2015 - 04/12/2015 | GoodSky                   | Platform to write and compete Poker-Playing AI logic                  |
-| construction-engine  | 02/03/2018 - xx/xx/xxxx | GoodSky                   | Unity engine for terrain editing and building placement               |
+| sim-u                | 02/03/2018 - xx/xx/xxxx | GoodSky                   | 'Sim-City' like University Sim using Unity                            |
