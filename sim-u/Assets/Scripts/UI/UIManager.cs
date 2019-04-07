@@ -1,6 +1,5 @@
 ﻿using Common;
 using GameData;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -97,16 +96,30 @@ namespace UI
                     {
                         var openSubMenuAction = buttonData.OnSelect as OpenSubMenuAction;
                         var openSubMenuButtons = GameDataStore.Get<ButtonGroup>(GameDataType.ButtonGroup, openSubMenuAction.ButtonGroupName);
+                        if (openSubMenuButtons == null)
+                        {
+                            GameLogger.FatalError("OpenSubMenuAction could not link to non-existant button group '{0}'", openSubMenuAction.ButtonGroupName);
+                        }
                         button.OnSelect = () => toolbar.OpenSubMenu(openSubMenuButtons);
                     }
                     else if (buttonData.OnSelect is OpenWindowAction)
                     {
                         var openWindowAction = buttonData.OnSelect as OpenWindowAction;
+                        if (!WindowManager.TryGetWindow(openWindowAction.WindowName, out Window _))
+                        {
+                            GameLogger.FatalError("OpenWindowAction could not link to non-existant window '{0}'", openWindowAction.WindowName);
+                        }
+
                         button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, null);
                     }
                     else if (buttonData.OnSelect is OpenWindowWithDataAction)
                     {
                         var openWindowAction = buttonData.OnSelect as OpenWindowWithDataAction;
+                        if (!WindowManager.TryGetWindow(openWindowAction.WindowName, out Window _))
+                        {
+                            GameLogger.FatalError("OpenWindowWithDataAction could not link to non-existant window '{0}'", openWindowAction.WindowName);
+                        }
+
                         button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, openWindowAction.DataType, openWindowAction.DataName);
                     }
 

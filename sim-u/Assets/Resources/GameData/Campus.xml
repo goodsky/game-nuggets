@@ -36,7 +36,7 @@
       <MaintenanceCost>1</MaintenanceCost>
       <Classrooms>1</Classrooms>
       <Icon>TestBuildingIcon</Icon>
-      <Description>This building has a really weird footprint. It's just two buildings diagonally adjacent. Not that weird really.</Description>
+      <Description>This building has a really weird footprint. It's a line of four buildings with a gap in the middle.</Description>
       <Mesh>test-building-really-weird</Mesh>
       <Material>BuildingDefault</Material>
     </Building>

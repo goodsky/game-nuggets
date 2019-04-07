@@ -21,6 +21,7 @@ namespace Common
     static class GameLogger
     {
         private static readonly int NumberOfFilesToKeepInMyDocuments = 10;
+        private static readonly string LogsFolder = "SimU";
 
         private static List<LogStream> Streams = new List<LogStream>();
         private static string[] LogLevelStrings = Enum.GetNames(typeof(LogLevel));
@@ -55,7 +56,7 @@ namespace Common
         public static void CreateMyDocumentsStream(string fileprefix, LogLevel levels)
         {
             var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var myFolder = Path.Combine(myDocuments, "ConstructionEngine");
+            var myFolder = Path.Combine(myDocuments, LogsFolder);
 
             if (!Directory.Exists(myFolder))
             {
@@ -152,6 +153,7 @@ namespace Common
         public static void FatalError(string message, params object[] args)
         {
             Log(LogLevel.Error, message, args);
+            Log(LogLevel.Error, "FATAL ERROR: ABORTING.");
 
             Application.Quit();
 

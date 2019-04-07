@@ -82,7 +82,7 @@ namespace GameData
             }
             else if (data != null)
             {
-                GameLogger.Warning("Found game data '{0}' in {1} but could not load as type '{2}'", dataName, type.ToString(), typeof(T).Name);
+                GameLogger.Error("Found game data '{0}' in {1} but could not load as type '{2}'", dataName, type.ToString(), typeof(T).Name);
             }
             else
             {
