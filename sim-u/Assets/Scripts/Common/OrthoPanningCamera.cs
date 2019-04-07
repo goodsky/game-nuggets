@@ -2,7 +2,7 @@
 
 namespace Common
 {
-    public class PanningCamera : MonoBehaviour
+    public class OrthoPanningCamera : MonoBehaviour
     {
         /// <summary>Speed of movement via keyboards.</summary>
         public float KeyboardSpeed = 0.2f;
@@ -16,22 +16,19 @@ namespace Common
         /// <summary>Size of the band against the edge of the screen for movement.</summary>
         public float ScreenEdge = 50.0f;
 
-        /// <summary>Minimum height of the camera (for zooming with mouse wheel)</summary>
-        public float MinHeight = 3.0f;
+        /// <summary>Minimum size of the orthographic camera.</summary>
+        public float MinOrthographicSize = 3;
 
-        /// <summary>Maximum height of the camera (for zooming with mouse wheel)</summary>
-        public float MaxHeight = 5.0f;
+        /// <summary>Maximum size of the orthographic camear.</summary>
+        public float MaxOrthographicSize = 7;
 
         private float _sqrSpeed;
 
         private Transform _pos;
         private Vector3 _right;
         private Vector3 _forward;
-        private Vector3 _zoom;
 
-        private float _minZoom;
-        private float _maxZoom;
-        private float _zoomPosition;
+        private Camera _camera;
 
         /// <summary>
         /// Unity Start method
@@ -47,11 +44,8 @@ namespace Common
             // Calculate movement axes based off of the starting rotation of the camera.
             _forward = new Vector3(Mathf.Cos(Mathf.Deg2Rad * (-yRotation + 90.0f)), 0.0f, Mathf.Sin(Mathf.Deg2Rad * (-yRotation + 90.0f)));
             _right = new Vector3(Mathf.Cos(Mathf.Deg2Rad * (-yRotation)), 0.0f, Mathf.Sin(Mathf.Deg2Rad * (-yRotation)));
-            _zoom = _pos.forward;
 
-            _maxZoom = (_pos.transform.position.y - MinHeight) / Mathf.Sin(Mathf.Deg2Rad * xRotation);
-            _minZoom = (_pos.transform.position.y - MaxHeight) / Mathf.Sin(Mathf.Deg2Rad * xRotation);
-            _zoomPosition = 0.0f;
+            _camera = GetComponent<Camera>();
         }
 
         /// <summary>
@@ -61,7 +55,6 @@ namespace Common
         {
             float vx = 0.0f;
             float vz = 0.0f;
-            float vZoom = 0.0f;
 
             if (Input.GetKey(KeyCode.Mouse1))
             {
@@ -107,28 +100,13 @@ namespace Common
                 }
 
                 // Zoom in and out with the mouse wheel
-                var wheelScroll = MouseWheelModifier * Input.GetAxis("Mouse ScrollWheel");
-                float newZoom = _zoomPosition + wheelScroll;
-                if (newZoom > _maxZoom)
-                {
-                    vZoom = _maxZoom - _zoomPosition;
-                    _zoomPosition = _maxZoom;
-                }
-                else if (newZoom < _minZoom)
-                {
-                    vZoom = _minZoom - _zoomPosition;
-                    _zoomPosition = _minZoom;
-                }
-                else
-                {
-                    vZoom = wheelScroll;
-                    _zoomPosition = newZoom;
-                }
+                var wheelScroll = -1 * MouseWheelModifier * Input.GetAxis("Mouse ScrollWheel");
+                float newOrthographicSize = _camera.orthographicSize + wheelScroll;
+                _camera.orthographicSize = Mathf.Clamp(newOrthographicSize, MinOrthographicSize, MaxOrthographicSize);
             }
 
             _pos.position += vx * _right;
             _pos.position += vz * _forward;
-            _pos.position += vZoom * _zoom;
 
             // Cap the position
             _pos.position =
