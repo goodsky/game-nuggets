@@ -27,6 +27,7 @@ namespace Campus
             _validMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid");
             _invalidMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid");
             _cursor = GridCursor.Create(terrain, _validMaterial);
+            _cursor.Deactivate();
 
             OnTerrainSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;

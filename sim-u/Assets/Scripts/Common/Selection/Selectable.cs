@@ -35,7 +35,7 @@ namespace Common
         /// <summary>
         /// Delay in seconds before the tooltip will pop up.
         /// </summary>
-        public float TooltipDelay = 1.0f;
+        public float TooltipDelay = 0.5f;
 
         /// <summary>
         /// Indicates that this object is the child of an object. 

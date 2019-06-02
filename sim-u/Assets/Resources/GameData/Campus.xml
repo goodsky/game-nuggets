@@ -3,9 +3,9 @@
   <!-- Size of the campus terrain -->
   <Terrain>
     <TerrainMaterial>grass-material</TerrainMaterial>
-    <GridCountX>64</GridCountX>
-    <GridCountZ>64</GridCountZ>
-    <GridCountY>16</GridCountY>
+    <GridCountX>32</GridCountX>
+    <GridCountZ>32</GridCountZ>
+    <GridCountY>32</GridCountY>
     <StartingHeight>6</StartingHeight>
   </Terrain>
 

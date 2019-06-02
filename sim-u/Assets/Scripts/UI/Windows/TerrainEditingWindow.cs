@@ -28,7 +28,7 @@ namespace UI
             Game.Campus.Terrain.Selectable.SelectionParent = this;
             Game.State.StartDoing(GameState.SelectingTerrain);
 
-            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
+            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
 
         /// <summary>

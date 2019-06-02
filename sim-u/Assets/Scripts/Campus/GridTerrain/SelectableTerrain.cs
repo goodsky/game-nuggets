@@ -32,6 +32,7 @@ namespace Campus.GridTerrain
         /// </summary>
         protected override void Update()
         {
+            // This code attempted to avoid doing extra raycasts while the mouse doesn't move.
             //if (_mousePosition.Equals(Input.mousePosition))
             //    return;
 

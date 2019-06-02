@@ -25,26 +25,24 @@
           <OnSelect x:type="OpenSubMenuAction" buttonGroupName="ConstructionMenu"/>
           <OnDeselect x:type="CloseSubMenuAction" />
         </Button>
+        <Button name="Paths">
+          <Tooltip>Campus Paths</Tooltip>
+          <IconImage>icon-path</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="Pathing"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="EditTerrain">
+          <Tooltip>Campus Terrain</Tooltip>
+          <IconImage>icon-edit-terrain</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="EditingTerrain"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
       </Buttons>
     </MainButtonGroup>
 
     <!-- Home Sub Menu Buttons -->
     <SubButtonGroup name="ConstructionMenu">
       <Buttons>
-        <Button name="EditTerrain">
-          <Tooltip>Edit Terrain</Tooltip>
-          <IconImage>icon-edit-terrain</IconImage>
-          <OnSelect x:type="OpenWindowAction" windowName="EditingTerrain" />
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-
-        <Button name="Path">
-          <Tooltip>Build Paths</Tooltip>
-          <IconImage>icon-path</IconImage>
-          <OnSelect x:type="OpenWindowAction" windowName="Pathing" />
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-
         <Button name="BuildTest">
           <Tooltip>Build Test Building</Tooltip>
           <IconImage>icon-test1</IconImage>
