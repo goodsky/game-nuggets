@@ -37,6 +37,12 @@
           <OnSelect x:type="OpenWindowAction" windowName="EditingTerrain"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+        <Button name="Demolish">
+          <Tooltip>Demolish Campus Improvements</Tooltip>
+          <IconImage>icon-bulldozer</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="Demolishing"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
       </Buttons>
     </MainButtonGroup>
 
@@ -73,6 +79,7 @@
     <Window name="ConstructionPlacing" prefab="ConstructionPlacingWindow" />
     <Window name="EditingTerrain" prefab="TerrainEditingWindow" />
     <Window name="Pathing" prefab="PathingWindow" />
+    <Window name="Demolishing" prefab="DemolishingWindow" />
   </Windows>
   
 </UIData>

@@ -46,6 +46,7 @@ namespace Campus.GridTerrain
             cursor.Terrain = terrain;
             cursor.CursorMaterial = material;
             cursor.Initialize();
+            cursor.Deactivate();
 
             return cursor;
         }

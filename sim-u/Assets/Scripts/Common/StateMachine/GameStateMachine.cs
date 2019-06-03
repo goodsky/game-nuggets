@@ -27,6 +27,9 @@ namespace Common
 
         /// <summary>Modifying the campus terrain.</summary>
         EditingTerrain,
+
+        /// <summary>Demolishing anchored features in the campus.</summary>
+        Demolishing,
     }
 
     /// <summary>
@@ -88,14 +91,19 @@ namespace Common
         /// </summary>
         public void StartDoing(GameState newState, object context = null)
         {
-            if (newState != GameState.SelectingTerrain &&
-                newState != GameState.PlacingConstruction &&
-                newState != GameState.SelectingPath)
+            switch (newState)
             {
-                throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
-            }
+                case GameState.SelectingTerrain:
+                case GameState.PlacingConstruction:
+                case GameState.SelectingPath:
+                case GameState.Demolishing:
+                    Transition(newState, context);
+                    break;
 
-            Transition(newState, context);
+                default:
+                    GameLogger.FatalError("Cannot start doing state! {0}", newState.ToString());
+                    break;
+            }
         }
 
         /// <summary>
@@ -103,13 +111,15 @@ namespace Common
         /// </summary>
         public void StopDoing()
         {
-            if (Current == GameState.EditingTerrain)
+            switch (Current)
             {
-                Transition(GameState.SelectingTerrain);
-            }
-            else
-            {
-                Transition(GameState.Selecting);
+                case GameState.EditingTerrain:
+                    Transition(GameState.SelectingTerrain);
+                    break;
+
+                default:
+                    Transition(GameState.Selecting);
+                    break;
             }
         }
 

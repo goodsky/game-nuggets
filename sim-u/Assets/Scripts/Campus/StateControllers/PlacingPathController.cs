@@ -65,7 +65,7 @@ namespace Campus
             {
                 if (IsValidTerrainAlongLine().All(b => b))
                 {
-                    Game.Campus.Paths.BuildPath(_pathStart, _pathEnd);
+                    Game.Campus.ConstructPath(_pathStart, _pathEnd);
                 }
 
                 Transition(GameState.SelectingPath);
@@ -132,7 +132,7 @@ namespace Campus
         /// <returns>A boolean array representing the valid terrain along the line.</returns>
         private bool[] IsValidTerrainAlongLine()
         {
-            var gridcheck = _terrain.Editor.CheckSmoothAndFree(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
+            var gridcheck = Game.Campus.CheckLineSmoothAndFree(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
 
             int dx = 0;
             int dz = 0;
@@ -160,7 +160,8 @@ namespace Campus
                     int checkz = _pathStart.z + i * dz;
 
                     // We can build over existing path
-                    gridcheck[i] = Game.Campus.Paths.IsPath(checkx, checkz);
+                    // NB: Assumes currently built paths are smooth
+                    gridcheck[i] = Game.Campus.GetGridUse(new Point2(checkx, checkz)) == CampusGridUse.Path;
                 }
             }
 

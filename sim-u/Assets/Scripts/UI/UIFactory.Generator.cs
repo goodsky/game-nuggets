@@ -14,7 +14,7 @@ namespace UI
         // These properties must always be set
         public string Name = "default";
         public string Tooltip = null;
-        public bool Toggleable = true;
+        public bool RetainsFocus = true;
         public Sprite IconImage = null; // can be null
         public Action OnSelect = null; // can be null
         public Action OnDeselect = null; // can be null
@@ -116,7 +116,7 @@ namespace UI
             rect.anchoredPosition = args.Position;
 
             var script = button.AddComponent<Button>();
-            script.Toggleable = args.Toggleable;
+            script.RetainsFocus = args.RetainsFocus;
             script.DefaultColor = args.DefaultColor;
             script.MouseOverColor = args.MouseOverColor;
             script.SelectedColor = args.SelectedColor;
@@ -173,7 +173,7 @@ namespace UI
                 new ButtonArgs()
                 {
                     Name = "LeftButton",
-                    Toggleable = false,
+                    RetainsFocus = false,
                     Position = new Vector2(0, 0),
                     Size = args.ButtonSize,
                     Pivot = new Vector2(1, 0.5f),
@@ -191,7 +191,7 @@ namespace UI
                 new ButtonArgs()
                 {
                     Name = "RightButton",
-                    Toggleable = false,
+                    RetainsFocus = false,
                     Position = new Vector2(0, 0),
                     Size = args.ButtonSize,
                     Pivot = new Vector2(0, 0.5f),

@@ -21,7 +21,6 @@ namespace Campus
         {
             _terrain = terrain;
             _cursor = GridCursor.Create(terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain"));
-            _cursor.Deactivate();
 
             OnTerrainSelectionUpdate += SelectionUpdate;
             OnTerrainClicked += Clicked;

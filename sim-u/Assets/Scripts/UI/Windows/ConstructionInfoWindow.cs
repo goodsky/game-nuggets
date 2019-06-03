@@ -37,6 +37,11 @@ namespace UI
         public Button BuildButton;
 
         /// <summary>
+        /// The build button.
+        /// </summary>
+        public Button CancelButton;
+
+        /// <summary>
         /// A view on the construction window title text.
         /// </summary>
         public string Title
@@ -65,7 +70,7 @@ namespace UI
         /// <summary>Gets the UI Buttons on this window.</summary>
         public override List<Button> Buttons
         {
-            get { return new List<Button>() { BuildButton }; }
+            get { return new List<Button>() { BuildButton, CancelButton }; }
         }
 
         /// <summary>
@@ -84,7 +89,8 @@ namespace UI
             Description = WriteDescription(buildingData);
             ConstructionImage.sprite = buildingData.Icon;
 
-            BuildButton.OnSelect = () => { Game.UI.WindowManager.OpenWindow("ConstructionPlacing", buildingData); };
+            BuildButton.OnSelect = () => { Game.UI.OpenWindow("ConstructionPlacing", buildingData); };
+            CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
         }
 
         /// <summary>

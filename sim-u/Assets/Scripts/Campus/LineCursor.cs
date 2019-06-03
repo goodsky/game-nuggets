@@ -34,7 +34,6 @@ namespace Campus
             for (int i = 0; i < _cursors.Length; ++i)
             {
                 _cursors[i] = GridCursor.Create(_terrain, _validMaterial);
-                _cursors[i].Deactivate();
             }
         }
 

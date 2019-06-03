@@ -23,9 +23,10 @@ namespace Common
         public bool IsEnabled = true;
 
         /// <summary>
-        /// Whether the object remains selected after a click.
+        /// Whether the object can maintain the UI focus.
+        /// NB: Some objects like scroll arrows do not retain focus or affect global selection.
         /// </summary>
-        public bool Toggleable = true;
+        public bool RetainsFocus = true;
 
         /// <summary>
         /// Tooltip message to display over this button when hovered over.
@@ -307,13 +308,11 @@ namespace Common
                 return;
             }
 
-            if (!Toggleable)
+            if (RetainsFocus)
             {
-                // Only select if toggleable (non-toggleable objects don't affect the global selection).
-                return;
+                // Only update the selection manager if this selectable is elgable for global selections.
+                SelectionManager.UpdateSelection(this);
             }
-
-            SelectionManager.UpdateSelection(this);
 
             AfterEvent();
         }

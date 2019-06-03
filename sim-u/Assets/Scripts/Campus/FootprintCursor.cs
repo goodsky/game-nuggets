@@ -50,6 +50,7 @@ namespace Campus
                     if (footprint[x, z])
                     {
                         _cursors[x, z] = GridCursor.Create(_terrain, _validMaterial);
+                        _cursors[x, z].Activate();
                     }
                     else
                     {

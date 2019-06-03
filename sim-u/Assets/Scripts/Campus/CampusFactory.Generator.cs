@@ -44,7 +44,7 @@ namespace Campus
         /// <param name="position">Position of the building to generate.</param>
         /// <param name="rotation">Rotation of the building to generate.</param>
         /// <returns>The campus building.</returns>
-        public static GameObject GenerateBuilding(BuildingData buildingData, Transform parent, Vector3 position, Quaternion rotation)
+        public static Building GenerateBuilding(BuildingData buildingData, Transform parent, Vector3 position, Quaternion rotation)
         {
             var buildingObject = new GameObject(buildingData.Name);
             buildingObject.transform.SetParent(parent, false);
@@ -62,7 +62,7 @@ namespace Campus
             renderer.material = buildingData.Material;
             building.Initialize(buildingData);
 
-            return buildingObject;
+            return building;
         }
     }
 }

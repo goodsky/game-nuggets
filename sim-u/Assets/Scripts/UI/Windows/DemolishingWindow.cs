@@ -1,11 +1,10 @@
 ﻿using Common;
-using GameData;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
 namespace UI
 {
-    public class ConstructionPlacingWindow : Window
+    public class DemolishingWindow : Window
     {
         /// <summary>
         /// The window Title UI text element.
@@ -29,17 +28,10 @@ namespace UI
         /// <param name="data">The game data</param>
         public override void Open(object data)
         {
-            var buildingData = data as BuildingData;
-            if (buildingData == null)
-            {
-                GameLogger.FatalError("ConstructionPlacingWindow was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
-            }
-
             Game.Campus.SetTerrainSelectionParent(this);
-            Game.State.StartDoing(GameState.PlacingConstruction, data);
+            Game.State.StartDoing(GameState.Demolishing, data);
 
-            TitleText.text = string.Format("Constructing {0}", buildingData.Name);
-            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
+            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
 
         /// <summary>

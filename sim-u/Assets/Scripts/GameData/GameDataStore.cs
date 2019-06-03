@@ -18,7 +18,7 @@ namespace GameData
     /// Global router of all Game Data and where it should be stored.
     /// Use it to get references to the runtime instances of game data.
     /// </summary>
-    public static class GameDataStore
+    public class GameDataStore
     {
         /// <summary>
         /// Gets data from a well-known location.
@@ -26,7 +26,7 @@ namespace GameData
         /// <param name="type">The data type.</param>
         /// <param name="dataName">Name of the data to load.</param>
         /// <returns>The game data, or null if not found.</returns>
-        public static object Get(GameDataType type, string dataName)
+        public object Get(GameDataType type, string dataName)
         {
             if (string.IsNullOrEmpty(dataName))
                 throw new ArgumentNullException("dataName");
@@ -45,7 +45,7 @@ namespace GameData
 
                 case GameDataType.Window:
                     Window window;
-                    if (Game.UI.WindowManager.TryGetWindow(dataName, out window))
+                    if (Game.UI.TryGetWindow(dataName, out window))
                     {
                         data = window;
                     }
@@ -71,7 +71,7 @@ namespace GameData
         /// <param name="type">The game data type.</param>
         /// <param name="dataName">Name of the data to load.</param>
         /// <returns>The game data, or null if not found.</returns>
-        public static T Get<T>(GameDataType type, string dataName) where T : class
+        public T Get<T>(GameDataType type, string dataName) where T : class
         {
             object data = Get(type, dataName);
 

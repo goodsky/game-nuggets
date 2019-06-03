@@ -49,7 +49,7 @@ namespace UI
         /// <param name="dataName">Name of the data to pass to the window.</param>
         public void OpenWindow(string name, GameDataType type, string dataName)
         {
-            object data = GameDataStore.Get(type, dataName);
+            object data = Game.Data.Get(type, dataName);
             OpenWindow(name, data);
         }
 

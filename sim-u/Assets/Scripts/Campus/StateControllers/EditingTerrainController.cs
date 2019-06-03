@@ -25,7 +25,6 @@ namespace Campus
         {
             _terrain = terrain;
             _cursor = GridCursor.Create(terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain2"));
-            _cursor.Deactivate();
         }
 
         /// <summary>
@@ -52,10 +51,7 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
-            if (_cursor != null)
-            {
-                _cursor.Deactivate();
-            }
+            _cursor.Deactivate();
         }
 
         /// <summary>

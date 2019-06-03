@@ -27,7 +27,6 @@ namespace Campus
             _validMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid");
             _invalidMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid");
             _cursor = GridCursor.Create(terrain, _validMaterial);
-            _cursor.Deactivate();
 
             OnTerrainSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;
@@ -36,8 +35,8 @@ namespace Campus
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="context">The construction to place.</param>
-        public override void TransitionIn(object context)
+        /// <param name="_">Not used.</param>
+        public override void TransitionIn(object _)
         {
             _cursor.Activate();
             _cursor.Place(_cursor.Position.x, _cursor.Position.y);
@@ -48,10 +47,7 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
-            if (_cursor != null)
-            {
-                _cursor.Deactivate();
-            }
+            _cursor.Deactivate();
         }
 
         /// <summary>
@@ -102,10 +98,10 @@ namespace Campus
             // DEBUGGING:
             if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; IsPath: {2}", 
+                GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; Grid Use: {2}", 
                     IsValidTerrain(), 
-                    _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0],
-                    Game.Campus.Paths.IsPath(_cursor.Position.x, _cursor.Position.y));
+                    Game.Campus.CheckLineSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0],
+                    Game.Campus.GetGridUse(_cursor.Position));
             }
         }
 
@@ -116,8 +112,8 @@ namespace Campus
         private bool IsValidTerrain()
         {
             return
-                _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ||
-                Game.Campus.Paths.IsPath(_cursor.Position.x, _cursor.Position.y);
+                Game.Campus.CheckLineSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ||
+                Game.Campus.GetGridUse(_cursor.Position) == CampusGridUse.Path;
         }
     }
 }

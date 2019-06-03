@@ -15,13 +15,16 @@ public class Game : MonoBehaviour
     [Header("Campus Configuration")]
     public TextAsset CampusConfig;
 
-    /// <summary>The global game state machine</summary>
+    /// <summary>Global GameData store</summary>
+    public static GameDataStore Data { get; private set; }
+
+    /// <summary>Global game state machine</summary>
     public static GameStateMachine State { get; private set; }
 
-    /// <summary>The User Interface Manager</summary>
+    /// <summary>Global User Interface Manager</summary>
     public static UIManager UI { get; private set; }
 
-    /// <summary>The Campus Manager</summary>
+    /// <summary>Global Campus Manager</summary>
     public static CampusManager Campus { get; private set; }
 
     private static object _singletonLock = new object();
@@ -78,6 +81,8 @@ public class Game : MonoBehaviour
     {
         UIFactory.LoadEventSystem(gameObject);
 
+        Data = new GameDataStore();
+
         State = gameObject.AddComponent<GameStateMachine>();
 
         var ui = UIFactory.LoadUICanvas(gameObject);
@@ -85,7 +90,7 @@ public class Game : MonoBehaviour
 
         var campus = UIFactory.GenerateEmpty("Campus", transform);
         Campus = GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, CampusConfig);
-
+        
         TooltipManager.Initialize(ui.gameObject.transform);
     }
 }

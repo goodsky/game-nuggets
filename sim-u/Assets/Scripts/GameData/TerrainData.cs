@@ -8,6 +8,15 @@ namespace GameData
         [XmlElement("TerrainMaterial")]
         public string TerrainMaterialName { get; set; }
 
+        [XmlElement("SubmaterialSquareSize")]
+        public int SubmaterialSquareSize { get; set; }
+
+        [XmlElement("SubmaterialPathsIndex")]
+        public int SubmaterialPathsIndex { get; set; }
+
+        [XmlElement("SubmaterialRoadsIndex")]
+        public int SubmaterialRoadsIndex { get; set; }
+
         [ResourceLoader(ResourceType.Materials, ResourceCategory.Terrain, nameof(TerrainMaterialName))]
         public Material TerrainMaterial { get; set; }
 

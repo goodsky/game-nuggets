@@ -96,7 +96,7 @@ namespace Campus
 
                 if (isValid)
                 {
-                    Game.Campus.Buildings.Build(_building, args.ClickLocation);
+                    Game.Campus.ConstructBuilding(_building, args.ClickLocation);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
             }
@@ -110,7 +110,7 @@ namespace Campus
         {
             int footprintSizeX = _building.Footprint.GetLength(0);
             int footprintSizeZ = _building.Footprint.GetLength(1);
-            return _terrain.Editor.CheckFlatAndFree(_cursors.Position.x, _cursors.Position.y, footprintSizeX, footprintSizeZ);
+            return Game.Campus.CheckFlatAndFree(_cursors.Position.x, _cursors.Position.y, footprintSizeX, footprintSizeZ);
         }
     }
 }

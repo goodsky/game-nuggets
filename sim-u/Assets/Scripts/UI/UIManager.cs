@@ -11,21 +11,11 @@ namespace UI
     public class UIManager : GameDataLoader<UIData>
     {
         private Dictionary<string, ButtonGroup> _buttonGroups = new Dictionary<string, ButtonGroup>();
-
-        /// <summary>UI Window Manager</summary>
-        public WindowManager WindowManager { get; private set; }
-
-        /// <summary>UI Status Bar</summary>
-        public GameObject StatusBar { get; private set; }
-
-        /// <summary>Main Toolbar</summary>
-        public GameObject MainMenu { get; private set; }
-
-        /// <summary>Main Toolbar selection pip</summary>
-        public GameObject MainMenuPip { get; private set; }
-
-        /// <summary>Sub Toolbarr</summary>
-        public GameObject SubMenu { get; private set; }
+        private WindowManager _windowManager;
+        private GameObject _statusBar;
+        private GameObject _mainMenu;
+        private GameObject _mainMenuPip;
+        private GameObject _subMenu;
 
         /// <summary>
         /// Try to load a button group from the store.
@@ -39,31 +29,63 @@ namespace UI
         }
 
         /// <summary>
+        /// Try to load a window from the store.
+        /// </summary>
+        /// <param name="name">Name of the window</param>
+        /// <param name="window">The window.</param>
+        /// <returns>True if the window exists, false otherwise.</returns>
+        public bool TryGetWindow(string name, out Window window)
+        {
+            return _windowManager.TryGetWindow(name, out window);
+        }
+
+        /// <summary>
+        /// Opens a window on screen using GameDataStore data.
+        /// </summary>
+        /// <param name="name">Name of the window to open.</param>
+        /// <param name="type">The type of game data to pass to the window.</param>
+        /// <param name="dataName">Name of the data to pass to the window.</param>
+        public void OpenWindow(string name, GameDataType type, string dataName)
+        {
+            _windowManager.OpenWindow(name, type, dataName);
+        }
+
+        /// <summary>
+        /// Opens a window on the screen with custom (possibly null) data.
+        /// </summary>
+        /// <param name="name">Name of the window to open.</param>
+        /// <param name="data">The data to pass to the window.</param>
+        public void OpenWindow(string name, object data)
+        {
+            _windowManager.OpenWindow(name, data);
+        }
+
+        /// <summary>
         /// Load UI runtime instances.
         /// </summary>
         /// <param name="data">UI GameData</param>
         protected override void LoadData(UIData data)
         {
             // Create the manager for opening and closing windows
-            WindowManager = UIFactory.GenerateEmptyUI("Window Manager", transform).AddComponent<WindowManager>();
-            WindowManager.LoadData(data);
+            _windowManager = UIFactory.GenerateEmptyUI("Window Manager", transform).AddComponent<WindowManager>();
+            _windowManager.LoadData(data);
 
             // Create the status bar on the top
-            StatusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor);
+            _statusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor);
 
             // Create the Main Menu Bar on the bottom
-            MainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, data.Config.MainMenuBackgroundColor);
-            MainMenuPip = UIFactory.LoadPip(MainMenu, data.Config.SubMenuBackgroundColor);
+            _mainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, data.Config.MainMenuBackgroundColor);
+            _mainMenuPip = UIFactory.LoadPip(_mainMenu, data.Config.SubMenuBackgroundColor);
 
             // Create the second layer menu
-            float mainMenuHeight = MainMenu.GetComponent<RectTransform>().sizeDelta.y;
-            SubMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, data.Config.SubMenuBackgroundColor);
-            SubMenu.SetActive(false);
+            float mainMenuHeight = _mainMenu.GetComponent<RectTransform>().sizeDelta.y;
+            _subMenu = UIFactory.LoadToolbar(gameObject, "Sub Toolbar", mainMenuHeight, data.Config.SubMenuBackgroundColor);
+            _subMenu.SetActive(false);
 
             // Link the main and sub menus
-            var mainMenuToolbar = MainMenu.AddComponent<Toolbar>();
-            mainMenuToolbar.SubMenu = SubMenu;
-            mainMenuToolbar.Pip = MainMenuPip;
+            var mainMenuToolbar = _mainMenu.AddComponent<Toolbar>();
+            mainMenuToolbar.SubMenu = _subMenu;
+            mainMenuToolbar.Pip = _mainMenuPip;
 
             // Load the Button Groups
             foreach (var buttonGroup in data.ButtonGroups)
@@ -79,7 +101,7 @@ namespace UI
         /// <param name="data">UI GameData</param>
         protected override void LinkData(UIData data)
         {
-            var toolbar = MainMenu.GetComponent<Toolbar>();
+            var toolbar = _mainMenu.GetComponent<Toolbar>();
 
             // Link button children and actions
             foreach (var buttonGroupData in data.ButtonGroups)
@@ -95,7 +117,7 @@ namespace UI
                     if (buttonData.OnSelect is OpenSubMenuAction)
                     {
                         var openSubMenuAction = buttonData.OnSelect as OpenSubMenuAction;
-                        var openSubMenuButtons = GameDataStore.Get<ButtonGroup>(GameDataType.ButtonGroup, openSubMenuAction.ButtonGroupName);
+                        var openSubMenuButtons = Game.Data.Get<ButtonGroup>(GameDataType.ButtonGroup, openSubMenuAction.ButtonGroupName);
                         if (openSubMenuButtons == null)
                         {
                             GameLogger.FatalError("OpenSubMenuAction could not link to non-existant button group '{0}'", openSubMenuAction.ButtonGroupName);
@@ -105,22 +127,22 @@ namespace UI
                     else if (buttonData.OnSelect is OpenWindowAction)
                     {
                         var openWindowAction = buttonData.OnSelect as OpenWindowAction;
-                        if (!WindowManager.TryGetWindow(openWindowAction.WindowName, out Window _))
+                        if (!_windowManager.TryGetWindow(openWindowAction.WindowName, out Window _))
                         {
                             GameLogger.FatalError("OpenWindowAction could not link to non-existant window '{0}'", openWindowAction.WindowName);
                         }
 
-                        button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, null);
+                        button.OnSelect = () => _windowManager.OpenWindow(openWindowAction.WindowName, null);
                     }
                     else if (buttonData.OnSelect is OpenWindowWithDataAction)
                     {
                         var openWindowAction = buttonData.OnSelect as OpenWindowWithDataAction;
-                        if (!WindowManager.TryGetWindow(openWindowAction.WindowName, out Window _))
+                        if (!_windowManager.TryGetWindow(openWindowAction.WindowName, out Window _))
                         {
                             GameLogger.FatalError("OpenWindowWithDataAction could not link to non-existant window '{0}'", openWindowAction.WindowName);
                         }
 
-                        button.OnSelect = () => WindowManager.OpenWindow(openWindowAction.WindowName, openWindowAction.DataType, openWindowAction.DataName);
+                        button.OnSelect = () => _windowManager.OpenWindow(openWindowAction.WindowName, openWindowAction.DataType, openWindowAction.DataName);
                     }
 
                     // Link OnDeselect Action -----------------------
@@ -130,7 +152,7 @@ namespace UI
                     }
                     else if (buttonData.OnDeselect is CloseWindowAction)
                     {
-                        button.OnDeselect = () => WindowManager.CloseWindow();
+                        button.OnDeselect = () => _windowManager.CloseWindow();
                     }
                 }
             }
@@ -150,7 +172,7 @@ namespace UI
 
             if (buttonGroup is MainButtonGroupData)
             {
-                menuTransform = MainMenu.transform;
+                menuTransform = _mainMenu.transform;
                 background = config.MainMenuBackgroundColor;
                 selected = config.MainMenuSelectedColor;
                 accent = config.MainMenuAccentColor;
@@ -158,7 +180,7 @@ namespace UI
             }
             else if (buttonGroup is SubButtonGroupData)
             {
-                menuTransform = SubMenu.transform;
+                menuTransform = _subMenu.transform;
                 background = config.SubMenuBackgroundColor;
                 selected = config.SubMenuSelectedColor;
                 accent = config.SubMenuAccentColor;
@@ -172,7 +194,7 @@ namespace UI
                     Name = buttonGroup.Name,
                     ArrowLeft = config.ArrowLeftSprite,
                     ArrowRight = config.ArrowRightSprite,
-                    Height = MainMenu.GetComponent<RectTransform>().rect.height,
+                    Height = _mainMenu.GetComponent<RectTransform>().rect.height,
                     PosY = 0,
                     Left = config.HorizontalMargins,
                     Right = config.HorizontalMargins,
