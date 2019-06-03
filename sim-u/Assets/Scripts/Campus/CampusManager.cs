@@ -102,16 +102,26 @@ namespace Campus
             _paths.ConstructPath(start, end);
         }
 
-        public void DeleteItemAt(Point2 pos)
+        /// <summary>
+        /// Destroys the campus improvement at the desired position.
+        /// </summary>
+        /// <param name="pos">The position to delete at.</param>
+        public void DestroyAt(Point2 pos)
         {
             CampusGridUse itemAt = GetGridUse(pos);
 
             switch (itemAt)
             {
                 case CampusGridUse.Path:
+                    _paths.DestroyPathAt(pos);
                     break;
 
                 case CampusGridUse.Building:
+                    _buildings.DestroyBuildingAt(pos);
+                    break;
+
+                default:
+                    GameLogger.Error("Could not destroy item '{0}' at {1}.", itemAt, pos);
                     break;
             }
         }

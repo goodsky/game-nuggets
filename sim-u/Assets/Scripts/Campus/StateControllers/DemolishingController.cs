@@ -58,7 +58,8 @@ namespace Campus
             {
                 if (HasDemolishableTile())
                 {
-                    
+                    Game.Campus.DestroyAt(_cursor.Position);
+                    _cursor.SetMaterial(_invalidMaterial);
                 }
             }
 

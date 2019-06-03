@@ -1,22 +1,15 @@
-﻿using Common;
-using GameData;
+﻿using GameData;
+using UnityEngine;
 
 namespace Campus
 {
-    public class Building : Selectable
+    public class Building : MonoBehaviour
     {
-        private BuildingData _building;
+        public BuildingData Data { get; private set; }
 
-        protected override void Start()
+        public void Initialize(BuildingData buildingData)
         {
-            base.Start();
-
-            OnSelect = () => { GameLogger.Info("Building '{0}' selected!", _building.Name); };
-        }
-
-        public void Initialize(BuildingData building)
-        {
-            _building = building;
+            Data = buildingData;
         }
     }
 }

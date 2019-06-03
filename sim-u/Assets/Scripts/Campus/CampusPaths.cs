@@ -86,9 +86,24 @@ namespace Campus
             // Set the updated materials
             for (int scanX = Math.Min(start.x, end.x) - 1; scanX <= Math.Max(start.x, end.x) + 1; ++scanX)
                 for (int scanZ = Math.Min(start.z, end.z) - 1; scanZ <= Math.Max(start.z, end.z) + 1; ++scanZ)
-                    if (scanX >= 0 && scanX < _terrain.CountX &&
-                        scanZ >= 0 && scanZ < _terrain.CountZ)
-                            UpdatePathMaterial(scanX, scanZ);
+                    UpdatePathMaterial(scanX, scanZ);
+        }
+
+        /// <summary>
+        /// Remove a path at the position.
+        /// </summary>
+        /// <param name="pos">The position to remove the path at.</param>
+        public void DestroyPathAt(Point2 pos)
+        {
+            if (_path[pos.x, pos.y])
+            {
+                _path[pos.x, pos.y] = false;
+                _terrain.Editor.RemoveAnchor(pos.x, pos.y);
+            }
+
+            for (int scanX = pos.x - 1; scanX <= pos.x + 1; ++scanX)
+                for (int scanZ = pos.y - 1; scanZ <= pos.y + 1; ++scanZ)
+                    UpdatePathMaterial(scanX, scanZ);
         }
 
         /// <summary>
@@ -98,7 +113,13 @@ namespace Campus
         readonly int[] dz = new[] { 1, 0, -1, 0 };
         private void UpdatePathMaterial(int x, int z)
         {
-            if (!_path[x, z])
+            if (x < 0 || x >= _terrain.CountX ||
+                z < 0 || z >= _terrain.CountZ)
+            {
+                return;
+            }
+
+                if (!_path[x, z])
             {
                 _terrain.SetSubmaterial(x, z, 0);
             }

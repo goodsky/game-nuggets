@@ -68,5 +68,36 @@ namespace Campus
                 }
             }
         }
+
+        /// <summary>
+        /// Remove a building at a location.
+        /// </summary>
+        /// <param name="pos">The position to remove the building at.</param>
+        public void DestroyBuildingAt(Point2 pos)
+        {
+            if (_buildings.TryGetValue(pos, out Building building))
+            {
+                Point3 location = _terrain.Convert.WorldToGrid(building.transform.position);
+
+                int xSize = building.Data.Footprint.GetLength(0);
+                int zSize = building.Data.Footprint.GetLength(1);
+                for (int dx = 0; dx < xSize; ++dx)
+                {
+                    for (int dz = 0; dz < zSize; ++dz)
+                    {
+                        int gridX = location.x + dx;
+                        int gridZ = location.z + dz;
+
+                        if (building.Data.Footprint[dx, dz])
+                        {
+                            _buildings.Remove(new Point2(gridX, gridZ));
+                            _terrain.Editor.RemoveAnchor(gridX, gridZ);
+                        }
+                    }
+                }
+
+                Object.Destroy(building.gameObject);
+            }
+        }
     }
 }
