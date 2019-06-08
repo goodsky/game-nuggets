@@ -102,8 +102,8 @@ namespace Campus
                     int checkX = x + dx[i];
                     int checkZ = z + dz[i];
                     adj[i] =
-                        (checkX > 0 && checkX < _terrain.CountX &&
-                         checkZ > 0 && checkZ < _terrain.CountZ &&
+                        (checkX >= 0 && checkX < _terrain.CountX &&
+                         checkZ >= 0 && checkZ < _terrain.CountZ &&
                          _path[checkX, checkZ])
                          ? 1 : 0;
                 }

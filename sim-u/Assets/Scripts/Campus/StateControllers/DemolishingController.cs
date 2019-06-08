@@ -45,7 +45,20 @@ namespace Campus
             _cursor.Deactivate();
         }
 
-        public override void Update() { }
+        /// <summary>
+        /// Called each step of this state.
+        /// </summary>
+        public override void Update()
+        {
+            if (Input.GetMouseButton(0))
+            {
+                if (HasDemolishableTile())
+                {
+                    Game.Campus.DestroyAt(_cursor.Position);
+                    _cursor.SetMaterial(_invalidMaterial);
+                }
+            }
+        }
 
         /// <summary>
         /// Called when the Terrain is clicked.
@@ -54,15 +67,6 @@ namespace Campus
         /// <param name="args">Mouse click arguments</param>
         private void Clicked(object sender, TerrainClickedArgs args)
         {
-            if (args.Button == MouseButton.Left)
-            {
-                if (HasDemolishableTile())
-                {
-                    Game.Campus.DestroyAt(_cursor.Position);
-                    _cursor.SetMaterial(_invalidMaterial);
-                }
-            }
-
             // DEBUGGING:
             if (args.Button == MouseButton.Right)
             {
