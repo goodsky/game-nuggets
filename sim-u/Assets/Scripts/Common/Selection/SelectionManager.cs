@@ -48,7 +48,7 @@ namespace Common
                     }
                     catch (Exception e)
                     {
-                        GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
+                        GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", globalSelection.GetType().Name, e);
                     }
                 }
 

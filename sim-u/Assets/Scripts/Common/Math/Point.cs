@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine.Assertions;
 
-namespace Campus.GridTerrain
+namespace Common
 {
     /// <summary>
     /// 2D Point that has a safe HashCode.
@@ -9,28 +9,28 @@ namespace Campus.GridTerrain
     /// </summary>
     public struct Point2 : IEquatable<Point2>
     {
-        private readonly int _x, _y;
+        private readonly int _x, _z;
 
         public int x { get { return _x; } }
-        public int y { get { return _y; } }
+        public int z { get { return _z; } }
 
-        public Point2(int x, int y)
+        public Point2(int x, int z)
         {
             this._x = x;
-            this._y = y;
+            this._z = z;
 
-            Assert.IsTrue(x >= 0 && x < (1 << 10) && y >= 0 && y < (1 << 10), string.Format("Point out of range ({0}, {1})", x, y));
+            Assert.IsTrue(x >= 0 && x < (1 << 10) && z >= 0 && z < (1 << 10), string.Format("Point out of range ({0}, {1})", x, z));
         }
 
         public override string ToString()
         {
-            return string.Format("({0},{1})", _x, _y);
+            return string.Format("({0},{1})", _x, _z);
         }
 
         public override int GetHashCode()
         {
             // works for values up to 2^10
-            return _x + (_y << 10);
+            return _x + (_z << 10);
         }
 
         public override bool Equals(object obj)
@@ -45,11 +45,11 @@ namespace Campus.GridTerrain
 
         public static bool operator ==(Point2 p1, Point2 p2)
         {
-            return p1._x == p2._x && p1._y == p2._y;
+            return p1._x == p2._x && p1._z == p2._z;
         }
-        public static bool operator !=(Point2 x, Point2 y)
+        public static bool operator !=(Point2 x, Point2 z)
         {
-            return !(x == y);
+            return !(x == z);
         }
     }
 

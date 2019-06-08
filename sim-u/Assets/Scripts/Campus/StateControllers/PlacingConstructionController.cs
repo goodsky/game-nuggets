@@ -110,7 +110,7 @@ namespace Campus
         {
             int footprintSizeX = _building.Footprint.GetLength(0);
             int footprintSizeZ = _building.Footprint.GetLength(1);
-            return Game.Campus.CheckFlatAndFree(_cursors.Position.x, _cursors.Position.y, footprintSizeX, footprintSizeZ);
+            return Game.Campus.CheckFlatAndFree(_cursors.Position.x, _cursors.Position.z, footprintSizeX, footprintSizeZ);
         }
     }
 }

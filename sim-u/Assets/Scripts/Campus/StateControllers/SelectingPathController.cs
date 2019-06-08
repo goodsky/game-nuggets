@@ -39,7 +39,7 @@ namespace Campus
         public override void TransitionIn(object _)
         {
             _cursor.Activate();
-            _cursor.Place(_cursor.Position.x, _cursor.Position.y);
+            _cursor.Place(_cursor.Position.x, _cursor.Position.z);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Campus
             {
                 GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; Grid Use: {2}", 
                     IsValidTerrain(), 
-                    Game.Campus.CheckLineSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0],
+                    Game.Campus.CheckLineSmoothAndFree(new AxisAlignedLine(_cursor.Position))[0],
                     Game.Campus.GetGridUse(_cursor.Position));
             }
         }
@@ -112,7 +112,7 @@ namespace Campus
         private bool IsValidTerrain()
         {
             return
-                Game.Campus.CheckLineSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ||
+                Game.Campus.CheckLineSmoothAndFree(new AxisAlignedLine(_cursor.Position))[0] ||
                 Game.Campus.GetGridUse(_cursor.Position) == CampusGridUse.Path;
         }
     }

@@ -34,7 +34,7 @@ namespace Campus
         public override void TransitionIn(object _)
         {
             _cursor.Activate();
-            _cursor.Place(_cursor.Position.x, _cursor.Position.y);
+            _cursor.Place(_cursor.Position.x, _cursor.Position.z);
         }
 
         /// <summary>

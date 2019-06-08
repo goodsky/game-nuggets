@@ -1,4 +1,5 @@
 ﻿using Campus.GridTerrain;
+using Common;
 using GameData;
 using System;
 using UnityEngine;
@@ -14,13 +15,13 @@ namespace Campus
         private GridMesh _terrain;
         private bool[,] _path;
 
-        private Action _onBuildGrid;
-        private Action _onDestroyGrid;
+        private int _emptyGrassSubmaterialIndex;
 
         public CampusPaths(CampusData campusData, GridMesh terrain)
         {
             _terrain = terrain;
             _path = new bool[_terrain.CountX, _terrain.CountZ];
+            _emptyGrassSubmaterialIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
             SetupPathMapping(campusData.Terrain.SubmaterialPathsIndex);
         }
 
@@ -33,59 +34,28 @@ namespace Campus
         {
             return
                 pos.x >= 0 && pos.x < _terrain.CountX &&
-                pos.y >= 0 && pos.y < _terrain.CountZ &&
-                _path[pos.x, pos.y];
+                pos.z >= 0 && pos.z < _terrain.CountZ &&
+                _path[pos.x, pos.z];
         }
 
         /// <summary>
         /// Build a path at the position.
         /// </summary>
-        /// <param name="x">X position</param>
-        /// <param name="z">Z position</param>
-        public void ConstructPath(Point3 start, Point3 end)
+        /// <param name="line">The line to construct along.</param>
+        public void ConstructPath(AxisAlignedLine line)
         {
-            if (Application.isEditor)
+            foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
             {
-                Assert.IsFalse(start.x != end.x && start.z != end.z, "Placing path in invalid location!");
-            }
-
-            int dx = 0;
-            int dz = 0;
-            int length = 1;
-
-            if (start.x == end.x && start.z == end.z)
-            {
-                // Case: Building a single square
-            }
-            else if (start.x != end.x)
-            {
-                // Case: Building a line along the x-axis
-                dx = start.x < end.x ? 1 : -1;
-                length = Math.Abs(start.x - end.x) + 1;
-            }
-            else
-            {
-                // Case: Building a line along the z-axis
-                dz = start.z < end.z ? 1 : -1;
-                length = Math.Abs(start.z - end.z) + 1;
-            }
-
-            // Set the paths
-            for (int i = 0; i < length; ++i)
-            {
-                int gridX = start.x + i * dx;
-                int gridZ = start.z + i * dz;
-
-                if (!_path[gridX, gridZ])
+                if (!_path[point.x, point.z])
                 {
-                    _path[gridX, gridZ] = true;
-                    _terrain.Editor.SetAnchored(gridX, gridZ);
+                    _path[point.x, point.z] = true;
+                    _terrain.Editor.SetAnchored(point.x, point.z);
                 }
             }
 
             // Set the updated materials
-            for (int scanX = Math.Min(start.x, end.x) - 1; scanX <= Math.Max(start.x, end.x) + 1; ++scanX)
-                for (int scanZ = Math.Min(start.z, end.z) - 1; scanZ <= Math.Max(start.z, end.z) + 1; ++scanZ)
+            for (int scanX = Math.Min(line.Start.x, line.End.x) - 1; scanX <= Math.Max(line.Start.x, line.End.x) + 1; ++scanX)
+                for (int scanZ = Math.Min(line.Start.z, line.End.z) - 1; scanZ <= Math.Max(line.Start.z, line.End.z) + 1; ++scanZ)
                     UpdatePathMaterial(scanX, scanZ);
         }
 
@@ -95,14 +65,14 @@ namespace Campus
         /// <param name="pos">The position to remove the path at.</param>
         public void DestroyPathAt(Point2 pos)
         {
-            if (_path[pos.x, pos.y])
+            if (_path[pos.x, pos.z])
             {
-                _path[pos.x, pos.y] = false;
-                _terrain.Editor.RemoveAnchor(pos.x, pos.y);
+                _path[pos.x, pos.z] = false;
+                _terrain.Editor.RemoveAnchor(pos.x, pos.z);
             }
 
             for (int scanX = pos.x - 1; scanX <= pos.x + 1; ++scanX)
-                for (int scanZ = pos.y - 1; scanZ <= pos.y + 1; ++scanZ)
+                for (int scanZ = pos.z - 1; scanZ <= pos.z + 1; ++scanZ)
                     UpdatePathMaterial(scanX, scanZ);
         }
 
@@ -119,9 +89,9 @@ namespace Campus
                 return;
             }
 
-                if (!_path[x, z])
+            if (!_path[x, z])
             {
-                _terrain.SetSubmaterial(x, z, 0);
+                _terrain.SetSubmaterial(x, z, _emptyGrassSubmaterialIndex);
             }
             else
             {
@@ -148,13 +118,15 @@ namespace Campus
 
         // mapping from adjacent paths to the material + rotation
         // [top, right, bottom, left]
+        //  |A |
+        //--+--+--
+        // D|  |B
+        //--+--+--
+        //  |C |
         private int[,,,] _subMaterial;
         private Rotation[,,,] _rotation;
         private void SetupPathMapping(int startIndex)
         {
-            // This is fun! Seemed like the best way to do it at the time. 
-            // Future people: let me know if I'm an idiot.
-
             _subMaterial = new int[2, 2, 2, 2];
             _rotation = new Rotation[2, 2, 2, 2];
 
@@ -217,6 +189,9 @@ namespace Campus
             _rotation   [1, 1, 1, 1] = Rotation.deg0;
         }
 
+        /// <summary>
+        /// This enum encodes the expected order of submaterials on the paths/roads sprite sheet.
+        /// </summary>
         private enum PathSubmaterialIndex
         {
             NoAdjacent = 0,

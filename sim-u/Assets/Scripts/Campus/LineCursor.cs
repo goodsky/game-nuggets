@@ -1,4 +1,5 @@
 ﻿using Campus.GridTerrain;
+using Common;
 using System;
 using UnityEngine;
 
@@ -75,56 +76,26 @@ namespace Campus
         }
 
         /// <summary>
-        /// Place the cursors between two points.
+        /// Place the line cursor along an <see cref="AxisAlignedLine"/>.
         /// </summary>
-        /// <param name="start">Starting location of the line.</param>
-        /// <param name="end">Ending location of the line.</param>
+        /// <param name="line">An axis aligned line.</param>
         /// <param name="isValid">Booleans representing whether each position is valid or not.</param>
-        public void Place(Point3 start, Point3 end, bool[] isValid = null)
+        public void Place(AxisAlignedLine line, bool[] isValid = null)
         {
-            if (start.x != end.x && start.z != end.z)
-                throw new InvalidOperationException("LineCursor must be placed along an axis-aligned line.");
-
-            int dx = 0;
-            int dz = 0;
-            int length = 1;
-
-            if (start.x == end.x && start.z == end.z)
+            int maxLineIndex = -1;
+            foreach ((int lineIndex, Point2 linePoint) in line.PointsAlongLine())
             {
-                // Case: Placing a single square
-            }
-            else if (start.x != end.x)
-            {
-                // Case: Placing a line along the x-axis
-                dx = start.x < end.x ? 1 : -1;
-                length = Math.Abs(start.x - end.x) + 1;
-            }
-            else
-            {
-                // Case: Placing a line along the z-axis
-                dz = start.z < end.z ? 1 : -1;
-                length = Math.Abs(start.z - end.z) + 1;
-            }
+                maxLineIndex = lineIndex;
+                var cursor = _cursors[lineIndex];
 
-            for (int i = 0; i < _cursors.Length; ++i)
-            {
-                if (i >= length)
-                {
-                    if (!_cursors[i].IsActive)
-                        break;
-
-                    // disable unused cursors
-                    _cursors[i].Deactivate();
-                    continue;
-                }
-
-                int gridX = start.x + i * dx;
-                int gridZ = start.z + i * dz;
-
-                var cursor = _cursors[i];
                 cursor.Activate();
-                cursor.SetMaterial(isValid[i] ? _validMaterial : _invalidMaterial);
-                cursor.Place(gridX, gridZ);
+                cursor.SetMaterial(isValid[lineIndex] ? _validMaterial : _invalidMaterial);
+                cursor.Place(linePoint.x, linePoint.z);
+            }
+
+            for (int lineIndex = maxLineIndex + 1; lineIndex < _cursors.Length; ++lineIndex)
+            {
+                _cursors[lineIndex].Deactivate();
             }
         }
     }

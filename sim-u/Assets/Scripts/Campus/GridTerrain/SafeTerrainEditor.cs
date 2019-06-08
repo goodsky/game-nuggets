@@ -107,7 +107,7 @@ namespace Campus.GridTerrain
             var p3 = new Point2(x + 1, z);
             var p4 = new Point2(x + 1, z + 1);
 
-            if (_vertexAnchored[p1.x, p1.y] || _vertexAnchored[p2.x, p2.y] || _vertexAnchored[p3.x, p3.y] || _vertexAnchored[p4.x, p4.y])
+            if (_vertexAnchored[p1.x, p1.z] || _vertexAnchored[p2.x, p2.z] || _vertexAnchored[p3.x, p3.z] || _vertexAnchored[p4.x, p4.z])
                 return false;
 
             // bounding box around the changes
@@ -132,22 +132,22 @@ namespace Campus.GridTerrain
 
                 minX = Math.Min(minX, cur.x);
                 maxX = Math.Max(maxX, cur.x);
-                minY = Math.Min(minY, cur.y);
-                maxY = Math.Max(maxY, cur.y);
+                minY = Math.Min(minY, cur.z);
+                maxY = Math.Max(maxY, cur.z);
 
                 for (int i = 0; i < dx.Length; ++i)
                 {
-                    var test = new Point2(cur.x + dx[i], cur.y + dy[i]);
+                    var test = new Point2(cur.x + dx[i], cur.z + dy[i]);
 
                     if (visited.Contains(test))
                         continue;
 
                     // we are okay with grid difference up to 1 step
-                    var heightDiff = _terrain.GetVertexHeight(test.x, test.y) - setHeights[cur];
+                    var heightDiff = _terrain.GetVertexHeight(test.x, test.z) - setHeights[cur];
 
                     if (heightDiff < -1)
                     {
-                        if (_vertexAnchored[test.x, test.y])
+                        if (_vertexAnchored[test.x, test.z])
                             return false;
 
                         setHeights[test] = setHeights[cur] - 1;
@@ -157,7 +157,7 @@ namespace Campus.GridTerrain
 
                     if (heightDiff > 1)
                     {
-                        if (_vertexAnchored[test.x, test.y])
+                        if (_vertexAnchored[test.x, test.z])
                             return false;
 
                         setHeights[test] = setHeights[cur] + 1;

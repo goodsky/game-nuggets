@@ -1,4 +1,5 @@
 ﻿using Campus.GridTerrain;
+using Common;
 using GameData;
 using System.Collections.Generic;
 using UnityEngine;
@@ -33,7 +34,7 @@ namespace Campus
         {
             return
                 pos.x >= 0 && pos.x < _terrain.CountX &&
-                pos.y >= 0 && pos.y < _terrain.CountZ &&
+                pos.z >= 0 && pos.z < _terrain.CountZ &&
                 _buildings.TryGetValue(pos, out Building _);
         }
 
