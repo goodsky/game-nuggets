@@ -38,12 +38,6 @@ namespace Campus
         /// <returns>The use of the current grid.</returns>
         public CampusGridUse GetGridUse(Point2 pos)
         {
-            if (pos.x < 0 || pos.x >= _terrain.CountX ||
-                pos.z < 0 || pos.z >= _terrain.CountZ)
-            {
-                return CampusGridUse.Empty;
-            }
-
             CampusGridUse use = CampusGridUse.Empty;
 
             if (_buildings.BuildingAtPosition(pos))
@@ -156,12 +150,9 @@ namespace Campus
                     // and not anchored
                     // and flat
                     check[x, z] =
-                        gridX >= 0 &&
-                        gridX < _terrain.CountX &&
-                        gridZ >= 0 &&
-                        gridZ < _terrain.CountZ &&
-                        GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty &&
-                        _terrain.IsGridFlat(gridX, gridZ);
+                        _terrain.GridInBounds(gridX, gridZ) &&
+                        _terrain.IsGridFlat(gridX, gridZ) &&
+                        GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
                 }
             }
 
@@ -180,10 +171,7 @@ namespace Campus
             foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
             {
                 bool isInBoundsAndEmpty =
-                    point.x >= 0 &&
-                    point.x < _terrain.CountX &&
-                    point.z >= 0 &&
-                    point.z < _terrain.CountZ &&
+                    _terrain.GridInBounds(point.x, point.z) &&
                     GetGridUse(point) == CampusGridUse.Empty;
 
                 switch (line.Alignment)
@@ -234,10 +222,7 @@ namespace Campus
             foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
             {
                 bool isInBoundsAndEmpty =
-                    point.x >= 0 &&
-                    point.x < _terrain.CountX &&
-                    point.z >= 0 &&
-                    point.z < _terrain.CountZ &&
+                    _terrain.GridInBounds(point.x, point.z) &&
                     GetGridUse(point) == CampusGridUse.Empty;
 
                 switch (line.Alignment)

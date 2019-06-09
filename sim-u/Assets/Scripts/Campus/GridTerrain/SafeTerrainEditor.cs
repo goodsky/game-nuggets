@@ -40,7 +40,7 @@ namespace Campus.GridTerrain
         /// <param name="z">The z grid coordinate.</param>
         public void SetAnchored(int x, int z)
         {
-            if (x < 0 || x > _terrain.CountX || z < 0 || z > _terrain.CountZ)
+            if (!_terrain.GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to anchor grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
 
             _vertexAnchored[x, z] = _vertexAnchored[x, z + 1] = _vertexAnchored[x + 1, z] = _vertexAnchored[x + 1, z + 1] = true;
@@ -53,7 +53,7 @@ namespace Campus.GridTerrain
         /// <param name="z">The z grid coordinate.</param>
         public void RemoveAnchor(int x, int z)
         {
-            if (x < 0 || x > _terrain.CountX || z < 0 || z > _terrain.CountZ)
+            if (!_terrain.GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to remove anchor from grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
 
             _vertexAnchored[x, z] = _vertexAnchored[x, z + 1] = _vertexAnchored[x + 1, z] = _vertexAnchored[x + 1, z + 1] = false;
@@ -70,7 +70,7 @@ namespace Campus.GridTerrain
             int xSize = freeGrids.GetLength(0);
             int zSize = freeGrids.GetLength(1);
 
-            if (xBase < 0 || xBase + xSize > _terrain.CountX || zBase < 0 || zBase + zSize > _terrain.CountZ)
+            if (!_terrain.GridInBounds(xBase, zBase) || !_terrain.GridInBounds(xBase + xSize - 1, zBase + zSize - 1))
                 GameLogger.FatalError("Attempted to remove anchor from outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xSize, zSize, _terrain.CountX, _terrain.CountZ);
 
             for (int x = 0; x < xSize; ++x)
@@ -98,6 +98,9 @@ namespace Campus.GridTerrain
         /// <returns>True if the set succeeded. False otherwise.</returns>
         public bool SafeSetHeight(int x, int z, int gridHeight)
         {
+            if (!_terrain.GridInBounds(x, z))
+                GameLogger.FatalError("Attempted to SafeSetHeight to grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
+
             var s = new Queue<Point2>();
             var visited = new HashSet<Point2>();
             var setHeights = new Dictionary<Point2, int>();

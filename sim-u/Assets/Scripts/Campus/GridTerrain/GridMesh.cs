@@ -195,6 +195,34 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
+        /// Check if a grid point is valid on this grid mesh.
+        /// </summary>
+        /// <param name="x">X coordinate of the grid square.</param>
+        /// <param name="z">Z coordinate of the grid square</param>
+        /// <returns>True if the grid point is in the bounds of the mesh.</returns>
+        public bool GridInBounds(int x, int z)
+        {
+            return  x >= 0 &&
+                    x < CountX &&
+                    z >= 0 &&
+                    z < CountZ;
+        }
+
+        /// <summary>
+        /// Check if a vertex point is valid on this grid mesh.
+        /// </summary>
+        /// <param name="x">X coordinate of the grid vertex.</param>
+        /// <param name="z">Z coordinate of the grid vertex</param>
+        /// <returns>True if the vertex point is in the bounds of the mesh.</returns>
+        public bool VertexInBounds(int x, int z)
+        {
+            return  x >= 0 &&
+                    x <= CountX &&
+                    z >= 0 &&
+                    z <= CountZ;
+        }
+
+        /// <summary>
         /// Gets the height of a grid square in grid steps.
         /// </summary>
         /// <param name="x">X coordinate of the grid square.</param>
@@ -202,7 +230,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the grid square in grid steps.</returns>
         public int GetSquareHeight(int x, int z, int corner = Vertex.Center)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetSquareHeight out of range. ({0},{1})", x, z);
 
             int centerIndex = _gridData[x, z].VertexIndex + corner;
@@ -217,7 +245,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the grid square in Unity world units.</returns>
         public float GetSquareWorldHeight(int x, int z, int corner = Vertex.Center)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetSquareWorldHeight out of range. ({0},{1})", x, z);
 
             int centerIndex = _gridData[x, z].VertexIndex + corner;
@@ -233,7 +261,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the vertex in grid steps.</returns>
         public int GetVertexHeight(int x, int z)
         {
-            if (x < 0 || x > CountX || z < 0 || z > CountZ)
+            if (!VertexInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetVertexHeight out of range. ({0},{1})", x, z);
 
             return _vertexHeight[x, z];
@@ -248,7 +276,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the vertex in Unity world units.</returns>
         public float GetVertexWorldHeight(int x, int z)
         {
-            if (x < 0 || x > CountX || z < 0 || z > CountZ)
+            if (!VertexInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetVertexWorldHeight out of range. ({0},{1})", x, z);
 
             return Convert.GridHeightToWorld(_vertexHeight[x, z]);
@@ -262,7 +290,7 @@ namespace Campus.GridTerrain
         /// <returns>True if the square is flat, false otherwise.</returns>
         public bool IsGridFlat(int x, int z)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to get IsGridFlat out of range. ({0},{1})", x, z);
 
             return _vertexHeight[x, z] == _vertexHeight[x + 1, z] &&
@@ -278,7 +306,7 @@ namespace Campus.GridTerrain
         /// <param name="height">The square height in grid steps.</param>
         public void SetSquareHeight(int x, int z, int gridHeight)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to set square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             SetVertexHeights(x, z, new int[,] { { gridHeight, gridHeight }, { gridHeight, gridHeight } });
@@ -297,7 +325,7 @@ namespace Campus.GridTerrain
             int xLength = gridHeights.GetLength(0);
             int zLength = gridHeights.GetLength(1);
 
-            if (xBase < 0 || xBase + xLength > CountX + 1 || zBase < 0 || zBase + zLength > CountZ + 1)
+            if (!VertexInBounds(xBase, zBase) || !VertexInBounds(xBase + xLength - 1, zBase + zLength - 1))
                 GameLogger.FatalError("Attempted to set vertex height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, CountX + 1, CountZ + 1);
 
             // 1st pass: set the corner vertices
@@ -388,7 +416,7 @@ namespace Campus.GridTerrain
         /// <returns>Id of the submaterial used at the grid square.</returns>
         public int GetSubmaterial(int x, int z)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to get square submaterial outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             return _gridData[x, z].SubmaterialIndex;
@@ -402,7 +430,7 @@ namespace Campus.GridTerrain
         /// <param name="submaterialId">The id of the submaterial (the gridsheet on the material from left->right, top->bottom).</param>
         public void SetSubmaterial(int x, int z, int submaterialId, Rotation rotation = Rotation.deg0)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to set square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             int submaterialOffsetX = submaterialId % _submaterialCountX;

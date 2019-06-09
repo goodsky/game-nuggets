@@ -50,7 +50,7 @@ namespace Campus
                         int cursorX = location.x + x;
                         int cursorZ = location.z + z;
 
-                        if (cursorX < _terrain.CountX && cursorZ < _terrain.CountZ)
+                        if (_terrain.GridInBounds(cursorX, cursorZ))
                         {
                             _cursors[x, z].Activate();
                             _cursors[x, z].Place(new Point2(cursorX, cursorZ));

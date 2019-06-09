@@ -28,15 +28,10 @@ namespace Campus
         /// <returns>True if there is a raod, false otherwise.</returns>
         public bool RoadAtPosition(Point2 pos)
         {
-            return
-                pos.x >= 0 && pos.x < _terrain.CountX &&
-                pos.z >= 0 && pos.z < _terrain.CountZ &&
-                ( 
-                    _road[pos.x, pos.z] ||
+            return  _road[pos.x, pos.z] ||
                     _road[pos.x + 1, pos.z] ||
                     _road[pos.x, pos.z + 1] ||
-                    _road[pos.x + 1, pos.z + 1]
-                );
+                    _road[pos.x + 1, pos.z + 1];
         }
 
         /// <summary>
@@ -110,8 +105,7 @@ namespace Campus
         readonly int[] dz = new[] { 0, 1, 1, 0 };
         private void UpdateRoadMaterial(int x, int z)
         {
-            if (x < 0 || x > _terrain.CountX ||
-                z < 0 || z > _terrain.CountZ)
+            if (!_terrain.GridInBounds(x, z))
             {
                 return;
             }
@@ -123,8 +117,7 @@ namespace Campus
                 int checkX = x + dx[i];
                 int checkZ = z + dz[i];
                 adj[i] =
-                    (checkX > 0 && checkX <= _terrain.CountX &&
-                    checkZ > 0 && checkZ <= _terrain.CountZ &&
+                    (_terrain.VertexInBounds(checkX, checkZ) &&
                     _road[checkX, checkZ])
                         ? 1 : 0;
             }

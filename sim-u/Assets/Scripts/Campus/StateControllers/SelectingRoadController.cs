@@ -75,11 +75,21 @@ namespace Campus
                 bool[,] isValidTerrain = IsValidTerrain(args.VertexSelection);
                 for (int i = 0; i < 4; ++i)
                 {
-                    _cursors[i].Place(new Point2(args.VertexSelection.x + dx[i], args.VertexSelection.z + dz[i]));
-                    _cursors[i].SetMaterial(
-                        isValidTerrain[i % 2, i / 2] ?
-                            _validMaterial :
-                            _invalidMaterial);
+                    int cursorX = args.VertexSelection.x + dx[i];
+                    int cursorZ = args.VertexSelection.z + dz[i];
+                    
+                    if (_terrain.GridInBounds(cursorX, cursorZ))
+                    {
+                        _cursors[i].Place(new Point2(cursorX, cursorZ));
+                        _cursors[i].SetMaterial(
+                            isValidTerrain[i % 2, i / 2] ?
+                                _validMaterial :
+                                _invalidMaterial);
+                    }
+                    else
+                    {
+                        _cursors[i].Deactivate();
+                    }
                 }
                 
             }
@@ -116,10 +126,14 @@ namespace Campus
         private bool[,] IsValidTerrain(Point2 selectedVertex)
         {
             // bool[,] isFlatAndFree = Game.Campus.CheckLineSmoothAndFreeAlongVertices(new AxisAlignedLine(selectedVertex));
-            bool[,] isFlatAndFree = Game.Campus.CheckFlatAndFree(selectedVertex.x, selectedVertex.z, 2, 2);
+            bool[,] isFlatAndFree = Game.Campus.CheckFlatAndFree(selectedVertex.x - 1, selectedVertex.z - 1, 2, 2);
             for (int i = 0; i < 4; ++i)
             {
-                isFlatAndFree[i % 2, i / 2] &= Game.Campus.GetGridUse(new Point2(selectedVertex.x + dx[i], selectedVertex.z + dz[i])) == CampusGridUse.Road;
+                int gridX = selectedVertex.x + dx[i];
+                int gridZ = selectedVertex.z + dz[i];
+                isFlatAndFree[i % 2, i / 2] &=
+                    _terrain.GridInBounds(gridX, gridZ) &&
+                    Game.Campus.GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Road;
             }
             return isFlatAndFree;
         }

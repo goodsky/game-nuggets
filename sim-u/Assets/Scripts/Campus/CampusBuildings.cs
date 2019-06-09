@@ -32,10 +32,7 @@ namespace Campus
         /// <returns>True if a building exists at position, false otherwise.</returns>
         public bool BuildingAtPosition(Point2 pos)
         {
-            return
-                pos.x >= 0 && pos.x < _terrain.CountX &&
-                pos.z >= 0 && pos.z < _terrain.CountZ &&
-                _buildings.TryGetValue(pos, out Building _);
+            return _buildings.TryGetValue(pos, out Building _);
         }
 
         /// <summary>
