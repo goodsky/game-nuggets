@@ -103,6 +103,15 @@ namespace Campus
         }
 
         /// <summary>
+        /// Build a road along a vertex line.
+        /// </summary>
+        /// <param name="line">The line to build path along.</param>
+        public void ConstructRoad(AxisAlignedLine line)
+        {
+            _roads.ConstructRoad(line);
+        }
+
+        /// <summary>
         /// Destroys the campus improvement at the desired position.
         /// </summary>
         /// <param name="pos">The position to delete at.</param>
@@ -114,6 +123,10 @@ namespace Campus
             {
                 case CampusGridUse.Path:
                     _paths.DestroyPathAt(pos);
+                    break;
+
+                case CampusGridUse.Road:
+                    _roads.DestroyRoadAt(pos);
                     break;
 
                 case CampusGridUse.Building:
@@ -207,57 +220,6 @@ namespace Campus
         }
 
         /// <summary>
-        /// Check if the terrain along the vertex is valid for pathing.
-        /// i.e. smooth and unanchored.
-        /// </summary>
-        /// <param name="line">The line to check.</param>
-        /// <returns>
-        /// Boolean values representing whether or not the terrain is smooth and free along the line.
-        /// The first dimension is only 2 elements long. The second dimension is the length of the path.
-        /// For example, [0, X] and [1, X] indicate whether the two grids X points along the vertex line are valid.
-        /// </returns>
-        public bool[,] CheckLineSmoothAndFreeAlongVertices(AxisAlignedLine line)
-        {
-            bool[] isValid = new bool[line.Length];
-            foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
-            {
-                bool isInBoundsAndEmpty =
-                    _terrain.GridInBounds(point.x, point.z) &&
-                    GetGridUse(point) == CampusGridUse.Empty;
-
-                switch (line.Alignment)
-                {
-                    case AxisAlignment.None:
-                        isValid[lineIndex] =
-                            isInBoundsAndEmpty &&
-                            (
-                                (_terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x, point.z + 1) &&
-                                _terrain.GetVertexHeight(point.x + 1, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z + 1)) ||
-                                (_terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z) &&
-                                _terrain.GetVertexHeight(point.x, point.z + 1) == _terrain.GetVertexHeight(point.x + 1, point.z + 1))
-                            );
-                        break;
-
-                    case AxisAlignment.XAxis:
-                        isValid[lineIndex] =
-                            isInBoundsAndEmpty &&
-                            _terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x, point.z + 1) &&
-                            _terrain.GetVertexHeight(point.x + 1, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z + 1);
-                        break;
-
-                    case AxisAlignment.ZAxis:
-                        isValid[lineIndex] =
-                            isInBoundsAndEmpty &&
-                            _terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z) &&
-                            _terrain.GetVertexHeight(point.x, point.z + 1) == _terrain.GetVertexHeight(point.x + 1, point.z + 1);
-                        break;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Load the campus game data.
         /// </summary>
         /// <param name="gameData">Campus game data.</param>
@@ -290,6 +252,7 @@ namespace Campus
             Game.State.RegisterController(GameState.SelectingPath, new SelectingPathController(terrain));
             Game.State.RegisterController(GameState.PlacingPath, new PlacingPathController(terrain));
             Game.State.RegisterController(GameState.SelectingRoad, new SelectingRoadController(terrain));
+            Game.State.RegisterController(GameState.PlacingRoad, new PlacingRoadController(terrain));
             Game.State.RegisterController(GameState.Demolishing, new DemolishingController(terrain));
 
             var footprintCreatorObject = new GameObject("FootprintCreator");

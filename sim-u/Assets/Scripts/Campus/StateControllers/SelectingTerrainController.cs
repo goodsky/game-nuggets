@@ -85,20 +85,19 @@ namespace Campus
                 Transition(GameState.EditingTerrain, args);
             }
 
-            if (Application.isEditor)
+            // DEBUGGING:
+            if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
+                GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4}); Anchored ({5}, {6}, {7}, {8})",
                        args.GridSelection,
                        _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z),
                        _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z),
                        _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z + 1),
-                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z + 1));
-
-                if (Input.GetKey(KeyCode.LeftControl))
-                {
-                    int submaterial = _terrain.GetSubmaterial(args.GridSelection.x, args.GridSelection.z);
-                    _terrain.SetSubmaterial(args.GridSelection.x, args.GridSelection.z, (submaterial + 1) % _terrain.SubmaterialCount, Rotation.deg270);
-                }
+                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z + 1),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z + 1),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z + 1));
             }
         }
     }

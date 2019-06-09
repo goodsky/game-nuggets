@@ -28,6 +28,12 @@ namespace Common
             Alignment = AxisAlignment.None;
         }
 
+        public AxisAlignedLine(Point2 start, Point2 end)
+            :this(start)
+        {
+            UpdateEndPointAlongAxis(end);
+        }
+
         public AxisAlignedLine(Point3 start)
             : this(new Point2(start.x, start.z))
         {

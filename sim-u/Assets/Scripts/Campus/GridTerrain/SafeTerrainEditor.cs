@@ -34,6 +34,19 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
+        /// Get if the queried vertex is anchored.
+        /// </summary>
+        /// <param name="x">The x vertex coordinate.</param>
+        /// <param name="z">The z vertex coordinate.</param>
+        public bool IsVertexAnchored(int x, int z)
+        {
+            if (!_terrain.VertexInBounds(x, z))
+                GameLogger.FatalError("Attempted to query anchored vertex outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
+
+            return _vertexAnchored[x, z];
+        }
+
+        /// <summary>
         /// Set the grid square to be anchored by construction.
         /// </summary>
         /// <param name="x">The x grid coordinate.</param>

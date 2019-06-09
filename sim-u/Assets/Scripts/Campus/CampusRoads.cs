@@ -10,6 +10,12 @@ namespace Campus
         private GridMesh _terrain;
         private bool[,] _road;
 
+        readonly int[] gridToVertexDx = new[] { 1, 1, 0, 0 };
+        readonly int[] gridToVertexDz = new[] { 1, 0, 0, 1 };
+
+        private int[] vertexToGridDx = new int[] { -1, -1, 0, 0 };
+        private int[] vertexToGridDz = new int[] { -1, 0, -1, 0 };
+
         public CampusRoads(CampusData campusData, GridMesh terrain)
         {
             _terrain = terrain;
@@ -37,47 +43,30 @@ namespace Campus
         /// <summary>
         /// Build a road along the provided line
         /// </summary>
-        /// <param name="x">X position</param>
-        /// <param name="z">Z position</param>
-        public void ConstructRoad(Point3 start, Point3 end)
+        /// <param name="line">An axis-aligned vertex line to build road at.</param>
+        public void ConstructRoad(AxisAlignedLine line)
         {
-            int dx = 0;
-            int dz = 0;
-            int length = 1;
-
-            if (start.x == end.x && start.z == end.z)
+            foreach ((int lineIndex, Point2 vertexPoint) in line.PointsAlongLine())
             {
-                // Case: Building a single square
-            }
-            else if (start.x != end.x)
-            {
-                // Case: Building a line along the x-axis
-                dx = start.x < end.x ? 1 : -1;
-                length = Math.Abs(start.x - end.x) + 1;
-            }
-            else
-            {
-                // Case: Building a line along the z-axis
-                dz = start.z < end.z ? 1 : -1;
-                length = Math.Abs(start.z - end.z) + 1;
-            }
-
-            // Set the paths
-            for (int i = 0; i < length; ++i)
-            {
-                int gridX = start.x + i * dx;
-                int gridZ = start.z + i * dz;
-
-                if (!_road[gridX, gridZ])
+                if (!_road[vertexPoint.x, vertexPoint.z])
                 {
-                    _road[gridX, gridZ] = true;
-                    _terrain.Editor.SetAnchored(gridX, gridZ);
+                    _road[vertexPoint.x, vertexPoint.z] = true;
+
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        int gridX = vertexPoint.x + vertexToGridDx[i];
+                        int gridZ = vertexPoint.z + vertexToGridDz[i];
+                        if (_terrain.GridInBounds(gridX, gridZ))
+                        {
+                            _terrain.Editor.SetAnchored(gridX, gridZ);
+                        }
+                    }
                 }
             }
 
             // Set the updated materials
-            for (int scanX = Math.Min(start.x, end.x) - 1; scanX <= Math.Max(start.x, end.x) + 1; ++scanX)
-                for (int scanZ = Math.Min(start.z, end.z) - 1; scanZ <= Math.Max(start.z, end.z) + 1; ++scanZ)
+            for (int scanX = Math.Min(line.Start.x, line.End.x) - 1; scanX <= Math.Max(line.Start.x, line.End.x); ++scanX)
+                for (int scanZ = Math.Min(line.Start.z, line.End.z) - 1; scanZ <= Math.Max(line.Start.z, line.End.z); ++scanZ)
                     UpdateRoadMaterial(scanX, scanZ);
         }
 
@@ -87,10 +76,13 @@ namespace Campus
         /// <param name="pos">The position to remove the path at.</param>
         public void DestroyRoadAt(Point2 pos)
         {
-            if (_road[pos.x, pos.z])
+            _terrain.Editor.RemoveAnchor(pos.x, pos.z);
+
+            for (int i = 0; i < 4; ++i)
             {
-                _road[pos.x, pos.z] = false;
-                _terrain.Editor.RemoveAnchor(pos.x, pos.z);
+                int vertX = pos.x + gridToVertexDx[i];
+                int vertZ = pos.z + gridToVertexDz[i];
+                _road[vertX, vertZ] = false;
             }
 
             for (int scanX = pos.x - 1; scanX <= pos.x + 1; ++scanX)
@@ -101,8 +93,6 @@ namespace Campus
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        readonly int[] dx = new[] { 1, 1, 0, 0 };
-        readonly int[] dz = new[] { 0, 1, 1, 0 };
         private void UpdateRoadMaterial(int x, int z)
         {
             if (!_terrain.GridInBounds(x, z))
@@ -114,8 +104,8 @@ namespace Campus
             int[] adj = new int[4];
             for (int i = 0; i < 4; ++i)
             {
-                int checkX = x + dx[i];
-                int checkZ = z + dz[i];
+                int checkX = x + gridToVertexDx[i];
+                int checkZ = z + gridToVertexDz[i];
                 adj[i] =
                     (_terrain.VertexInBounds(checkX, checkZ) &&
                     _road[checkX, checkZ])

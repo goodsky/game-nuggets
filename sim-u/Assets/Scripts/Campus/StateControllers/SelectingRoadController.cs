@@ -1,7 +1,6 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
-using System.Linq;
 using UnityEngine;
 
 namespace Campus
@@ -17,8 +16,13 @@ namespace Campus
         private Material _invalidMaterial;
         private GridCursor[] _cursors;
 
-        private readonly int[] dx = new int[] { -1, -1, 0, 0 };
-        private readonly int[] dz = new int[] { -1, 0, -1, 0 };
+        // Convert vertex to grid squares around the vertex
+        private readonly int[] dxGrid = new int[] { -1, -1, 0, 0 };
+        private readonly int[] dzGrid = new int[] { -1, 0, -1, 0 };
+
+        // Convert vertex to the indices of the IsValidCheck bool[,]
+        private readonly int[] dxCheck = new int[] { 0, 0, 1, 1 };
+        private readonly int[] dzCheck = new int[] { 0, 1, 0, 1 };
 
         /// <summary>
         /// Instantiates an instance of the controller.
@@ -75,14 +79,14 @@ namespace Campus
                 bool[,] isValidTerrain = IsValidTerrain(args.VertexSelection);
                 for (int i = 0; i < 4; ++i)
                 {
-                    int cursorX = args.VertexSelection.x + dx[i];
-                    int cursorZ = args.VertexSelection.z + dz[i];
+                    int cursorX = args.VertexSelection.x + dxGrid[i];
+                    int cursorZ = args.VertexSelection.z + dzGrid[i];
                     
                     if (_terrain.GridInBounds(cursorX, cursorZ))
                     {
                         _cursors[i].Place(new Point2(cursorX, cursorZ));
                         _cursors[i].SetMaterial(
-                            isValidTerrain[i % 2, i / 2] ?
+                            isValidTerrain[dxCheck[i], dzCheck[i]] ?
                                 _validMaterial :
                                 _invalidMaterial);
                     }
@@ -125,15 +129,20 @@ namespace Campus
         /// <returns>Boolean values representing whether or not the grid location is valid for a road.</returns>
         private bool[,] IsValidTerrain(Point2 selectedVertex)
         {
+            // BUG: This does not allow you to start building roads on a valid smooth ramp.
             // bool[,] isFlatAndFree = Game.Campus.CheckLineSmoothAndFreeAlongVertices(new AxisAlignedLine(selectedVertex));
-            bool[,] isFlatAndFree = Game.Campus.CheckFlatAndFree(selectedVertex.x - 1, selectedVertex.z - 1, 2, 2);
+            bool[,] isFlatAndFree = Game.Campus.CheckFlatAndFree(selectedVertex.x + dxGrid[0], selectedVertex.z + dzGrid[0], 2, 2);
             for (int i = 0; i < 4; ++i)
             {
-                int gridX = selectedVertex.x + dx[i];
-                int gridZ = selectedVertex.z + dz[i];
-                isFlatAndFree[i % 2, i / 2] &=
-                    _terrain.GridInBounds(gridX, gridZ) &&
-                    Game.Campus.GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Road;
+                int gridX = selectedVertex.x + dxGrid[i];
+                int gridZ = selectedVertex.z + dzGrid[i];
+
+                isFlatAndFree[dxCheck[i], dzCheck[i]] =
+                    isFlatAndFree[dxCheck[i], dzCheck[i]] ||
+                    (
+                        _terrain.GridInBounds(gridX, gridZ) &&
+                        Game.Campus.GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Road
+                    );
             }
             return isFlatAndFree;
         }
