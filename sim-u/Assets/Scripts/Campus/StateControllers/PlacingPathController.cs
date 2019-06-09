@@ -29,7 +29,7 @@ namespace Campus
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 
-            OnTerrainSelectionUpdate += PlacementUpdate;
+            OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;
         }
 
@@ -43,7 +43,7 @@ namespace Campus
             if (args == null)
                 GameLogger.FatalError("EditingTerrainController was given incorrect context.");
 
-            _line = new AxisAlignedLine(args.ClickLocation);
+            _line = new AxisAlignedLine(args.GridSelection);
             _cursor.Place(_line, IsValidTerrainAlongLine());
         }
 
@@ -77,11 +77,11 @@ namespace Campus
         /// </summary>
         /// <param name="sender">not used.</param>
         /// <param name="args">The terrain selection update args.</param>
-        private void PlacementUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void PlacementUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
-                _line.UpdateEndPointAlongAxis(args.SelectionLocation);
+                _line.UpdateEndPointAlongAxis(args.GridSelection);
             }
             else
             {

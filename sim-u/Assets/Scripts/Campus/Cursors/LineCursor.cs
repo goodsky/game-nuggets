@@ -39,22 +39,26 @@ namespace Campus
         }
 
         /// <summary>
-        /// Destroy the cursor game objects.
+        /// Place the line cursor along an <see cref="AxisAlignedLine"/>.
         /// </summary>
-        public void Destroy()
+        /// <param name="line">An axis aligned line.</param>
+        /// <param name="isValid">Booleans representing whether each position is valid or not.</param>
+        public void Place(AxisAlignedLine line, bool[] isValid = null)
         {
-            if (_cursors != null)
+            int maxLineIndex = -1;
+            foreach ((int lineIndex, Point2 linePoint) in line.PointsAlongLine())
             {
-                foreach (var cursor in _cursors)
-                {
-                    if (cursor != null)
-                    {
-                        cursor.Deactivate();
-                        UnityEngine.Object.Destroy(cursor);
-                    }
-                }
+                maxLineIndex = lineIndex;
+                var cursor = _cursors[lineIndex];
 
-                _cursors = null;
+                cursor.Activate();
+                cursor.SetMaterial(isValid[lineIndex] ? _validMaterial : _invalidMaterial);
+                cursor.Place(linePoint);
+            }
+
+            for (int lineIndex = maxLineIndex + 1; lineIndex < _cursors.Length; ++lineIndex)
+            {
+                _cursors[lineIndex].Deactivate();
             }
         }
 
@@ -76,26 +80,22 @@ namespace Campus
         }
 
         /// <summary>
-        /// Place the line cursor along an <see cref="AxisAlignedLine"/>.
+        /// Destroy the cursor game objects.
         /// </summary>
-        /// <param name="line">An axis aligned line.</param>
-        /// <param name="isValid">Booleans representing whether each position is valid or not.</param>
-        public void Place(AxisAlignedLine line, bool[] isValid = null)
+        public void Destroy()
         {
-            int maxLineIndex = -1;
-            foreach ((int lineIndex, Point2 linePoint) in line.PointsAlongLine())
+            if (_cursors != null)
             {
-                maxLineIndex = lineIndex;
-                var cursor = _cursors[lineIndex];
+                foreach (var cursor in _cursors)
+                {
+                    if (cursor != null)
+                    {
+                        cursor.Deactivate();
+                        UnityEngine.Object.Destroy(cursor);
+                    }
+                }
 
-                cursor.Activate();
-                cursor.SetMaterial(isValid[lineIndex] ? _validMaterial : _invalidMaterial);
-                cursor.Place(linePoint.x, linePoint.z);
-            }
-
-            for (int lineIndex = maxLineIndex + 1; lineIndex < _cursors.Length; ++lineIndex)
-            {
-                _cursors[lineIndex].Deactivate();
+                _cursors = null;
             }
         }
     }

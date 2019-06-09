@@ -48,6 +48,18 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
+        /// Convert a world point to the nearest vertex on the grid.
+        /// </summary>
+        /// <param name="world">Point in Unity world space.</param>
+        /// <returns>The coorisponding grid vertex coordinate.</returns>
+        public Point2 WorldToGridVertex(Vector3 world)
+        {
+            return new Point2(
+                Mathf.FloorToInt(((world.x + _halfGridSize) - _minTerrainX) / _gridSize + Utils.Epsilon),
+                Mathf.FloorToInt(((world.z + _halfGridSize) - _minTerrainZ) / _gridSize + Utils.Epsilon));
+        }
+
+        /// <summary>
         /// Convert a grid coordinate into world point at the origin of the grid.
         /// </summary>
         /// <param name="grid">Grid point.</param>

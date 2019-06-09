@@ -22,7 +22,7 @@ namespace Campus
             _terrain = terrain;
             _cursor = GridCursor.Create(terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain"));
 
-            OnTerrainSelectionUpdate += SelectionUpdate;
+            OnTerrainGridSelectionUpdate += SelectionUpdate;
             OnTerrainClicked += Clicked;
         }
 
@@ -33,7 +33,7 @@ namespace Campus
         public override void TransitionIn(object context)
         {
             _cursor.Activate();
-            _cursor.Place(_cursor.Position.x, _cursor.Position.z);
+            _cursor.Place(_cursor.Position);
         }
 
         /// <summary>
@@ -57,14 +57,14 @@ namespace Campus
         /// </summary>
         /// <param name="sender">Not used.</param>
         /// <param name="args">The terrain selection arguments.</param>
-        private void SelectionUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void SelectionUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
-                _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
+                _cursor.Place(args.GridSelection);
             }
             else
             {
@@ -88,16 +88,16 @@ namespace Campus
             if (Application.isEditor)
             {
                 GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
-                       args.ClickLocation,
-                       _terrain.GetVertexHeight(args.ClickLocation.x, args.ClickLocation.z),
-                       _terrain.GetVertexHeight(args.ClickLocation.x + 1, args.ClickLocation.z),
-                       _terrain.GetVertexHeight(args.ClickLocation.x, args.ClickLocation.z + 1),
-                       _terrain.GetVertexHeight(args.ClickLocation.x + 1, args.ClickLocation.z + 1));
+                       args.GridSelection,
+                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z + 1),
+                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z + 1));
 
                 if (Input.GetKey(KeyCode.LeftControl))
                 {
-                    int submaterial = _terrain.GetSubmaterial(args.ClickLocation.x, args.ClickLocation.z);
-                    _terrain.SetSubmaterial(args.ClickLocation.x, args.ClickLocation.z, (submaterial + 1) % _terrain.SubmaterialCount, Rotation.deg270);
+                    int submaterial = _terrain.GetSubmaterial(args.GridSelection.x, args.GridSelection.z);
+                    _terrain.SetSubmaterial(args.GridSelection.x, args.GridSelection.z, (submaterial + 1) % _terrain.SubmaterialCount, Rotation.deg270);
                 }
             }
         }

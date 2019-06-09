@@ -36,13 +36,23 @@ namespace Common
                 }
             }
 
-            /// <summary>Event handler for terrain selection moved events that don't transition the state.</summary>
-            protected event EventHandler<TerrainSelectionUpdateArgs> OnTerrainSelectionUpdate;
-            public void TerrainSelectionUpdate(TerrainSelectionUpdateArgs args)
+            /// <summary>Event handler for terrain grid selection moved events that don't transition the state.</summary>
+            protected event EventHandler<TerrainGridUpdateArgs> OnTerrainGridSelectionUpdate;
+            public void TerrainGridSelectionUpdate(TerrainGridUpdateArgs args)
             {
-                if (OnTerrainSelectionUpdate != null)
+                if (OnTerrainGridSelectionUpdate != null)
                 {
-                    OnTerrainSelectionUpdate.Invoke(null, args);
+                    OnTerrainGridSelectionUpdate.Invoke(null, args);
+                }
+            }
+
+            /// <summary>Event handler for terrain vertex selection moved events that don't transition the state.</summary>
+            protected event EventHandler<TerrainVertexUpdateArgs> OnTerrainVertexSelectionUpdate;
+            public void TerrainVertexSelectionUpdate(TerrainVertexUpdateArgs args)
+            {
+                if (OnTerrainVertexSelectionUpdate != null)
+                {
+                    OnTerrainVertexSelectionUpdate.Invoke(null, args);
                 }
             }
 

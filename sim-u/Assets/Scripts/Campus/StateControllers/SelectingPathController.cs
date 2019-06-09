@@ -28,7 +28,7 @@ namespace Campus
             _invalidMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid");
             _cursor = GridCursor.Create(terrain, _validMaterial);
 
-            OnTerrainSelectionUpdate += PlacementUpdate;
+            OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;
         }
 
@@ -39,7 +39,7 @@ namespace Campus
         public override void TransitionIn(object _)
         {
             _cursor.Activate();
-            _cursor.Place(_cursor.Position.x, _cursor.Position.z);
+            _cursor.Place(_cursor.Position);
         }
 
         /// <summary>
@@ -60,14 +60,14 @@ namespace Campus
         /// </summary>
         /// <param name="sender">not used.</param>
         /// <param name="args">The terrain selection update args.</param>
-        private void PlacementUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void PlacementUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
-                _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
+                _cursor.Place(args.GridSelection);
                 _cursor.SetMaterial(
                     IsValidTerrain() ?
                         _validMaterial :

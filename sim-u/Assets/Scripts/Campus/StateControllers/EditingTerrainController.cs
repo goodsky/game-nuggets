@@ -37,10 +37,10 @@ namespace Campus
             if (args == null)
                 GameLogger.FatalError("EditingTerrainController was given incorrect context.");
 
-            _editingGridLocation = args.ClickLocation;
+            _editingGridLocation = args.GridSelection;
 
             _cursor.Activate();
-            _cursor.Place(_editingGridLocation.x, _editingGridLocation.z);
+            _cursor.Place(_editingGridLocation);
 
             _mouseDragStartY = Input.mousePosition.y;
             _mouseDragHeightChange = 0;
@@ -74,7 +74,7 @@ namespace Campus
 
                 if (_terrain.Editor.SafeSetHeight(_editingGridLocation.x, _editingGridLocation.z, gridHeight))
                 {
-                    _cursor.Place(_editingGridLocation.x, _editingGridLocation.z);
+                    _cursor.Place(_editingGridLocation);
                 }
             }
         }

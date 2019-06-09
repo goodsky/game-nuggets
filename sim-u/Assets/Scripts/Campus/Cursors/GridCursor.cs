@@ -1,8 +1,9 @@
-﻿using Common;
+﻿using Campus.GridTerrain;
+using Common;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Campus.GridTerrain
+namespace Campus
 {
     /// <summary>
     /// Fits like a glove.
@@ -46,16 +47,77 @@ namespace Campus.GridTerrain
             var cursor = cursorObject.AddComponent<GridCursor>();
             cursor.Terrain = terrain;
             cursor.CursorMaterial = material;
-            cursor.Initialize();
+            cursor.CreateMesh();
             cursor.Deactivate();
 
             return cursor;
         }
 
         /// <summary>
+        /// Place the cursor at the requested grid position.
+        /// </summary>
+        /// <param name="x">X coordinate on the grid.</param>
+        /// <param name="z">Z coordinate on the grid.</param>
+        public void Place(Point2 point)
+        {
+            Position = point;
+            transform.position = new Vector3(point.x * Terrain.GridSquareSize, 0.0f, point.z * Terrain.GridSquareSize);
+
+            _vertices[0].y = Terrain.GetVertexWorldHeight(point.x, point.z) + FloatAmount;
+            _vertices[1].y = Terrain.GetVertexWorldHeight(point.x + 1, point.z) + FloatAmount;
+            _vertices[2].y = Terrain.GetVertexWorldHeight(point.x + 1, point.z + 1) + FloatAmount;
+            _vertices[3].y = Terrain.GetVertexWorldHeight(point.x, point.z + 1) + FloatAmount;
+            _vertices[4].y = Terrain.GetSquareWorldHeight(point.x, point.z) + FloatAmount;
+
+            _mesh.Clear();
+            _mesh.vertices = _vertices;
+            _mesh.uv = _uv;
+            _mesh.triangles = _triangles;
+
+            _mesh.RecalculateBounds();
+            _mesh.RecalculateNormals();
+        }
+
+        /// <summary>
+        /// Place the cursor at the requested grid position.
+        /// </summary>
+        /// <param name="x">X coordinate on the grid.</param>
+        /// <param name="z">Z coordinate on the grid.</param>
+        public void Place(Point3 point)
+        {
+            Place(new Point2(point.x, point.z));
+        }
+
+        /// <summary>
+        /// Set the cursor's material.
+        /// </summary>
+        /// <param name="material">The new material</param>
+        public void SetMaterial(Material material)
+        {
+            CursorMaterial = material;
+            _renderer.material = CursorMaterial;
+        }
+
+        /// <summary>
+        /// Activate the Unity game object.
+        /// </summary>
+        public void Activate()
+        {
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// Deactivate the Unity game object.
+        /// </summary>
+        public void Deactivate()
+        {
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
         /// A required initialize step to setup the cursor.
         /// </summary>
-        protected void Initialize()
+        private void CreateMesh()
         {
             var filter = gameObject.AddComponent<MeshFilter>();
 
@@ -103,57 +165,6 @@ namespace Campus.GridTerrain
             _renderer.material = CursorMaterial;
 
             Position = new Point2(0, 0);
-        }
-
-        /// <summary>
-        /// Activate the Unity game object.
-        /// </summary>
-        public void Activate()
-        {
-            gameObject.SetActive(true);
-        }
-
-        /// <summary>
-        /// Deactivate the Unity game object.
-        /// </summary>
-        public void Deactivate()
-        {
-            gameObject.SetActive(false);
-        }
-
-        /// <summary>
-        /// Set the cursor's material.
-        /// </summary>
-        /// <param name="material">The new material</param>
-        public void SetMaterial(Material material)
-        {
-            CursorMaterial = material;
-            _renderer.material = CursorMaterial;
-        }
-
-        /// <summary>
-        /// Place the cursor at the requested grid position.
-        /// </summary>
-        /// <param name="x">X coordinate on the grid.</param>
-        /// <param name="z">Z coordinate on the grid.</param>
-        public void Place(int x, int z)
-        {
-            Position = new Point2(x, z);
-            transform.position = new Vector3(x * Terrain.GridSquareSize, 0.0f, z * Terrain.GridSquareSize);
-
-            _vertices[0].y = Terrain.GetVertexWorldHeight(x, z) + FloatAmount;
-            _vertices[1].y = Terrain.GetVertexWorldHeight(x + 1, z) + FloatAmount;
-            _vertices[2].y = Terrain.GetVertexWorldHeight(x + 1, z + 1) + FloatAmount;
-            _vertices[3].y = Terrain.GetVertexWorldHeight(x, z + 1) + FloatAmount;
-            _vertices[4].y = Terrain.GetSquareWorldHeight(x, z) + FloatAmount;
-
-            _mesh.Clear();
-            _mesh.vertices = _vertices;
-            _mesh.uv = _uv;
-            _mesh.triangles = _triangles;
-
-            _mesh.RecalculateBounds();
-            _mesh.RecalculateNormals();
         }
     }
 }

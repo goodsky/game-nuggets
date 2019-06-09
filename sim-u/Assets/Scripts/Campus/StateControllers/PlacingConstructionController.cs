@@ -28,7 +28,7 @@ namespace Campus
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 
-            OnTerrainSelectionUpdate += PlacementUpdate;
+            OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Build;
         }
 
@@ -63,11 +63,11 @@ namespace Campus
         /// </summary>
         /// <param name="sender">not used.</param>
         /// <param name="args">The terrain selection update args.</param>
-        private void PlacementUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void PlacementUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
-                _cursors.Place(args.SelectionLocation);
+                _cursors.Place(args.GridSelection);
                 _cursors.SetMaterials(GetValidTerrainUnderMouse());
             }
             else
@@ -96,7 +96,7 @@ namespace Campus
 
                 if (isValid)
                 {
-                    Game.Campus.ConstructBuilding(_building, args.ClickLocation);
+                    Game.Campus.ConstructBuilding(_building, args.GridSelection);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
             }

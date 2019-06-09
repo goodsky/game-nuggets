@@ -9,6 +9,8 @@ namespace Common
     /// </summary>
     public struct Point2 : IEquatable<Point2>
     {
+        public static readonly Point2 Null = new Point2(null);
+
         private readonly int _x, _z;
 
         public int x { get { return _x; } }
@@ -20,6 +22,11 @@ namespace Common
             this._z = z;
 
             Assert.IsTrue(x >= 0 && x < (1 << 10) && z >= 0 && z < (1 << 10), string.Format("Point out of range ({0}, {1})", x, z));
+        }
+
+        private Point2(object _)
+        {
+            _x = -1; _z = -1;
         }
 
         public override string ToString()
@@ -59,7 +66,7 @@ namespace Common
     /// </summary>
     public struct Point3 : IEquatable<Point3>
     {
-        public static Point3 Null = new Point3(null);
+        public static readonly Point3 Null = new Point3(null);
 
         private readonly int _x, _y, _z;
 

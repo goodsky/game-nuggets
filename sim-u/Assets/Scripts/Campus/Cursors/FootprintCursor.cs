@@ -31,6 +31,40 @@ namespace Campus
         }
 
         /// <summary>
+        /// Place the cursors at a location.
+        /// </summary>
+        /// <param name="location"></param>
+        public void Place(Point3 location)
+        {
+            Position = new Point2(location.x, location.z);
+
+            int xSize = _cursors.GetLength(0);
+            int zSize = _cursors.GetLength(1);
+
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    if (_cursors != null && _cursors[x, z] != null)
+                    {
+                        int cursorX = location.x + x;
+                        int cursorZ = location.z + z;
+
+                        if (cursorX < _terrain.CountX && cursorZ < _terrain.CountZ)
+                        {
+                            _cursors[x, z].Activate();
+                            _cursors[x, z].Place(new Point2(cursorX, cursorZ));
+                        }
+                        else
+                        {
+                            _cursors[x, z].Deactivate();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Creates a new collection of cursors.
         /// </summary>
         /// <param name="footprint">The footprint of the building.</param>
@@ -55,6 +89,27 @@ namespace Campus
                     else
                     {
                         _cursors[x, z] = null;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set the color of the cursors based on valid locations.
+        /// </summary>
+        /// <param name="validLocations">An array representing which locations are valid.</param>
+        public void SetMaterials(bool[,] validLocations)
+        {
+            int xSize = _cursors.GetLength(0);
+            int zSize = _cursors.GetLength(1);
+
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    if (_cursors != null && _cursors[x, z] != null)
+                    {
+                        _cursors[x, z].SetMaterial(validLocations[x, z] ? _validMaterial : _invalidMaterial);
                     }
                 }
             }
@@ -109,61 +164,6 @@ namespace Campus
                     if (cursor != null)
                     {
                         cursor.Deactivate();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set the color of the cursors based on valid locations.
-        /// </summary>
-        /// <param name="validLocations">An array representing which locations are valid.</param>
-        public void SetMaterials(bool[,] validLocations)
-        {
-            int xSize = _cursors.GetLength(0);
-            int zSize = _cursors.GetLength(1);
-
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    if (_cursors != null && _cursors[x, z] != null)
-                    {
-                        _cursors[x, z].SetMaterial(validLocations[x, z] ? _validMaterial : _invalidMaterial);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Place the cursors at a location.
-        /// </summary>
-        /// <param name="location"></param>
-        public void Place(Point3 location)
-        {
-            Position = new Point2(location.x, location.z);
-
-            int xSize = _cursors.GetLength(0);
-            int zSize = _cursors.GetLength(1);
-
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    if (_cursors != null && _cursors[x, z] != null)
-                    {
-                        int cursorX = location.x + x;
-                        int cursorZ = location.z + z;
-
-                        if (cursorX < _terrain.CountX && cursorZ < _terrain.CountZ)
-                        {
-                            _cursors[x, z].Activate();
-                            _cursors[x, z].Place(cursorX, cursorZ);
-                        }
-                        else
-                        {
-                            _cursors[x, z].Deactivate();
-                        }
                     }
                 }
             }

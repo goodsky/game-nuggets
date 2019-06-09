@@ -13,14 +13,8 @@ namespace Common
         /// <summary>The default game state. You are selecting your next state.</summary>
         Selecting,
 
-        /// <summary>Constructing a new entity on the campus.</summary>
-        PlacingConstruction,
-
-        /// <summary>Selecting the start position of the path.</summary>
-        SelectingPath,
-
-        /// <summary>Creating the path.</summary>
-        PlacingPath,
+        /// <summary>Demolishing anchored features in the campus.</summary>
+        Demolishing,
 
         /// <summary>Selecting campus terrain to modify.</summary>
         SelectingTerrain,
@@ -28,8 +22,20 @@ namespace Common
         /// <summary>Modifying the campus terrain.</summary>
         EditingTerrain,
 
-        /// <summary>Demolishing anchored features in the campus.</summary>
-        Demolishing,
+        /// <summary>Selecting the start position of the path.</summary>
+        SelectingPath,
+
+        /// <summary>Creating the path.</summary>
+        PlacingPath,
+
+        /// <summary>Selecting the start position of the road.</summary>
+        SelectingRoad,
+
+        /// <summary>Creating the road.</summary>
+        PlacingRoad,
+
+        /// <summary>Constructing a new entity on the campus.</summary>
+        PlacingConstruction,
     }
 
     /// <summary>
@@ -49,7 +55,8 @@ namespace Common
 
         private readonly object _setLock = new object();
 
-        private TerrainSelectionUpdateArgs _lastTerrainLocation = null;
+        private TerrainGridUpdateArgs _lastTerrainGridSelection = null;
+        private TerrainVertexUpdateArgs _lastTerrainVertexSelection = null;
 
         /// <summary>
         /// Unity start method.
@@ -96,6 +103,7 @@ namespace Common
                 case GameState.SelectingTerrain:
                 case GameState.PlacingConstruction:
                 case GameState.SelectingPath:
+                case GameState.SelectingRoad:
                 case GameState.Demolishing:
                     Transition(newState, context);
                     break;
@@ -137,16 +145,30 @@ namespace Common
         }
 
         /// <summary>
-        /// The selection on the terrain was updated.
+        /// The grid selection on the terrain was updated.
         /// </summary>
         /// <param name="args"></param>
-        public void SelectionUpdateTerrain(TerrainSelectionUpdateArgs args)
+        public void UpdateTerrainGridSelection(TerrainGridUpdateArgs args)
         {
-            _lastTerrainLocation = args;
+            _lastTerrainGridSelection = args;
 
             foreach (var controller in _currentStateControllers)
             {
-                controller.TerrainSelectionUpdate(args);
+                controller.TerrainGridSelectionUpdate(args);
+            }
+        }
+
+        /// <summary>
+        /// The grid selection on the terrain was updated.
+        /// </summary>
+        /// <param name="args"></param>
+        public void UpdateTerrainVertexSelection(TerrainVertexUpdateArgs args)
+        {
+            _lastTerrainVertexSelection = args;
+
+            foreach (var controller in _currentStateControllers)
+            {
+                controller.TerrainVertexSelectionUpdate(args);
             }
         }
 
@@ -179,10 +201,15 @@ namespace Common
                 {
                     controller.TransitionIn(context);
 
-                    // Primer events that the new state needs.
-                    if (_lastTerrainLocation != null)
+                    // Prime new states with the last relevant event arguments
+                    if (_lastTerrainGridSelection != null)
                     {
-                        controller.TerrainSelectionUpdate(_lastTerrainLocation);
+                        controller.TerrainGridSelectionUpdate(_lastTerrainGridSelection);
+                    }
+
+                    if (_lastTerrainVertexSelection != null)
+                    {
+                        controller.TerrainVertexSelectionUpdate(_lastTerrainVertexSelection);
                     }
                 }
             }

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
-    public class PathingWindow : Window
+    public class PathsWindow : Window
     {
         /// <summary>
         /// The window Title UI text element.

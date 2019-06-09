@@ -2,10 +2,6 @@
 using Common;
 using GameData;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Campus
 {
@@ -128,8 +124,8 @@ namespace Campus
                 int checkZ = z + dz[i];
                 adj[i] =
                     (checkX > 0 && checkX <= _terrain.CountX &&
-                        checkZ > 0 && checkZ <= _terrain.CountZ &&
-                        _road[checkX, checkZ])
+                    checkZ > 0 && checkZ <= _terrain.CountZ &&
+                    _road[checkX, checkZ])
                         ? 1 : 0;
             }
 
