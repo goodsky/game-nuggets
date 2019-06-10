@@ -11,8 +11,8 @@ namespace Campus
     /// </summary>
     public class CampusBuildings
     {
-        private Dictionary<Point2, Building> _buildings = new Dictionary<Point2, Building>();
         private GridMesh _terrain;
+        private Building[,] _building;
 
         /// <summary>
         /// Ctor.
@@ -23,6 +23,7 @@ namespace Campus
         public CampusBuildings(GridMesh terrain)
         {
             _terrain = terrain;
+            _building = new Building[terrain.CountX, terrain.CountZ];
         }
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace Campus
         /// <returns>True if a building exists at position, false otherwise.</returns>
         public bool BuildingAtPosition(Point2 pos)
         {
-            return _buildings.TryGetValue(pos, out Building _);
+            return _building[pos.x, pos.z] != null;
         }
 
         /// <summary>
@@ -41,7 +42,8 @@ namespace Campus
         /// </summary>
         /// <param name="buildingData">The building to construct.</param>
         /// <param name="location">The location of the building.</param>
-        public void ConstructBuilding(BuildingData buildingData, Point3 location)
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> ConstructBuilding(BuildingData buildingData, Point3 location)
         {
             var building = CampusFactory.GenerateBuilding(
                         buildingData,
@@ -60,8 +62,8 @@ namespace Campus
 
                     if (buildingData.Footprint[dx, dz])
                     {
-                        _buildings.Add(new Point2(gridX, gridZ), building);
-                        _terrain.Editor.SetAnchored(gridX, gridZ);
+                        _building[gridX, gridZ] = building;
+                        yield return new Point2(gridX, gridZ);
                     }
                 }
             }
@@ -71,10 +73,14 @@ namespace Campus
         /// Remove a building at a location.
         /// </summary>
         /// <param name="pos">The position to remove the building at.</param>
-        public void DestroyBuildingAt(Point2 pos)
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> DestroyBuildingAt(Point2 pos)
         {
-            if (_buildings.TryGetValue(pos, out Building building))
+            Building building = _building[pos.x, pos.z];
+            if (building != null)
             {
+                // Potential Bug: Does this WorldToGrid always work?
+                //                Could be a dangerous edge case w/ floating point numbers.
                 Point3 location = _terrain.Convert.WorldToGrid(building.transform.position);
 
                 int xSize = building.Data.Footprint.GetLength(0);
@@ -88,8 +94,8 @@ namespace Campus
 
                         if (building.Data.Footprint[dx, dz])
                         {
-                            _buildings.Remove(new Point2(gridX, gridZ));
-                            _terrain.Editor.RemoveAnchor(gridX, gridZ);
+                            _building[gridX, gridZ] = null;
+                            yield return new Point2(gridX, gridZ);
                         }
                     }
                 }

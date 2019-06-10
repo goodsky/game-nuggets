@@ -2,9 +2,14 @@
 using Common;
 using GameData;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Campus
 {
+    /// <summary>
+    /// Collection of all roads on campus.
+    /// </summary>
     public class CampusRoads
     {
         private GridMesh _terrain;
@@ -44,40 +49,31 @@ namespace Campus
         /// Build a road along the provided line
         /// </summary>
         /// <param name="line">An axis-aligned vertex line to build road at.</param>
-        public void ConstructRoad(AxisAlignedLine line)
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> ConstructRoad(AxisAlignedLine line)
         {
             foreach ((int lineIndex, Point2 vertexPoint) in line.PointsAlongLine())
             {
                 if (!_road[vertexPoint.x, vertexPoint.z])
                 {
                     _road[vertexPoint.x, vertexPoint.z] = true;
-
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        int gridX = vertexPoint.x + vertexToGridDx[i];
-                        int gridZ = vertexPoint.z + vertexToGridDz[i];
-                        if (_terrain.GridInBounds(gridX, gridZ))
-                        {
-                            _terrain.Editor.SetAnchored(gridX, gridZ);
-                        }
-                    }
                 }
             }
 
-            // Set the updated materials
+            // Return all the potentially modified grids around the road for updating.
             for (int scanX = Math.Min(line.Start.x, line.End.x) - 1; scanX <= Math.Max(line.Start.x, line.End.x); ++scanX)
                 for (int scanZ = Math.Min(line.Start.z, line.End.z) - 1; scanZ <= Math.Max(line.Start.z, line.End.z); ++scanZ)
-                    UpdateRoadMaterial(scanX, scanZ);
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
         /// Remove a path at the position.
         /// </summary>
         /// <param name="pos">The position to remove the path at.</param>
-        public void DestroyRoadAt(Point2 pos)
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> DestroyRoadAt(Point2 pos)
         {
-            _terrain.Editor.RemoveAnchor(pos.x, pos.z);
-
             for (int i = 0; i < 4; ++i)
             {
                 int vertX = pos.x + gridToVertexDx[i];
@@ -85,21 +81,19 @@ namespace Campus
                 _road[vertX, vertZ] = false;
             }
 
-            for (int scanX = pos.x - 1; scanX <= pos.x + 1; ++scanX)
-                for (int scanZ = pos.z - 1; scanZ <= pos.z + 1; ++scanZ)
-                    UpdateRoadMaterial(scanX, scanZ);
+            // Set the updated materials and whether the grid squares are anchored
+            // NB: This search must be one wider than you think due to the way roads are set up.
+            for (int scanX = pos.x - 2; scanX <= pos.x + 2; ++scanX)
+                for (int scanZ = pos.z - 2; scanZ <= pos.z + 2; ++scanZ)
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        private void UpdateRoadMaterial(int x, int z)
+        public (int submaterialIndex, Rotation rotation) GetRoadMaterial(int x, int z)
         {
-            if (!_terrain.GridInBounds(x, z))
-            {
-                return;
-            }
-
             // check the 4 adjacent road vertices to pick the correct image
             int[] adj = new int[4];
             for (int i = 0; i < 4; ++i)
@@ -112,11 +106,7 @@ namespace Campus
                         ? 1 : 0;
             }
 
-            _terrain.SetSubmaterial(
-                x,
-                z,
-                _subMaterial[adj[0], adj[1], adj[2], adj[3]],
-                _rotation[adj[0], adj[1], adj[2], adj[3]]);
+            return (_subMaterial[adj[0], adj[1], adj[2], adj[3]], _rotation[adj[0], adj[1], adj[2], adj[3]]);
         }
 
         // mapping from adjacent road vertices to the material + rotation

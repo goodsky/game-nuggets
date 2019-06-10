@@ -96,7 +96,7 @@ namespace Campus
             }
 
             // DEBUGGING:
-            if (args.Button == MouseButton.Right)
+            if (args.Button == MouseButton.Right && _cursor.Position != Point2.Null)
             {
                 GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; Grid Use: {2}", 
                     IsValidTerrain(), 

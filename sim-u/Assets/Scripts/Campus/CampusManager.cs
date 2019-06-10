@@ -3,6 +3,7 @@ using Common;
 using GameData;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -30,6 +31,8 @@ namespace Campus
         private CampusBuildings _buildings;
         private CampusPaths _paths;
         private CampusRoads _roads;
+
+        private int _defaultMaterialIndex;
 
         /// <summary>
         /// Returns what is at the campus grid position.
@@ -90,7 +93,7 @@ namespace Campus
         /// <param name="location">The location of the building.</param>
         public void ConstructBuilding(BuildingData building, Point3 location)
         {
-            _buildings.ConstructBuilding(building, location);
+            UpdateGrids(_buildings.ConstructBuilding(building, location));
         }
 
         /// <summary>
@@ -99,7 +102,7 @@ namespace Campus
         /// <param name="line">The line to build path along.</param>
         public void ConstructPath(AxisAlignedLine line)
         {
-            _paths.ConstructPath(line);
+            UpdateGrids(_paths.ConstructPath(line));
         }
 
         /// <summary>
@@ -108,7 +111,7 @@ namespace Campus
         /// <param name="line">The line to build path along.</param>
         public void ConstructRoad(AxisAlignedLine line)
         {
-            _roads.ConstructRoad(line);
+            UpdateGrids(_roads.ConstructRoad(line));
         }
 
         /// <summary>
@@ -119,24 +122,27 @@ namespace Campus
         {
             CampusGridUse itemAt = GetGridUse(pos);
 
+            IEnumerable<Point2> updatedPoints = Enumerable.Empty<Point2>();
             switch (itemAt)
             {
                 case CampusGridUse.Path:
-                    _paths.DestroyPathAt(pos);
+                    updatedPoints = _paths.DestroyPathAt(pos);
                     break;
 
                 case CampusGridUse.Road:
-                    _roads.DestroyRoadAt(pos);
+                    updatedPoints = _roads.DestroyRoadAt(pos);
                     break;
 
                 case CampusGridUse.Building:
-                    _buildings.DestroyBuildingAt(pos);
+                    updatedPoints = _buildings.DestroyBuildingAt(pos);
                     break;
 
                 default:
                     GameLogger.Error("Could not destroy item '{0}' at {1}.", itemAt, pos);
                     break;
             }
+
+            UpdateGrids(updatedPoints);
         }
 
         /// <summary>
@@ -246,6 +252,8 @@ namespace Campus
             _paths = new CampusPaths(gameData, terrain);
             _roads = new CampusRoads(gameData, terrain);
 
+            _defaultMaterialIndex = gameData.Terrain.SubmaterialEmptyGrassIndex;
+
             Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
             Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
             Game.State.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
@@ -273,6 +281,76 @@ namespace Campus
         /// <param name="gameData">Campus game data.</param>
         protected override void LinkData(CampusData gameData)
         {
+        }
+
+        /// <summary>
+        /// Recalculate the state of a campus grid.
+        /// Usually called directly after any edit operation.
+        /// </summary>
+        /// <param name="updatedPoints">The points that have been updated.</param>
+        private void UpdateGrids(IEnumerable<Point2> updatedPoints)
+        {
+            foreach (Point2 updatedPoint in updatedPoints)
+            {
+                UpdateGridMaterial(updatedPoint);
+                UpdateGridAnchoring(updatedPoint);
+            }
+        }
+
+        /// <summary>
+        /// Update the submaterial for a grid on the terrain.
+        /// This taked into account all possible submaterial sources.
+        /// </summary>
+        /// <param name="pos">The grid position to update submaterial on.</param>
+        private void UpdateGridMaterial(Point2 pos)
+        {
+            (int pathMaterialIndex, Rotation pathMaterialRotation) = _paths.GetPathMaterial(pos.x, pos.z);
+            (int roadMaterialIndex, Rotation roadMaterialRotation) = _roads.GetRoadMaterial(pos.x, pos.z);
+
+            int materialIndex = _defaultMaterialIndex;
+            Rotation materialRotation = Rotation.deg0;
+
+            if (pathMaterialIndex != _defaultMaterialIndex)
+            {
+                Assert.AreEqual(_defaultMaterialIndex, materialIndex);
+                materialIndex = pathMaterialIndex;
+                materialRotation = pathMaterialRotation;
+            }
+
+            if (roadMaterialIndex != _defaultMaterialIndex)
+            {
+                Assert.AreEqual(_defaultMaterialIndex, materialIndex);
+                materialIndex = roadMaterialIndex;
+                materialRotation = roadMaterialRotation;
+            }
+
+            _terrain.SetSubmaterial(pos.x, pos.z, materialIndex, materialRotation);
+        }
+
+        /// <summary>
+        /// Update the 
+        /// </summary>
+        /// <param name="pos"></param>
+        private void UpdateGridAnchoring(Point2 pos)
+        {
+            bool isAnchored = false;
+            switch (GetGridUse(pos))
+            {
+                case CampusGridUse.Building:
+                case CampusGridUse.Path:
+                case CampusGridUse.Road:
+                    isAnchored = true;
+                    break;
+            }
+
+            if (isAnchored)
+            {
+                _terrain.Editor.SetAnchored(pos.x, pos.z);
+            }
+            else
+            {
+                _terrain.Editor.RemoveAnchor(pos.x, pos.z);
+            }
         }
     }
 }

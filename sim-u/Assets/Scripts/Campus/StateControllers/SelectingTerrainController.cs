@@ -82,22 +82,25 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                Transition(GameState.EditingTerrain, args);
+                if (_cursor.IsActive)
+                {
+                    Transition(GameState.EditingTerrain, args);
+                }
             }
 
             // DEBUGGING:
-            if (args.Button == MouseButton.Right)
+            if (args.Button == MouseButton.Right && args.GridSelection != Point3.Null)
             {
                 GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4}); Anchored ({5}, {6}, {7}, {8})",
                        args.GridSelection,
-                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z),
-                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z),
-                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z + 1),
                        _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z + 1),
-                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z + 1),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z + 1),
                        _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z),
-                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z + 1),
-                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z + 1));
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z + 1));
             }
         }
     }

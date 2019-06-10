@@ -11,11 +11,20 @@ namespace Campus.GridTerrain
     /// </summary>
     public class SafeTerrainEditor
     {
-        // Shortcut for BFS
-        private readonly int[] dx = new[] { -1, 0, 1, 0 };
-        private readonly int[] dy = new[] { 0, -1, 0, 1 };
+        // Deltas used to iterate from vertex to vertex in BFS
+        private readonly int[] vertexDx = new[] { -1, 0, 1, 0 };
+        private readonly int[] vertexDz = new[] { 0, -1, 0, 1 };
+
+        // Deltas used to iterate the grids around a vertex
+        private readonly int[] vertexToGridDx = new[] { -1, -1, 0, 0 };
+        private readonly int[] vertexToGridDz = new[] { -1, 0, -1, 0 };
+
+        // Deltas used to iterate the vertices around a grid
+        private readonly int[] gridToVertexDx = new[] { 0, 0, 1, 1 };
+        private readonly int[] gridToVertexDz = new[] { 0, 1, 0, 1 };
 
         private GridMesh _terrain;
+        private bool[,] _gridAnchored;
         private bool[,] _vertexAnchored;
 
         /// <summary>
@@ -27,10 +36,11 @@ namespace Campus.GridTerrain
             _terrain = terrain;
 
             // Anchor all corners, otherwise start unanchored
+            _gridAnchored = new bool[_terrain.CountX, _terrain.CountZ];
             _vertexAnchored = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
             for (int i = 0; i <= _terrain.CountX; ++i)
                 for (int j = 0; j <= _terrain.CountZ; ++j)
-                    _vertexAnchored[i, j] = (i == 0 || j == 0 || i == _terrain.CountX - 1 || j == _terrain.CountZ - 1) ? true : false;
+                    _vertexAnchored[i, j] = (i == 0 || j == 0 || i == _terrain.CountX || j == _terrain.CountZ) ? true : false;
         }
 
         /// <summary>
@@ -47,7 +57,8 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
-        /// Set the grid square to be anchored by construction.
+        /// Set the grid square to be anchored.
+        /// The anchor will prevent additional construction and terrain editing.
         /// </summary>
         /// <param name="x">The x grid coordinate.</param>
         /// <param name="z">The z grid coordinate.</param>
@@ -56,11 +67,13 @@ namespace Campus.GridTerrain
             if (!_terrain.GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to anchor grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
 
+            _gridAnchored[x, z] = true;
             _vertexAnchored[x, z] = _vertexAnchored[x, z + 1] = _vertexAnchored[x + 1, z] = _vertexAnchored[x + 1, z + 1] = true;
         }
 
         /// <summary>
-        /// Set the grid square to be anchored by construction.
+        /// Remove the anchor from a grid square.
+        /// The anchor will prevent additional construction and terrain editing.
         /// </summary>
         /// <param name="x">The x grid coordinate.</param>
         /// <param name="z">The z grid coordinate.</param>
@@ -69,7 +82,21 @@ namespace Campus.GridTerrain
             if (!_terrain.GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to remove anchor from grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
 
-            _vertexAnchored[x, z] = _vertexAnchored[x, z + 1] = _vertexAnchored[x + 1, z] = _vertexAnchored[x + 1, z + 1] = false;
+            _gridAnchored[x, z] = false;
+            for (int i = 0; i < 4; ++i)
+            {
+                int vertX = x + gridToVertexDx[i];
+                int vertZ = z + gridToVertexDz[i];
+                bool vertAnchored = false;
+                for (int j = 0; j < 4; ++j)
+                {
+                    int gridX = vertX + vertexToGridDx[j];
+                    int gridZ = vertZ + vertexToGridDz[j];
+                    vertAnchored = vertAnchored || (_terrain.GridInBounds(gridX, gridZ) && _gridAnchored[gridX, gridZ]);
+                }
+
+                _vertexAnchored[vertX, vertZ] = vertAnchored;
+            }
         }
 
         /// <summary>
@@ -151,9 +178,9 @@ namespace Campus.GridTerrain
                 minY = Math.Min(minY, cur.z);
                 maxY = Math.Max(maxY, cur.z);
 
-                for (int i = 0; i < dx.Length; ++i)
+                for (int i = 0; i < vertexDx.Length; ++i)
                 {
-                    var test = new Point2(cur.x + dx[i], cur.z + dy[i]);
+                    var test = new Point2(cur.x + vertexDx[i], cur.z + vertexDz[i]);
 
                     if (visited.Contains(test))
                         continue;

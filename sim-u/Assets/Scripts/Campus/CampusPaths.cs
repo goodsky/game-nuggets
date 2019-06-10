@@ -2,8 +2,7 @@
 using Common;
 using GameData;
 using System;
-using UnityEngine;
-using UnityEngine.Assertions;
+using System.Collections.Generic;
 
 namespace Campus
 {
@@ -39,55 +38,52 @@ namespace Campus
         /// Build a path at the position.
         /// </summary>
         /// <param name="line">The line to construct along.</param>
-        public void ConstructPath(AxisAlignedLine line)
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> ConstructPath(AxisAlignedLine line)
         {
             foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
             {
                 if (!_path[point.x, point.z])
                 {
                     _path[point.x, point.z] = true;
-                    _terrain.Editor.SetAnchored(point.x, point.z);
                 }
             }
 
             // Set the updated materials
             for (int scanX = Math.Min(line.Start.x, line.End.x) - 1; scanX <= Math.Max(line.Start.x, line.End.x) + 1; ++scanX)
                 for (int scanZ = Math.Min(line.Start.z, line.End.z) - 1; scanZ <= Math.Max(line.Start.z, line.End.z) + 1; ++scanZ)
-                    UpdatePathMaterial(scanX, scanZ);
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
         /// Remove a path at the position.
         /// </summary>
         /// <param name="pos">The position to remove the path at.</param>
-        public void DestroyPathAt(Point2 pos)
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> DestroyPathAt(Point2 pos)
         {
             if (_path[pos.x, pos.z])
             {
                 _path[pos.x, pos.z] = false;
-                _terrain.Editor.RemoveAnchor(pos.x, pos.z);
             }
 
             for (int scanX = pos.x - 1; scanX <= pos.x + 1; ++scanX)
                 for (int scanZ = pos.z - 1; scanZ <= pos.z + 1; ++scanZ)
-                    UpdatePathMaterial(scanX, scanZ);
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        readonly int[] dx = new[] { 0, 1, 0, -1 };
-        readonly int[] dz = new[] { 1, 0, -1, 0 };
-        private void UpdatePathMaterial(int x, int z)
+        readonly int[] adjacencyDx = new[] { 0, 1, 0, -1 };
+        readonly int[] adjacentyDz = new[] { 1, 0, -1, 0 };
+        public (int submaterialIndex, Rotation rotation) GetPathMaterial(int x, int z)
         {
-            if (!_terrain.GridInBounds(x, z))
-            {
-                return;
-            }
-
             if (!_path[x, z])
             {
-                _terrain.SetSubmaterial(x, z, _emptyGrassSubmaterialIndex);
+                return (_emptyGrassSubmaterialIndex, Rotation.deg0);
             }
             else
             {
@@ -95,19 +91,15 @@ namespace Campus
                 int[] adj = new int[4];
                 for (int i = 0; i < 4; ++i)
                 {
-                    int checkX = x + dx[i];
-                    int checkZ = z + dz[i];
+                    int checkX = x + adjacencyDx[i];
+                    int checkZ = z + adjacentyDz[i];
                     adj[i] =
                         (_terrain.GridInBounds(checkX, checkZ) &&
                          _path[checkX, checkZ])
                          ? 1 : 0;
                 }
 
-                _terrain.SetSubmaterial(
-                    x, 
-                    z, 
-                    _subMaterial[adj[0], adj[1], adj[2], adj[3]],
-                    _rotation[adj[0], adj[1], adj[2], adj[3]]);
+                return (_subMaterial[adj[0], adj[1], adj[2], adj[3]], _rotation[adj[0], adj[1], adj[2], adj[3]]);
             }
         }
 
