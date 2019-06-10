@@ -118,8 +118,8 @@ namespace Campus
         private Rotation[,,,] _rotation;
         private void SetupRoadMapping(int emptyGrassIndex, int roadStartIndex)
         {
-            _subMaterial = new int[2, 2, 2, 2];
-            _rotation = new Rotation[2, 2, 2, 2];
+            _subMaterial = new int[3, 3, 3, 3];
+            _rotation = new Rotation[3, 3, 3, 3];
 
             // no adjacent ---
             _subMaterial[0, 0, 0, 0] = emptyGrassIndex;

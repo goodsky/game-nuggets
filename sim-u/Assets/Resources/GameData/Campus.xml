@@ -6,7 +6,7 @@
     <SubmaterialSquareSize>64</SubmaterialSquareSize>
     <SubmaterialEmptyGrassIndex>0</SubmaterialEmptyGrassIndex>
     <SubmaterialPathsIndex>1</SubmaterialPathsIndex>
-    <SubmaterialRoadsIndex>7</SubmaterialRoadsIndex>
+    <SubmaterialRoadsIndex>8</SubmaterialRoadsIndex>
     <GridCountX>32</GridCountX>
     <GridCountZ>32</GridCountZ>
     <GridCountY>32</GridCountY>

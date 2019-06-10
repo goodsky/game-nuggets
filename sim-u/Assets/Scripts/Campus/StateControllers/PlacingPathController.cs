@@ -43,7 +43,7 @@ namespace Campus
                 GameLogger.FatalError("EditingTerrainController was given incorrect context.");
 
             _line = new AxisAlignedLine(args.GridSelection);
-            _cursor.Place(_line, IsValidTerrainAlongLine());
+            _cursor.Place(_line, IsValidForPathAlongLine());
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (IsValidTerrainAlongLine().All(b => b))
+                if (IsValidForPathAlongLine().All(b => b))
                 {
                     Game.Campus.ConstructPath(_line);
                 }
@@ -95,7 +95,7 @@ namespace Campus
                     _line.UpdateEndPointAlongAxis(new Point2(_line.End.x, _terrain.CountZ - 1));
             }
 
-            _cursor.Place(_line, IsValidTerrainAlongLine());
+            _cursor.Place(_line, IsValidForPathAlongLine());
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Campus
         /// Get a boolean array representing whether the grids selected are valid for path.
         /// </summary>
         /// <returns>A boolean array representing the valid terrain along the line.</returns>
-        private bool[] IsValidTerrainAlongLine()
+        private bool[] IsValidForPathAlongLine()
         {
             bool[] gridcheck = Game.Campus.CheckLineSmoothAndFree(_line);
 

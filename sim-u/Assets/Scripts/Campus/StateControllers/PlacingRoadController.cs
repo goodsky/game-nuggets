@@ -51,8 +51,8 @@ namespace Campus
             _vertexLine = new AxisAlignedLine(args.VertexSelection);
 
             (AxisAlignedLine line1, AxisAlignedLine line2) = GetRoadGridLines();
-            _cursor1.Place(line1, IsValidTerrainAlongLine(line1));
-            _cursor2.Place(line2, IsValidTerrainAlongLine(line2));
+            _cursor1.Place(line1, IsValidForRoadAlongLine(line1));
+            _cursor2.Place(line2, IsValidForRoadAlongLine(line2));
         }
 
         /// <summary>
@@ -72,8 +72,8 @@ namespace Campus
             if (!Input.GetMouseButton(0))
             {
                 (AxisAlignedLine line1, AxisAlignedLine line2) = GetRoadGridLines();
-                if (IsValidTerrainAlongLine(line1).All(x => x) &&
-                    IsValidTerrainAlongLine(line2).All(x => x))
+                if (IsValidForRoadAlongLine(line1).All(x => x) &&
+                    IsValidForRoadAlongLine(line2).All(x => x))
                 {
                     Game.Campus.ConstructRoad(_vertexLine);
                 }
@@ -95,8 +95,8 @@ namespace Campus
                 _vertexLine.UpdateEndPointAlongAxis(args.VertexSelection);
 
                 (AxisAlignedLine line1, AxisAlignedLine line2) = GetRoadGridLines();
-                _cursor1.Place(line1, IsValidTerrainAlongLine(line1));
-                _cursor2.Place(line2, IsValidTerrainAlongLine(line2));
+                _cursor1.Place(line1, IsValidForRoadAlongLine(line1));
+                _cursor2.Place(line2, IsValidForRoadAlongLine(line2));
             }
         }
 
@@ -118,7 +118,7 @@ namespace Campus
         /// Get a boolean array representing whether the grids selected are valid for path.
         /// </summary>
         /// <returns>A boolean array representing the valid terrain along the line.</returns>
-        private bool[] IsValidTerrainAlongLine(AxisAlignedLine line)
+        private bool[] IsValidForRoadAlongLine(AxisAlignedLine line)
         {
             bool[] gridcheck = Game.Campus.CheckLineSmoothAndFree(line);
             foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
@@ -128,6 +128,13 @@ namespace Campus
                     // We can build over existing road
                     // NB: Assumes currently built roads are smooth
                     gridcheck[lineIndex] = Game.Campus.GetGridUse(point) == CampusGridUse.Road;
+                }
+
+                if (gridcheck[lineIndex])
+                {
+                    // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly.
+                    //       Don't do it!
+
                 }
             }
 

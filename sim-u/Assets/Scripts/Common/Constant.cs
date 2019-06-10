@@ -20,6 +20,6 @@
         /// <summary>
         /// Epsilon for uv mapping.
         /// </summary>
-        public const float uvEpsilon = 25e-4f;
+        public const float uvEpsilon = 1.25e-3f;
     }
 }
