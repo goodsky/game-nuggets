@@ -428,7 +428,9 @@ namespace Campus.GridTerrain
         /// <param name="x">X coordinate of the grid square.</param>
         /// <param name="z">Z coordinate of the grid square.</param>
         /// <param name="submaterialId">The id of the submaterial (the gridsheet on the material from left->right, top->bottom).</param>
-        public void SetSubmaterial(int x, int z, int submaterialId, Rotation rotation = Rotation.deg0)
+        /// <param name="rotation">Value to rotate the submaterial by. (Applied before inversion)</param>
+        /// <param name="inversion">Whether or not to flip the submaterial. (Applied after rotation)</param>
+        public void SetSubmaterial(int x, int z, int submaterialId, Rotation rotation = Rotation.deg0, Inversion inversion = Inversion.None)
         {
             if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to set square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
@@ -459,12 +461,35 @@ namespace Campus.GridTerrain
             }
 
             var grid = _gridData[x, z];
+            grid.SubmaterialIndex = submaterialId;
+
             _uv[grid.VertexIndex + (Vertex.BottomLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.BottomRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.TopRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.TopLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
             _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
-            grid.SubmaterialIndex = submaterialId;
+
+            if ((inversion & Inversion.InvertX) == Inversion.InvertX)
+            {
+                Vector2 swapTop = _uv[grid.VertexIndex + Vertex.TopRight];
+                _uv[grid.VertexIndex + Vertex.TopRight] = _uv[grid.VertexIndex + Vertex.TopLeft];
+                _uv[grid.VertexIndex + Vertex.TopLeft] = swapTop;
+
+                Vector2 swapBottom = _uv[grid.VertexIndex + Vertex.BottomRight];
+                _uv[grid.VertexIndex + Vertex.BottomRight] = _uv[grid.VertexIndex + Vertex.BottomLeft];
+                _uv[grid.VertexIndex + Vertex.BottomLeft] = swapBottom;
+            }
+
+            if ((inversion & Inversion.InvertZ) == Inversion.InvertZ)
+            {
+                Vector2 swapLeft = _uv[grid.VertexIndex + Vertex.TopLeft];
+                _uv[grid.VertexIndex + Vertex.TopLeft] = _uv[grid.VertexIndex + Vertex.BottomLeft];
+                _uv[grid.VertexIndex + Vertex.BottomLeft] = swapLeft;
+
+                Vector2 swapRight = _uv[grid.VertexIndex + Vertex.TopRight];
+                _uv[grid.VertexIndex + Vertex.TopRight] = _uv[grid.VertexIndex + Vertex.BottomRight];
+                _uv[grid.VertexIndex + Vertex.BottomRight] = swapRight;
+            }
 
             _mesh.uv = _uv;
         }
@@ -570,12 +595,25 @@ namespace Campus.GridTerrain
         }
     }
 
-    // Rotation of a submaterial
+    /// <summary>
+    /// Rotation of a submaterial
+    /// </summary>
     public enum Rotation
     {
         deg0,
         deg90,
         deg180,
         deg270
+    }
+
+    /// <summary>
+    /// Inversion of a submaterial
+    /// </summary>
+    [Flags]
+    public enum Inversion
+    {
+        None    = 0,
+        InvertX = 1,
+        InvertZ = 2,
     }
 }

@@ -77,11 +77,11 @@ namespace Campus
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        public (int submaterialIndex, Rotation rotation) GetPathMaterial(int x, int z)
+        public (int submaterialIndex, Rotation rotation, Inversion inversion) GetPathMaterial(int x, int z)
         {
             if (!_path[x, z])
             {
-                return (_emptyGrassSubmaterialIndex, Rotation.deg0);
+                return (_emptyGrassSubmaterialIndex, Rotation.deg0, Inversion.None);
             }
             else
             {
@@ -97,7 +97,7 @@ namespace Campus
                          ? 1 : 0;
                 }
 
-                return (_subMaterial[adj[0], adj[1], adj[2], adj[3]], _rotation[adj[0], adj[1], adj[2], adj[3]]);
+                return (_subMaterial[adj[0], adj[1], adj[2], adj[3]], _rotation[adj[0], adj[1], adj[2], adj[3]], Inversion.None);
             }
         }
 

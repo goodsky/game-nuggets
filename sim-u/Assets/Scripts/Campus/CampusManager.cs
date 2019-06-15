@@ -324,17 +324,19 @@ namespace Campus
         /// <param name="pos">The grid position to update submaterial on.</param>
         private void UpdateGridMaterial(Point2 pos)
         {
-            (int pathMaterialIndex, Rotation pathMaterialRotation) = _paths.GetPathMaterial(pos.x, pos.z);
-            (int roadMaterialIndex, Rotation roadMaterialRotation) = _roads.GetRoadMaterial(pos.x, pos.z);
+            (int pathMaterialIndex, Rotation pathMaterialRotation, Inversion pathMaterialInversion) = _paths.GetPathMaterial(pos.x, pos.z);
+            (int roadMaterialIndex, Rotation roadMaterialRotation, Inversion roadMaterialInversion) = _roads.GetRoadMaterial(pos.x, pos.z);
 
             int materialIndex = _defaultMaterialIndex;
             Rotation materialRotation = Rotation.deg0;
+            Inversion materialInversion = Inversion.None;
 
             if (pathMaterialIndex != _defaultMaterialIndex)
             {
                 Assert.AreEqual(_defaultMaterialIndex, materialIndex);
                 materialIndex = pathMaterialIndex;
                 materialRotation = pathMaterialRotation;
+                materialInversion = pathMaterialInversion;
             }
 
             if (roadMaterialIndex != _defaultMaterialIndex)
@@ -342,9 +344,10 @@ namespace Campus
                 Assert.AreEqual(_defaultMaterialIndex, materialIndex);
                 materialIndex = roadMaterialIndex;
                 materialRotation = roadMaterialRotation;
+                materialInversion = roadMaterialInversion;
             }
 
-            _terrain.SetSubmaterial(pos.x, pos.z, materialIndex, materialRotation);
+            _terrain.SetSubmaterial(pos.x, pos.z, materialIndex, materialRotation, materialInversion);
         }
 
         /// <summary>

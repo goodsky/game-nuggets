@@ -95,7 +95,7 @@ namespace Campus
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        public (int submaterialIndex, Rotation rotation) GetRoadMaterial(int x, int z)
+        public (int submaterialIndex, Rotation rotation, Inversion inversion) GetRoadMaterial(int x, int z)
         {
             // check the 4 adjacent road vertices to pick the correct image
             int[] adj = new int[4];
@@ -109,7 +109,7 @@ namespace Campus
                         ? 1 : 0;
             }
 
-            return (_subMaterial[adj[0], adj[1], adj[2], adj[3]], _rotation[adj[0], adj[1], adj[2], adj[3]]);
+            return (_subMaterial[adj[0], adj[1], adj[2], adj[3]], _rotation[adj[0], adj[1], adj[2], adj[3]], _inversion[adj[0], adj[1], adj[2], adj[3]]);
         }
 
         // mapping from adjacent road vertices to the material + rotation
@@ -117,12 +117,15 @@ namespace Campus
         // D--A
         // |  |
         // C--B
+        // *** adjacent roads can either be an non-intersection [1] or intersection [2]
         private int[,,,] _subMaterial;
         private Rotation[,,,] _rotation;
+        private Inversion[,,,] _inversion;
         private void SetupRoadMapping(int emptyGrassIndex, int roadStartIndex)
         {
             _subMaterial = new int[3, 3, 3, 3];
             _rotation = new Rotation[3, 3, 3, 3];
+            _inversion = new Inversion[3, 3, 3, 3];
 
             // no adjacent ---
             _subMaterial[0, 0, 0, 0] = emptyGrassIndex;
