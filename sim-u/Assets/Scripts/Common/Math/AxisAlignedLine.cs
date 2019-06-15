@@ -69,7 +69,19 @@ namespace Common
             UpdateEndPointAlongAxis(new Point2(newEnd.x, newEnd.z));
         }
 
-        public IEnumerable<(int index, Point2 point)> PointsAlongLine()
+        public bool IsPointOnLine(Point2 point)
+        {
+            int minX = Math.Min(Start.x, End.x);
+            int maxX = Math.Max(Start.x, End.x);
+            int minZ = Math.Min(Start.z, End.z);
+            int maxZ = Math.Max(Start.z, End.z);
+
+            return
+                minX <= point.x && point.x <= maxX &&
+                minZ <= point.z && point.z <= maxZ;
+        }
+
+        public IEnumerable<(int index, Point2 point)> GetPointsAlongLine()
         {
             int dx = 0;
             int dz = 0;

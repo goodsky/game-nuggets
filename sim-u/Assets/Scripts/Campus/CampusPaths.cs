@@ -41,7 +41,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> ConstructPath(AxisAlignedLine line)
         {
-            foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
+            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
             {
                 if (!_path[point.x, point.z])
                 {
@@ -77,8 +77,6 @@ namespace Campus
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        readonly int[] adjacencyDx = new[] { 0, 1, 0, -1 };
-        readonly int[] adjacentyDz = new[] { 1, 0, -1, 0 };
         public (int submaterialIndex, Rotation rotation) GetPathMaterial(int x, int z)
         {
             if (!_path[x, z])
@@ -91,8 +89,8 @@ namespace Campus
                 int[] adj = new int[4];
                 for (int i = 0; i < 4; ++i)
                 {
-                    int checkX = x + adjacencyDx[i];
-                    int checkZ = z + adjacentyDz[i];
+                    int checkX = x + GridConverter.AdjacentGridDx[i];
+                    int checkZ = z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
                         (_terrain.GridInBounds(checkX, checkZ) &&
                          _path[checkX, checkZ])

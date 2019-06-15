@@ -17,6 +17,30 @@ namespace Campus.GridTerrain
         private float _minTerrainY;
 
         /// <summary>
+        /// Deltas to get the 4 adjacent grids around a grid
+        /// </summary>
+        public static readonly int[] AdjacentGridDx = new int[] { 0, 1, 0, -1 };
+        public static readonly int[] AdjacentGridDz = new int[] { 1, 0, -1, 0 };
+
+        /// <summary>
+        /// Deltas to get the 4 adjacent vertices around a vertex
+        /// </summary>
+        public static readonly int[] AdjacentVertexDx = new int[] { 0, 1, 0, -1 };
+        public static readonly int[] AdjacentVertexDz = new int[] { 1, 0, -1, 0 };
+
+        /// <summary>
+        /// Deltas to get the 4 vertices around a grid
+        /// </summary>
+        public static readonly int[] GridToVertexDx = new int[] { 1, 1, 0, 0 };
+        public static readonly int[] GridToVertexDz = new int[] { 1, 0, 0, 1 };
+
+        /// <summary>
+        /// Deltas to ge the 4 grids around a vertex
+        /// </summary>
+        public static readonly int[] VertexToGridDx = new int[] { -1, -1, 0, 0 };
+        public static readonly int[] VertexToGridDz = new int[] { -1, 0, -1, 0 };
+
+        /// <summary>
         /// Create an instance of the grid terrain converter.
         /// </summary>
         /// <param name="gridSize">Size of a grid square.</param>

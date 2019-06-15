@@ -3,7 +3,6 @@ using Common;
 using GameData;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Campus
 {
@@ -14,12 +13,6 @@ namespace Campus
     {
         private GridMesh _terrain;
         private bool[,] _road;
-
-        readonly int[] gridToVertexDx = new[] { 1, 1, 0, 0 };
-        readonly int[] gridToVertexDz = new[] { 1, 0, 0, 1 };
-
-        private int[] vertexToGridDx = new int[] { -1, -1, 0, 0 };
-        private int[] vertexToGridDz = new int[] { -1, 0, -1, 0 };
 
         public CampusRoads(CampusData campusData, GridMesh terrain)
         {
@@ -37,12 +30,22 @@ namespace Campus
         /// </summary>
         /// <param name="pos">Grid position to query.</param>
         /// <returns>True if there is a raod, false otherwise.</returns>
-        public bool RoadAtPosition(Point2 pos)
+        public bool RoadAtGrid(Point2 pos)
         {
             return  _road[pos.x, pos.z] ||
                     _road[pos.x + 1, pos.z] ||
                     _road[pos.x, pos.z + 1] ||
                     _road[pos.x + 1, pos.z + 1];
+        }
+
+        /// <summary>
+        /// Gets a value representing wheter or not there is a road at vertex position.
+        /// </summary>
+        /// <param name="pos">Vertex position to query.</param>
+        /// <returns>True if there is a road, false otherwise.</returns>
+        public bool RoadAtVertex(Point2 pos)
+        {
+            return _road[pos.x, pos.z];
         }
 
         /// <summary>
@@ -52,7 +55,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> ConstructRoad(AxisAlignedLine line)
         {
-            foreach ((int lineIndex, Point2 vertexPoint) in line.PointsAlongLine())
+            foreach ((int lineIndex, Point2 vertexPoint) in line.GetPointsAlongLine())
             {
                 if (!_road[vertexPoint.x, vertexPoint.z])
                 {
@@ -76,8 +79,8 @@ namespace Campus
         {
             for (int i = 0; i < 4; ++i)
             {
-                int vertX = pos.x + gridToVertexDx[i];
-                int vertZ = pos.z + gridToVertexDz[i];
+                int vertX = pos.x + GridConverter.GridToVertexDx[i];
+                int vertZ = pos.z + GridConverter.GridToVertexDz[i];
                 _road[vertX, vertZ] = false;
             }
 
@@ -98,8 +101,8 @@ namespace Campus
             int[] adj = new int[4];
             for (int i = 0; i < 4; ++i)
             {
-                int checkX = x + gridToVertexDx[i];
-                int checkZ = z + gridToVertexDz[i];
+                int checkX = x + GridConverter.GridToVertexDx[i];
+                int checkZ = z + GridConverter.GridToVertexDz[i];
                 adj[i] =
                     (_terrain.VertexInBounds(checkX, checkZ) &&
                     _road[checkX, checkZ])

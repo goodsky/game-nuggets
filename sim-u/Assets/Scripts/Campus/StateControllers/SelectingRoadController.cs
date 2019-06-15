@@ -16,11 +16,8 @@ namespace Campus
         private Material _invalidMaterial;
         private GridCursor[] _cursors;
 
-        // Convert vertex to grid squares around the vertex
-        private readonly int[] dxGrid = new int[] { -1, -1, 0, 0 };
-        private readonly int[] dzGrid = new int[] { -1, 0, -1, 0 };
-
         // Convert vertex to the indices of the IsValidCheck bool[,]
+        // This is a special encoding to match the CheckFlatAndFree call.
         private readonly int[] dxCheck = new int[] { 0, 0, 1, 1 };
         private readonly int[] dzCheck = new int[] { 0, 1, 0, 1 };
 
@@ -79,8 +76,8 @@ namespace Campus
                 bool[,] isValidTerrain = IsValidTerrain(args.VertexSelection);
                 for (int i = 0; i < 4; ++i)
                 {
-                    int cursorX = args.VertexSelection.x + dxGrid[i];
-                    int cursorZ = args.VertexSelection.z + dzGrid[i];
+                    int cursorX = args.VertexSelection.x + GridConverter.VertexToGridDx[i];
+                    int cursorZ = args.VertexSelection.z + GridConverter.VertexToGridDz[i];
                     
                     if (_terrain.GridInBounds(cursorX, cursorZ))
                     {
@@ -131,11 +128,13 @@ namespace Campus
         {
             // BUG: This does not allow you to start building roads on a valid smooth ramp.
             // bool[,] isFlatAndFree = Game.Campus.CheckLineSmoothAndFreeAlongVertices(new AxisAlignedLine(selectedVertex));
-            bool[,] isFlatAndFree = Game.Campus.CheckFlatAndFree(selectedVertex.x + dxGrid[0], selectedVertex.z + dzGrid[0], 2, 2);
+            int startingGridX = selectedVertex.x + GridConverter.VertexToGridDx[0];
+            int startingGridZ = selectedVertex.z + GridConverter.VertexToGridDz[0];
+            bool[,] isFlatAndFree = Game.Campus.CheckFlatAndFree(startingGridX, startingGridZ, 2, 2);
             for (int i = 0; i < 4; ++i)
             {
-                int gridX = selectedVertex.x + dxGrid[i];
-                int gridZ = selectedVertex.z + dzGrid[i];
+                int gridX = selectedVertex.x + GridConverter.VertexToGridDx[i];
+                int gridZ = selectedVertex.z + GridConverter.VertexToGridDz[i];
 
                 isFlatAndFree[dxCheck[i], dzCheck[i]] =
                     isFlatAndFree[dxCheck[i], dzCheck[i]] ||

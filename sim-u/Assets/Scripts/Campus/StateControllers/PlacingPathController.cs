@@ -120,7 +120,7 @@ namespace Campus
         {
             bool[] gridcheck = Game.Campus.CheckLineSmoothAndFree(_line);
 
-            foreach ((int lineIndex, Point2 point) in _line.PointsAlongLine())
+            foreach ((int lineIndex, Point2 point) in _line.GetPointsAlongLine())
             {
                 if (!gridcheck[lineIndex])
                 {

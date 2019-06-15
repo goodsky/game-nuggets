@@ -11,18 +11,6 @@ namespace Campus.GridTerrain
     /// </summary>
     public class SafeTerrainEditor
     {
-        // Deltas used to iterate from vertex to vertex in BFS
-        private readonly int[] vertexDx = new[] { -1, 0, 1, 0 };
-        private readonly int[] vertexDz = new[] { 0, -1, 0, 1 };
-
-        // Deltas used to iterate the grids around a vertex
-        private readonly int[] vertexToGridDx = new[] { -1, -1, 0, 0 };
-        private readonly int[] vertexToGridDz = new[] { -1, 0, -1, 0 };
-
-        // Deltas used to iterate the vertices around a grid
-        private readonly int[] gridToVertexDx = new[] { 0, 0, 1, 1 };
-        private readonly int[] gridToVertexDz = new[] { 0, 1, 0, 1 };
-
         private GridMesh _terrain;
         private bool[,] _gridAnchored;
         private bool[,] _vertexAnchored;
@@ -85,13 +73,13 @@ namespace Campus.GridTerrain
             _gridAnchored[x, z] = false;
             for (int i = 0; i < 4; ++i)
             {
-                int vertX = x + gridToVertexDx[i];
-                int vertZ = z + gridToVertexDz[i];
+                int vertX = x + GridConverter.GridToVertexDx[i];
+                int vertZ = z + GridConverter.GridToVertexDz[i];
                 bool vertAnchored = false;
                 for (int j = 0; j < 4; ++j)
                 {
-                    int gridX = vertX + vertexToGridDx[j];
-                    int gridZ = vertZ + vertexToGridDz[j];
+                    int gridX = vertX + GridConverter.VertexToGridDx[j];
+                    int gridZ = vertZ + GridConverter.VertexToGridDz[j];
                     vertAnchored = vertAnchored || (_terrain.GridInBounds(gridX, gridZ) && _gridAnchored[gridX, gridZ]);
                 }
 
@@ -178,9 +166,11 @@ namespace Campus.GridTerrain
                 minY = Math.Min(minY, cur.z);
                 maxY = Math.Max(maxY, cur.z);
 
-                for (int i = 0; i < vertexDx.Length; ++i)
+                for (int i = 0; i < 4; ++i)
                 {
-                    var test = new Point2(cur.x + vertexDx[i], cur.z + vertexDz[i]);
+                    int vertX = cur.x + GridConverter.AdjacentVertexDx[i];
+                    int vertZ = cur.z + GridConverter.AdjacentVertexDz[i];
+                    var test = new Point2(vertX, vertZ);
 
                     if (visited.Contains(test))
                         continue;

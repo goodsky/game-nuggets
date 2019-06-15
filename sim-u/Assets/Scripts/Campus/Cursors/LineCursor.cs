@@ -46,7 +46,7 @@ namespace Campus
         public void Place(AxisAlignedLine line, bool[] isValid = null)
         {
             int maxLineIndex = -1;
-            foreach ((int lineIndex, Point2 linePoint) in line.PointsAlongLine())
+            foreach ((int lineIndex, Point2 linePoint) in line.GetPointsAlongLine())
             {
                 maxLineIndex = lineIndex;
                 var cursor = _cursors[lineIndex];

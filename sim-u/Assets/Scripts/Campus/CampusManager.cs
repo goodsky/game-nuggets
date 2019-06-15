@@ -38,7 +38,7 @@ namespace Campus
         /// Returns what is at the campus grid position.
         /// </summary>
         /// <param name="pos">Grid position to query.</param>
-        /// <returns>The use of the current grid.</returns>
+        /// <returns>The use of the queried grid.</returns>
         public CampusGridUse GetGridUse(Point2 pos)
         {
             CampusGridUse use = CampusGridUse.Empty;
@@ -55,7 +55,27 @@ namespace Campus
                 use = CampusGridUse.Path;
             }
 
-            if (_roads.RoadAtPosition(pos))
+            if (_roads.RoadAtGrid(pos))
+            {
+                Assert.AreEqual(CampusGridUse.Empty, use);
+                use = CampusGridUse.Road;
+            }
+
+            return use;
+        }
+
+        /// <summary>
+        /// Returns what is at the campus vertex position.
+        /// This only queries systems the build on vertices.
+        /// i.e. roads.
+        /// </summary>
+        /// <param name="pos">Vertex position to query.</param>
+        /// <returns>The use of the queried vertex.</returns>
+        public CampusGridUse GetVertexUse(Point2 pos)
+        {
+            CampusGridUse use = CampusGridUse.Empty;
+
+            if (_roads.RoadAtVertex(pos))
             {
                 Assert.AreEqual(CampusGridUse.Empty, use);
                 use = CampusGridUse.Road;
@@ -187,7 +207,7 @@ namespace Campus
         public bool[] CheckLineSmoothAndFree(AxisAlignedLine line)
         {
             bool[] isValid = new bool[line.Length];
-            foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
+            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
             {
                 bool isInBoundsAndEmpty =
                     _terrain.GridInBounds(point.x, point.z) &&

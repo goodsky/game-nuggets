@@ -121,7 +121,7 @@ namespace Campus
         private bool[] IsValidForRoadAlongLine(AxisAlignedLine line)
         {
             bool[] gridcheck = Game.Campus.CheckLineSmoothAndFree(line);
-            foreach ((int lineIndex, Point2 point) in line.PointsAlongLine())
+            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
             {
                 if (!gridcheck[lineIndex])
                 {
@@ -134,7 +134,27 @@ namespace Campus
                 {
                     // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly.
                     //       Don't do it!
+                    int roadVertexCount = 0;
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        int vertX = point.x + GridConverter.GridToVertexDx[i];
+                        int vertZ = point.z + GridConverter.GridToVertexDz[i];
 
+                        if (_terrain.VertexInBounds(vertX, vertZ))
+                        {
+                            Point2 roadVertex = new Point2(vertX, vertZ);
+                            if (Game.Campus.GetVertexUse(roadVertex) == CampusGridUse.Road ||
+                                _vertexLine.IsPointOnLine(roadVertex))
+                            {
+                                ++roadVertexCount;
+                            }
+                        }
+                    }
+
+                    if (roadVertexCount == 4)
+                    {
+                        gridcheck[lineIndex] = false;
+                    }
                 }
             }
 
