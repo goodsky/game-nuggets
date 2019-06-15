@@ -5,7 +5,8 @@
     <TerrainMaterial>grass-material</TerrainMaterial>
     <SubmaterialSquareSize>64</SubmaterialSquareSize>
     <SubmaterialEmptyGrassIndex>0</SubmaterialEmptyGrassIndex>
-    <SubmaterialPathsIndex>1</SubmaterialPathsIndex>
+    <SubmaterialInvalidIndex>1</SubmaterialInvalidIndex>
+    <SubmaterialPathsIndex>2</SubmaterialPathsIndex>
     <SubmaterialRoadsIndex>8</SubmaterialRoadsIndex>
     <GridCountX>16</GridCountX>
     <GridCountZ>8</GridCountZ>

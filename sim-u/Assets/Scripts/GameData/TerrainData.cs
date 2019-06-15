@@ -14,6 +14,9 @@ namespace GameData
         [XmlElement("SubmaterialEmptyGrassIndex")]
         public int SubmaterialEmptyGrassIndex { get; set; }
 
+        [XmlElement("SubmaterialInvalidIndex")]
+        public int SubmaterialInvalidIndex { get; set; }
+
         [XmlElement("SubmaterialPathsIndex")]
         public int SubmaterialPathsIndex { get; set; }
 
