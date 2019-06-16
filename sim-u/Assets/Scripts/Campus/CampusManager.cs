@@ -245,7 +245,7 @@ namespace Campus
                             isGridAvailable = true;
                             break;
                         case CampusGridUse.Path:
-                            isGridAvailable = _roads.IsValidForCrosswalk
+                            isGridAvailable = false; // TODO: build crosswalks here?
                             break;
                         default:
                             isGridAvailable = false;
