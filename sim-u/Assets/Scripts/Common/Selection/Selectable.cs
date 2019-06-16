@@ -172,46 +172,31 @@ namespace Common
             if (IsSelected)
             {
                 IsSelected = false;
-                if (OnDeselect != null)
-                {
-                    OnDeselect();
-                }
+                OnDeselect?.Invoke();
             }
 
             if (IsMouseOver)
             {
                 IsMouseOver = false;
-                if (OnMouseOut != null)
-                {
-                    OnMouseOut();
-                }
+                OnMouseOut?.Invoke();
             }
 
             if (IsLeftMouseDown)
             {
                 IsLeftMouseDown = false;
-                if (OnMouseUp != null)
-                {
-                    OnMouseUp(MouseButton.Left);
-                }
+                OnMouseUp?.Invoke(MouseButton.Left);
             }
 
             if (IsRightMouseDown)
             {
                 IsRightMouseDown = false;
-                if (OnMouseUp != null)
-                {
-                    OnMouseUp(MouseButton.Right);
-                }
+                OnMouseUp?.Invoke(MouseButton.Right);
             }
 
             if (IsMiddleMouseDown)
             {
                 IsMiddleMouseDown = false;
-                if (OnMouseUp != null)
-                {
-                    OnMouseUp(MouseButton.Middle);
-                }
+                OnMouseUp?.Invoke(MouseButton.Middle);
             }
 
             AfterEvent();
@@ -224,10 +209,7 @@ namespace Common
         {
             IsSelected = true;
 
-            if (OnSelect != null)
-            {
-                OnSelect();
-            }
+            OnSelect?.Invoke();
 
             AfterEvent();
         }
@@ -251,10 +233,7 @@ namespace Common
                 SelectionParent.Deselect();
             }
 
-            if (OnDeselect != null)
-            {
-                OnDeselect();
-            }
+            OnDeselect?.Invoke();
 
             AfterEvent();
         }
@@ -267,10 +246,7 @@ namespace Common
             IsEnabled = true;
             _eventTrigger.enabled = true;
 
-            if (OnEnabled != null)
-            {
-                OnEnabled();
-            }
+            OnEnabled?.Invoke();
 
             AfterEvent();
         }
@@ -288,10 +264,7 @@ namespace Common
                 SelectionManager.UpdateSelection(null);
             }
 
-            if (OnDisabled != null)
-            {
-                OnDisabled();
-            }
+            OnDisabled?.Invoke();
 
             AfterEvent();
         }
@@ -326,10 +299,7 @@ namespace Common
             IsMouseOver = true;
             _tooltipCount = 0.0f;
 
-            if (OnMouseOver != null)
-            {
-                OnMouseOver();
-            }
+            OnMouseOver?.Invoke();
 
             AfterEvent();
         }
@@ -343,38 +313,26 @@ namespace Common
             if (IsLeftMouseDown)
             {
                 IsLeftMouseDown = false;
-                if (OnMouseUp != null)
-                {
-                    OnMouseUp(MouseButton.Left);
-                }
+                OnMouseUp?.Invoke(MouseButton.Left);
             }
 
             if (IsRightMouseDown)
             {
                 IsRightMouseDown = false;
-                if (OnMouseUp != null)
-                {
-                    OnMouseUp(MouseButton.Right);
-                }
+                OnMouseUp?.Invoke(MouseButton.Right);
             }
 
             if (IsMiddleMouseDown)
             {
                 IsMiddleMouseDown = false;
-                if (OnMouseUp != null)
-                {
-                    OnMouseUp(MouseButton.Middle);
-                }
+                OnMouseUp?.Invoke(MouseButton.Middle);
             }
 
             IsMouseOver = false;
 
             TooltipManager.PopDown();
 
-            if (OnMouseOut != null)
-            {
-                OnMouseOut();
-            }
+            OnMouseOut?.Invoke();
 
             AfterEvent();
         }
@@ -410,10 +368,7 @@ namespace Common
                     break;
             }
 
-            if (OnMouseDown != null)
-            {
-                OnMouseDown(mouseButton);
-            }
+            OnMouseDown?.Invoke(mouseButton);
 
             AfterEvent();
         }
@@ -449,10 +404,7 @@ namespace Common
                     break;
             }
 
-            if (OnMouseUp != null)
-            {
-                OnMouseUp(mouseButton);
-            }
+            OnMouseUp?.Invoke(mouseButton);
 
             AfterEvent();
         }
@@ -487,12 +439,5 @@ namespace Common
         /// Inhereted objects can override this method to update after any event.
         /// </summary>
         public virtual void AfterEvent() { }
-    }
-
-    public enum MouseButton
-    {
-        Left,
-        Right,
-        Middle
     }
 }

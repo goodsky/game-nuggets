@@ -22,8 +22,8 @@ namespace Common
         {
             lock (globalSelectionLock)
             {
-                //NB: If you select the same item twice it will not be unselected
-                //    However, it will be selected again.
+                //NB: If you select the same item twice the Deselect() event will not be fired.
+                //    However, the Select() event will be fired again.
                 var oldSelection = globalSelection;
                 globalSelection = selection;
 
