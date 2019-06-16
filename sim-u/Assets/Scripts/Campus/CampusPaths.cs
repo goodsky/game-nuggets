@@ -80,9 +80,9 @@ namespace Campus
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetPathMaterial(int x, int z)
+        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetPathMaterial(Point2 pos)
         {
-            if (!_path[x, z])
+            if (!_path[pos.x, pos.z])
             {
                 return (_emptyGrassSubmaterialIndex, SubmaterialRotation.deg0, SubmaterialInversion.None);
             }
@@ -92,8 +92,8 @@ namespace Campus
                 int[] adj = new int[4];
                 for (int i = 0; i < 4; ++i)
                 {
-                    int checkX = x + GridConverter.AdjacentGridDx[i];
-                    int checkZ = z + GridConverter.AdjacentGridDz[i];
+                    int checkX = pos.x + GridConverter.AdjacentGridDx[i];
+                    int checkZ = pos.z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
                         (_terrain.GridInBounds(checkX, checkZ) &&
                          _path[checkX, checkZ])

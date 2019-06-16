@@ -48,20 +48,32 @@ namespace Campus
 
             if (_buildings.BuildingAtPosition(pos))
             {
-                Assert.AreEqual(CampusGridUse.Empty, use);
-                use = CampusGridUse.Building;
+                use = use | CampusGridUse.Building;
             }
 
             if (_paths.PathAtPosition(pos))
             {
-                Assert.AreEqual(CampusGridUse.Empty, use);
-                use = CampusGridUse.Path;
+                use = use | CampusGridUse.Path;
             }
 
             if (_roads.RoadAtGrid(pos))
             {
-                Assert.AreEqual(CampusGridUse.Empty, use);
-                use = CampusGridUse.Road;
+                use = use | CampusGridUse.Road;
+            }
+
+            // DEBUG: assert that only valid enums are created
+            switch (use)
+            {
+                case CampusGridUse.Empty:
+                case CampusGridUse.Path:
+                case CampusGridUse.Road:
+                case CampusGridUse.Building:
+                case CampusGridUse.Crosswalk:
+                    break;
+
+                default:
+                    GameLogger.FatalError("Unexpected path use detected! Point {0}; Use: {1}", pos, use);
+                    break;
             }
 
             return use;
@@ -161,14 +173,29 @@ namespace Campus
             bool isValid = true;
             foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
             {
-                bool isInBoundsSmoothAndAvailabile =
+                bool isValidTerrain =
                     _terrain.GridInBounds(point.x, point.z) &&
-                    _terrain.IsGridSmooth(point.x, point.z, line.Alignment) &&
-                    (GetGridUse(point) == CampusGridUse.Empty ||
-                     GetGridUse(point) == CampusGridUse.Path);
+                    _terrain.IsGridSmooth(point.x, point.z, line.Alignment);
 
-                validGrids[lineIndex] = isInBoundsSmoothAndAvailabile;
-                isValid = isValid && isInBoundsSmoothAndAvailabile;
+                bool isGridAvailable;
+                switch (GetGridUse(point))
+                {
+                    case CampusGridUse.Empty:
+                    case CampusGridUse.Path:
+                    case CampusGridUse.Crosswalk:
+                        isGridAvailable = true;
+                        break;
+                    case CampusGridUse.Road:
+                        isGridAvailable = _roads.IsValidForCrosswalk(point);
+                        break;
+                    default:
+                        isGridAvailable = false;
+                        break;
+                }
+
+                bool gridIsValid = isValidTerrain && isGridAvailable;
+                validGrids[lineIndex] = gridIsValid;
+                isValid = isValid && gridIsValid;
             }
 
             return isValid;
@@ -206,13 +233,27 @@ namespace Campus
 
                 foreach ((int lineIndex, Point2 point) in gridline.GetPointsAlongLine())
                 {
-                    bool isInBoundsSmoothAndAvailabile =
+                    bool isValidTerrain =
                         _terrain.GridInBounds(point.x, point.z) &&
-                        _terrain.IsGridSmooth(point.x, point.z, gridline.Alignment) &&
-                        (GetGridUse(point) == CampusGridUse.Empty ||
-                         GetGridUse(point) == CampusGridUse.Road);
+                        _terrain.IsGridSmooth(point.x, point.z, gridline.Alignment);
 
-                    if (isInBoundsSmoothAndAvailabile)
+                    bool isGridAvailable;
+                    switch (GetGridUse(point))
+                    {
+                        case CampusGridUse.Empty:
+                        case CampusGridUse.Road:
+                            isGridAvailable = true;
+                            break;
+                        case CampusGridUse.Path:
+                            isGridAvailable = _roads.IsValidForCrosswalk
+                            break;
+                        default:
+                            isGridAvailable = false;
+                            break;
+                    }
+
+                    bool isTightTurn = false;
+                    if (isValidTerrain && isGridAvailable)
                     {
                         // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly.
                         int roadVertexCount = 0;
@@ -234,12 +275,13 @@ namespace Campus
 
                         if (roadVertexCount == 4)
                         {
-                            isInBoundsSmoothAndAvailabile = false;
+                            isTightTurn = true;
                         }
                     }
 
-                    validGrids[gridlineIndex][lineIndex] = isInBoundsSmoothAndAvailabile;
-                    isValid = isValid && isInBoundsSmoothAndAvailabile;
+                    bool gridIsValid = isValidTerrain && isGridAvailable && !isTightTurn;
+                    validGrids[gridlineIndex][lineIndex] = gridIsValid;
+                    isValid = isValid && gridIsValid;
                 }
             }
 
@@ -259,14 +301,22 @@ namespace Campus
         /// Destroys the campus improvement at the desired position.
         /// </summary>
         /// <param name="pos">The position to delete at.</param>
-        public void DestroyAt(Point2 pos)
+        /// <param name="filter">Optional: only delete the requested type of item.</param>
+        public void DestroyAt(Point2 pos, CampusGridUse? filter = null)
         {
             CampusGridUse itemAt = GetGridUse(pos);
+
+            if (filter.HasValue &&
+                (itemAt & filter.Value) != filter.Value)
+            {
+                return;
+            }
 
             IEnumerable<Point2> updatedPoints = Enumerable.Empty<Point2>();
             switch (itemAt)
             {
                 case CampusGridUse.Path:
+                case CampusGridUse.Crosswalk:
                     updatedPoints = _paths.DestroyPathAt(pos);
                     break;
 
@@ -376,27 +426,29 @@ namespace Campus
         /// <param name="pos">The grid position to update submaterial on.</param>
         private void UpdateGridMaterial(Point2 pos)
         {
-            (int pathMaterialIndex, SubmaterialRotation pathMaterialRotation, SubmaterialInversion pathMaterialInversion) = _paths.GetPathMaterial(pos.x, pos.z);
-            (int roadMaterialIndex, SubmaterialRotation roadMaterialRotation, SubmaterialInversion roadMaterialInversion) = _roads.GetRoadMaterial(pos.x, pos.z);
-
             int materialIndex = _defaultMaterialIndex;
             SubmaterialRotation materialRotation = SubmaterialRotation.deg0;
             SubmaterialInversion materialInversion = SubmaterialInversion.None;
 
-            if (pathMaterialIndex != _defaultMaterialIndex)
+            switch (GetGridUse(pos))
             {
-                Assert.AreEqual(_defaultMaterialIndex, materialIndex);
-                materialIndex = pathMaterialIndex;
-                materialRotation = pathMaterialRotation;
-                materialInversion = pathMaterialInversion;
-            }
+                case CampusGridUse.Path:
+                    (materialIndex,
+                     materialRotation,
+                     materialInversion) = _paths.GetPathMaterial(pos);
+                    break;
 
-            if (roadMaterialIndex != _defaultMaterialIndex)
-            {
-                Assert.AreEqual(_defaultMaterialIndex, materialIndex);
-                materialIndex = roadMaterialIndex;
-                materialRotation = roadMaterialRotation;
-                materialInversion = roadMaterialInversion;
+                case CampusGridUse.Road:
+                    (materialIndex,
+                     materialRotation,
+                     materialInversion) = _roads.GetRoadMaterial(pos);
+                    break;
+
+                case CampusGridUse.Crosswalk:
+                    (materialIndex,
+                     materialRotation,
+                     materialInversion) = _roads.GetRoadMaterial(pos, isPathPresent: true);
+                    break;
             }
 
             _terrain.SetSubmaterial(pos.x, pos.z, materialIndex, materialRotation, materialInversion);

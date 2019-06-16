@@ -11,8 +11,9 @@ namespace Campus
     /// </summary>
     public class CampusRoads
     {
-        private GridMesh _terrain;
-        private bool[,] _road;
+        private readonly GridMesh _terrain;
+        private readonly bool[,] _road;
+        private readonly int _roadSubmaterialStartIndex;
 
         public CampusRoads(CampusData campusData, GridMesh terrain)
         {
@@ -22,6 +23,8 @@ namespace Campus
                 emptyGrassIndex: campusData.Terrain.SubmaterialEmptyGrassIndex,
                 invalidIndex: campusData.Terrain.SubmaterialInvalidIndex,
                 roadStartIndex: campusData.Terrain.SubmaterialRoadsIndex);
+
+            _roadSubmaterialStartIndex = campusData.Terrain.SubmaterialRoadsIndex;
         }
 
         /// <summary>
@@ -40,13 +43,27 @@ namespace Campus
         }
 
         /// <summary>
-        /// Gets a value representing wheter or not there is a road at vertex position.
+        /// Gets a value representing whether or not there is a road at vertex position.
         /// </summary>
         /// <param name="pos">Vertex position to query.</param>
         /// <returns>True if there is a road, false otherwise.</returns>
         public bool RoadAtVertex(Point2 pos)
         {
             return _road[pos.x, pos.z];
+        }
+
+        /// <summary>
+        /// Gets a value representing whether or not the position is valid for a crosswalk.
+        /// </summary>
+        /// <param name="pos">Grid position to query.</param>
+        /// <returns>True if the road is valid for a crosswalk, false otherwise.</returns>
+        public bool IsValidForCrosswalk(Point2 pos)
+        {
+            // TODO: This is a shortcut for now.
+            //       Later we could make this check for "hypothetical" roads as well during road construction.
+            //       Later we could make this check that there are two valid road positions (a full valid crossing).
+            (int submaterial, var _, var __) = GetRoadMaterial(pos);
+            return submaterial == _roadSubmaterialStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
         }
 
         /// <summary>
@@ -89,22 +106,37 @@ namespace Campus
             // Set the updated materials and whether the grid squares are anchored
             // NB: This search must be one wider than you think due to the way roads are set up.
             for (int scanX = pos.x - 2; scanX <= pos.x + 2; ++scanX)
+            {
                 for (int scanZ = pos.z - 2; scanZ <= pos.z + 2; ++scanZ)
+                {
                     if (_terrain.GridInBounds(scanX, scanZ))
-                        yield return new Point2(scanX, scanZ);
+                    {
+                        Point2 scan = new Point2(scanX, scanZ);
+
+                        // Crosswalks may need to be destroyed.
+                        if (Game.Campus.GetGridUse(scan) == CampusGridUse.Crosswalk &&
+                            !IsValidForCrosswalk(scan))
+                        {
+                            Game.Campus.DestroyAt(scan, filter: CampusGridUse.Crosswalk);
+                        }
+
+                        yield return scan;
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetRoadMaterial(int x, int z)
+        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetRoadMaterial(Point2 pos, bool isPathPresent = false)
         {
             // check the 4 adjacent road vertices to pick the correct image
             int[] adj = new int[4];
             for (int i = 0; i < 4; ++i)
             {
-                int checkX = x + GridConverter.GridToVertexDx[i];
-                int checkZ = z + GridConverter.GridToVertexDz[i];
+                int checkX = pos.x + GridConverter.GridToVertexDx[i];
+                int checkZ = pos.z + GridConverter.GridToVertexDz[i];
 
                 adj[i] = 0;
 
@@ -128,7 +160,13 @@ namespace Campus
                 }
             }
 
-            return (_mat[adj[0], adj[1], adj[2], adj[3]], _rot[adj[0], adj[1], adj[2], adj[3]], _inv[adj[0], adj[1], adj[2], adj[3]]);
+            int SubmaterialIndex = _mat[adj[0], adj[1], adj[2], adj[3]];
+            if (isPathPresent && IsValidForCrosswalk(pos))
+            {
+                SubmaterialIndex = _roadSubmaterialStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertexWithCrosswalk;
+            }
+
+            return (SubmaterialIndex, _rot[adj[0], adj[1], adj[2], adj[3]], _inv[adj[0], adj[1], adj[2], adj[3]]);
         }
 
         // mapping from adjacent road vertices to the material + rotation
