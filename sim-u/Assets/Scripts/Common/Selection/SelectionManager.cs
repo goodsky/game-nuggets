@@ -22,13 +22,13 @@ namespace Common
         {
             lock (globalSelectionLock)
             {
-                if (selection == globalSelection)
-                    return;
-
+                //NB: If you select the same item twice it will not be unselected
+                //    However, it will be selected again.
                 var oldSelection = globalSelection;
                 globalSelection = selection;
 
-                if (oldSelection != null)
+                if (oldSelection != null &&
+                    oldSelection != selection)
                 {
                     try
                     {

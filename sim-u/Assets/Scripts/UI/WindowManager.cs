@@ -67,6 +67,13 @@ namespace UI
                 return;
             }
 
+            if (window == _openWindow)
+            {
+                // If you open the same window again, I assume you want to close it.
+                CloseWindow();
+                return;
+            }
+
             CloseWindow();
 
             var selected = SelectionManager.Selected;

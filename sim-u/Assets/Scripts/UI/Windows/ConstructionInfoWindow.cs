@@ -90,7 +90,7 @@ namespace UI
             ConstructionImage.sprite = buildingData.Icon;
 
             BuildButton.OnSelect = () => { Game.UI.OpenWindow("ConstructionPlacing", buildingData); };
-            CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
+            CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent); };
         }
 
         /// <summary>
