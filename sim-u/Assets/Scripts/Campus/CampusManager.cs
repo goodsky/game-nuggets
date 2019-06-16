@@ -12,12 +12,15 @@ namespace Campus
     /// <summary>
     /// The different ways a campus grid can be used.
     /// </summary>
+    [Flags]
     public enum CampusGridUse
     {
-        Empty = 0,
-        Path,
-        Road,
-        Building,
+        Empty       = 0,
+        Path        = (1 << 1),
+        Road        = (1 << 2),
+        Building    = (1 << 3),
+
+        Crosswalk = Path | Road,
     }
 
     /// <summary>
@@ -95,14 +98,43 @@ namespace Campus
         }
 
         /// <summary>
-        /// Set the parent of the terrain object.
-        /// In essence, this makes it so when you click the terrain,
-        /// the parent selectable is not closed.
+        /// Checks that the requested location is valid for a new building.
         /// </summary>
-        /// <param name="parent">The selectable to keep open after terrain clicks.</param>
-        public void SetTerrainSelectionParent(Selectable parent)
+        /// <param name="building">The building data.</param>
+        /// <param name="location">The grid location for building.</param>
+        /// <param name="validGrids">Output: The valid grids for building. Used for updating cursors.</param>
+        /// <returns>True if the location is valid for the building, false otherwise.</returns>
+        public bool IsValidForBuilding(BuildingData building, Point3 location, out bool[,] validGrids)
         {
-            _terrain.Selectable.SelectionParent = parent;
+            int xSize = building.Footprint.GetLength(0);
+            int zSize = building.Footprint.GetLength(1);
+            validGrids = new bool[xSize, zSize];
+
+            bool isValid = true;
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    if (!building.Footprint[x, z])
+                    {
+                        continue; // Don't need to check outside of the building footprint
+                    }
+
+                    int gridX = location.x + x;
+                    int gridZ = location.z + z;
+
+                    bool isInBoundsFlatAndFree =
+                        _terrain.GridInBounds(gridX, gridZ) &&
+                        _terrain.IsGridFlat(gridX, gridZ) &&
+                        _terrain.GetSquareHeight(gridX, gridZ) == location.y &&
+                        GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
+
+                    validGrids[x, z] = isInBoundsFlatAndFree;
+                    isValid = isValid && isInBoundsFlatAndFree;
+                }
+            }
+
+            return isValid;
         }
 
         /// <summary>
@@ -117,12 +149,101 @@ namespace Campus
         }
 
         /// <summary>
+        /// Checks that the requested line is valid for a new path.
+        /// </summary>
+        /// <param name="line">Line we want to build a path along.</param>
+        /// <param name="validGrids">Output: The valid grids for path building. Used for updating cursors.</param>
+        /// <returns>True if the line is valid for a path, false otherwise.</returns>
+        public bool IsValidForPath(AxisAlignedLine line, out bool[] validGrids)
+        {
+            validGrids = new bool[line.Length];
+
+            bool isValid = true;
+            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
+            {
+                bool isInBoundsSmoothAndAvailabile =
+                    _terrain.GridInBounds(point.x, point.z) &&
+                    _terrain.IsGridSmooth(point.x, point.z, line.Alignment) &&
+                    (GetGridUse(point) == CampusGridUse.Empty ||
+                     GetGridUse(point) == CampusGridUse.Path);
+
+                validGrids[lineIndex] = isInBoundsSmoothAndAvailabile;
+                isValid = isValid && isInBoundsSmoothAndAvailabile;
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
         /// Build a path along a line.
         /// </summary>
         /// <param name="line">The line to build path along.</param>
         public void ConstructPath(AxisAlignedLine line)
         {
             UpdateGrids(_paths.ConstructPath(line));
+        }
+
+        /// <summary>
+        /// Checks that the requested lines are valid for a new road.
+        /// NB: This method will be called in pairs. Once for each side of the road.
+        /// </summary>
+        /// <param name="line">Center vertex line for the new road.</param>
+        /// <param name="gridlines">Output: The gridlines that surround the center vertex line.</param>
+        /// <param name="validGrids">Output: The valid grids for road building. Used for updating cursors.</param>
+        /// <returns>True if the line is valid for a road, false otherwise.</returns>
+        public bool IsValidForRoad(AxisAlignedLine line, out AxisAlignedLine[] gridlines, out bool[][] validGrids)
+        {
+            gridlines = new AxisAlignedLine[2];
+            (gridlines[0], gridlines[1]) = line.GetSurroundingGridLines(clampX: _terrain.CountX, clampZ: _terrain.CountZ);
+
+            validGrids = new bool[2][];
+
+            bool isValid = true;
+            for (int gridlineIndex = 0; gridlineIndex < 2; ++gridlineIndex)
+            {
+                AxisAlignedLine gridline = gridlines[gridlineIndex];
+                validGrids[gridlineIndex] = new bool[gridline.Length];
+
+                foreach ((int lineIndex, Point2 point) in gridline.GetPointsAlongLine())
+                {
+                    bool isInBoundsSmoothAndAvailabile =
+                        _terrain.GridInBounds(point.x, point.z) &&
+                        _terrain.IsGridSmooth(point.x, point.z, gridline.Alignment) &&
+                        (GetGridUse(point) == CampusGridUse.Empty ||
+                         GetGridUse(point) == CampusGridUse.Road);
+
+                    if (isInBoundsSmoothAndAvailabile)
+                    {
+                        // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly.
+                        int roadVertexCount = 0;
+                        for (int i = 0; i < 4; ++i)
+                        {
+                            int vertX = point.x + GridConverter.GridToVertexDx[i];
+                            int vertZ = point.z + GridConverter.GridToVertexDz[i];
+
+                            if (_terrain.VertexInBounds(vertX, vertZ))
+                            {
+                                Point2 roadVertex = new Point2(vertX, vertZ);
+                                if (Game.Campus.GetVertexUse(roadVertex) == CampusGridUse.Road ||
+                                    line.IsPointOnLine(roadVertex))
+                                {
+                                    ++roadVertexCount;
+                                }
+                            }
+                        }
+
+                        if (roadVertexCount == 4)
+                        {
+                            isInBoundsSmoothAndAvailabile = false;
+                        }
+                    }
+
+                    validGrids[gridlineIndex][lineIndex] = isInBoundsSmoothAndAvailabile;
+                    isValid = isValid && isInBoundsSmoothAndAvailabile;
+                }
+            }
+
+            return isValid;
         }
 
         /// <summary>
@@ -166,83 +287,14 @@ namespace Campus
         }
 
         /// <summary>
-        /// Check if the terrain is valid for construction.
-        /// i.e. flat and unanchored.
+        /// Set the parent of the terrain object.
+        /// In essence, this makes it so when you click the terrain,
+        /// the parent selectable is not closed.
         /// </summary>
-        /// <param name="xBase">Grid x position.</param>
-        /// <param name="zBase">Grid z position.</param>
-        /// <param name="xSize">Width of the area to check.</param>
-        /// <param name="zSize">Height of the area to check.</param>
-        /// <returns>Array of booleans representing valid or invalid squares.</returns>
-        public bool[,] CheckFlatAndFree(int xBase, int zBase, int xSize, int zSize)
+        /// <param name="parent">The selectable to keep open after terrain clicks.</param>
+        public void SetTerrainSelectionParent(Selectable parent)
         {
-            bool[,] check = new bool[xSize, zSize];
-
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    int gridX = xBase + x;
-                    int gridZ = zBase + z;
-
-                    // grid is valid if it is inside the terrain
-                    // and not anchored
-                    // and flat
-                    check[x, z] =
-                        _terrain.GridInBounds(gridX, gridZ) &&
-                        _terrain.IsGridFlat(gridX, gridZ) &&
-                        GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
-                }
-            }
-
-            return check;
-        }
-
-        /// <summary>
-        /// Check if the terrain is valid for pathing.
-        /// i.e. smooth and unanchored.
-        /// </summary>
-        /// <param name="line">The line to check.</param>
-        /// <returns>Boolean array representing whether or not the square is smooth and free along the line.</returns>
-        public bool[] CheckLineSmoothAndFree(AxisAlignedLine line)
-        {
-            bool[] isValid = new bool[line.Length];
-            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
-            {
-                bool isInBoundsAndEmpty =
-                    _terrain.GridInBounds(point.x, point.z) &&
-                    GetGridUse(point) == CampusGridUse.Empty;
-
-                switch (line.Alignment)
-                {
-                    case AxisAlignment.None:
-                        isValid[lineIndex] =
-                            isInBoundsAndEmpty &&
-                            (
-                                (_terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x, point.z + 1) &&
-                                _terrain.GetVertexHeight(point.x + 1, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z + 1)) ||
-                                (_terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z) &&
-                                _terrain.GetVertexHeight(point.x, point.z + 1) == _terrain.GetVertexHeight(point.x + 1, point.z + 1))
-                            );
-                        break;
-
-                    case AxisAlignment.XAxis:
-                        isValid[lineIndex] =
-                            isInBoundsAndEmpty &&
-                            _terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x, point.z + 1) &&
-                            _terrain.GetVertexHeight(point.x + 1, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z + 1);
-                        break;
-
-                    case AxisAlignment.ZAxis:
-                        isValid[lineIndex] =
-                            isInBoundsAndEmpty &&
-                            _terrain.GetVertexHeight(point.x, point.z) == _terrain.GetVertexHeight(point.x + 1, point.z) &&
-                            _terrain.GetVertexHeight(point.x, point.z + 1) == _terrain.GetVertexHeight(point.x + 1, point.z + 1);
-                        break;
-                }
-            }
-
-            return isValid;
+            _terrain.Selectable.SelectionParent = parent;
         }
 
         /// <summary>
@@ -324,12 +376,12 @@ namespace Campus
         /// <param name="pos">The grid position to update submaterial on.</param>
         private void UpdateGridMaterial(Point2 pos)
         {
-            (int pathMaterialIndex, Rotation pathMaterialRotation, Inversion pathMaterialInversion) = _paths.GetPathMaterial(pos.x, pos.z);
-            (int roadMaterialIndex, Rotation roadMaterialRotation, Inversion roadMaterialInversion) = _roads.GetRoadMaterial(pos.x, pos.z);
+            (int pathMaterialIndex, SubmaterialRotation pathMaterialRotation, SubmaterialInversion pathMaterialInversion) = _paths.GetPathMaterial(pos.x, pos.z);
+            (int roadMaterialIndex, SubmaterialRotation roadMaterialRotation, SubmaterialInversion roadMaterialInversion) = _roads.GetRoadMaterial(pos.x, pos.z);
 
             int materialIndex = _defaultMaterialIndex;
-            Rotation materialRotation = Rotation.deg0;
-            Inversion materialInversion = Inversion.None;
+            SubmaterialRotation materialRotation = SubmaterialRotation.deg0;
+            SubmaterialInversion materialInversion = SubmaterialInversion.None;
 
             if (pathMaterialIndex != _defaultMaterialIndex)
             {

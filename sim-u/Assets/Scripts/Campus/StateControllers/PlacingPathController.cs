@@ -1,7 +1,6 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
-using System.Linq;
 using UnityEngine;
 
 namespace Campus
@@ -40,10 +39,12 @@ namespace Campus
         {
             var args = context as TerrainClickedArgs;
             if (args == null)
-                GameLogger.FatalError("EditingTerrainController was given incorrect context.");
+                GameLogger.FatalError("PlacingPathController was given incorrect context.");
 
             _line = new AxisAlignedLine(args.GridSelection);
-            _cursor.Place(_line, IsValidForPathAlongLine());
+
+            Game.Campus.IsValidForPath(_line, out bool[] validGrids);
+            _cursor.Place(_line, validGrids);
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (IsValidForPathAlongLine().All(b => b))
+                if (Game.Campus.IsValidForPath(_line, out bool[] _))
                 {
                     Game.Campus.ConstructPath(_line);
                 }
@@ -95,7 +96,8 @@ namespace Campus
                     _line.UpdateEndPointAlongAxis(new Point2(_line.End.x, _terrain.CountZ - 1));
             }
 
-            _cursor.Place(_line, IsValidForPathAlongLine());
+            Game.Campus.IsValidForPath(_line, out bool[] validGrids);
+            _cursor.Place(_line, validGrids);
         }
 
         /// <summary>
@@ -110,27 +112,6 @@ namespace Campus
                 // Cancel placing path.
                 Transition(GameState.SelectingPath);
             }
-        }
-
-        /// <summary>
-        /// Get a boolean array representing whether the grids selected are valid for path.
-        /// </summary>
-        /// <returns>A boolean array representing the valid terrain along the line.</returns>
-        private bool[] IsValidForPathAlongLine()
-        {
-            bool[] gridcheck = Game.Campus.CheckLineSmoothAndFree(_line);
-
-            foreach ((int lineIndex, Point2 point) in _line.GetPointsAlongLine())
-            {
-                if (!gridcheck[lineIndex])
-                {
-                    // We can build over existing path
-                    // NB: Assumes currently built paths are smooth
-                    gridcheck[lineIndex] = Game.Campus.GetGridUse(point) == CampusGridUse.Path;
-                }
-            }
-
-            return gridcheck;
         }
     }
 }

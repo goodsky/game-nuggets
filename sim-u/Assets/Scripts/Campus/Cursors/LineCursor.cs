@@ -43,7 +43,7 @@ namespace Campus
         /// </summary>
         /// <param name="line">An axis aligned line.</param>
         /// <param name="isValid">Booleans representing whether each position is valid or not.</param>
-        public void Place(AxisAlignedLine line, bool[] isValid = null)
+        public void Place(AxisAlignedLine line, bool[] isValid)
         {
             int maxLineIndex = -1;
             foreach ((int lineIndex, Point2 linePoint) in line.GetPointsAlongLine())

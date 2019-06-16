@@ -283,7 +283,7 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
-        /// Gets if the grid square is flat or not.
+        /// Checks if the grid square is flat or not.
         /// </summary>
         /// <param name="x">X coordinates of the grid square.</param>
         /// <param name="z">Z coorindates of the grid square.</param>
@@ -296,6 +296,42 @@ namespace Campus.GridTerrain
             return _vertexHeight[x, z] == _vertexHeight[x + 1, z] &&
                 _vertexHeight[x, z] == _vertexHeight[x, z + 1] &&
                 _vertexHeight[x, z] == _vertexHeight[x + 1, z + 1];
+        }
+
+        /// <summary>
+        /// Check if the grid square is smooth along a specified axis alignment.
+        /// </summary>
+        /// <param name="x">X coordinates of the grid square.</param>
+        /// <param name="z">Z coorindates of the grid square.</param>
+        /// <param name="alignment">The direction to check for smoothness.</param>
+        /// <returns>True if the grid is smooth, false otherwise.</returns>
+        public bool IsGridSmooth(int x, int z, AxisAlignment alignment)
+        {
+            if (!GridInBounds(x, z))
+                GameLogger.FatalError("Attempted to get IsGridSmooth out of range. ({0},{1})", x, z);
+
+            switch (alignment)
+            {
+                case AxisAlignment.None:
+                    return
+                        (GetVertexHeight(x, z) == GetVertexHeight(x, z + 1) &&
+                         GetVertexHeight(x + 1, z) == GetVertexHeight(x + 1, z + 1)) ||
+                        (GetVertexHeight(x, z) == GetVertexHeight(x + 1, z) &&
+                         GetVertexHeight(x, z + 1) == GetVertexHeight(x + 1, z + 1));
+
+                case AxisAlignment.XAxis:
+                    return
+                        GetVertexHeight(x, z) == GetVertexHeight(x, z + 1) &&
+                        GetVertexHeight(x + 1, z) == GetVertexHeight(x + 1, z + 1);
+
+                case AxisAlignment.ZAxis:
+                    return
+                        GetVertexHeight(x, z) == GetVertexHeight(x + 1, z) &&
+                        GetVertexHeight(x, z + 1) == GetVertexHeight(x + 1, z + 1);
+
+                default:
+                    throw new ArgumentException($"Unknown AxisAlignment {alignment}.");
+            }
         }
 
         /// <summary>
@@ -430,7 +466,7 @@ namespace Campus.GridTerrain
         /// <param name="submaterialId">The id of the submaterial (the gridsheet on the material from left->right, top->bottom).</param>
         /// <param name="rotation">Value to rotate the submaterial by. (Applied before inversion)</param>
         /// <param name="inversion">Whether or not to flip the submaterial. (Applied after rotation)</param>
-        public void SetSubmaterial(int x, int z, int submaterialId, Rotation rotation = Rotation.deg0, Inversion inversion = Inversion.None)
+        public void SetSubmaterial(int x, int z, int submaterialId, SubmaterialRotation rotation = SubmaterialRotation.deg0, SubmaterialInversion inversion = SubmaterialInversion.None)
         {
             if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to set square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
@@ -449,13 +485,13 @@ namespace Campus.GridTerrain
             int rotationOffset = 0;
             switch (rotation)
             {
-                case Rotation.deg90:
+                case SubmaterialRotation.deg90:
                     rotationOffset = 3;
                     break;
-                case Rotation.deg180:
+                case SubmaterialRotation.deg180:
                     rotationOffset = 2;
                     break;
-                case Rotation.deg270:
+                case SubmaterialRotation.deg270:
                     rotationOffset = 1;
                     break;
             }
@@ -469,7 +505,7 @@ namespace Campus.GridTerrain
             _uv[grid.VertexIndex + (Vertex.TopLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
             _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
 
-            if ((inversion & Inversion.InvertX) == Inversion.InvertX)
+            if ((inversion & SubmaterialInversion.InvertX) == SubmaterialInversion.InvertX)
             {
                 Vector2 swapTop = _uv[grid.VertexIndex + Vertex.TopRight];
                 _uv[grid.VertexIndex + Vertex.TopRight] = _uv[grid.VertexIndex + Vertex.TopLeft];
@@ -480,7 +516,7 @@ namespace Campus.GridTerrain
                 _uv[grid.VertexIndex + Vertex.BottomLeft] = swapBottom;
             }
 
-            if ((inversion & Inversion.InvertZ) == Inversion.InvertZ)
+            if ((inversion & SubmaterialInversion.InvertZ) == SubmaterialInversion.InvertZ)
             {
                 Vector2 swapLeft = _uv[grid.VertexIndex + Vertex.TopLeft];
                 _uv[grid.VertexIndex + Vertex.TopLeft] = _uv[grid.VertexIndex + Vertex.BottomLeft];
@@ -593,27 +629,5 @@ namespace Campus.GridTerrain
             public const int CountPerSquare = 5;
             public const int TrianglesPerSquare = 4;
         }
-    }
-
-    /// <summary>
-    /// Rotation of a submaterial
-    /// </summary>
-    public enum Rotation
-    {
-        deg0,
-        deg90,
-        deg180,
-        deg270
-    }
-
-    /// <summary>
-    /// Inversion of a submaterial
-    /// </summary>
-    [Flags]
-    public enum Inversion
-    {
-        None    = 0,
-        InvertX = 1,
-        InvertZ = 2,
     }
 }

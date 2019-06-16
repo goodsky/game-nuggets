@@ -108,5 +108,41 @@ namespace Common
                 yield return (i, new Point2(Start.x + i * dx, Start.z + i * dz));
             }
         }
+
+        public (AxisAlignedLine, AxisAlignedLine) GetSurroundingGridLines(int clampX = int.MaxValue, int clampZ = int.MaxValue)
+        {
+            int minX = Math.Min(Start.x, End.x);
+            int maxX = Math.Max(Start.x, End.x);
+            int minZ = Math.Min(Start.z, End.z);
+            int maxZ = Math.Max(Start.z, End.z);
+
+            if (Alignment == AxisAlignment.ZAxis)
+            {
+                var start1 = ClampPoint(minX - 1, minZ - 1, clampX, clampZ);
+                var end1 = ClampPoint(maxX - 1, maxZ, clampX, clampZ);
+
+                var start2 = ClampPoint(minX, minZ - 1, clampX, clampZ);
+                var end2 = ClampPoint(maxX, maxZ, clampX, clampZ);
+
+                return (new AxisAlignedLine(start1, end1), new AxisAlignedLine(start2, end2));
+            }
+            else
+            {
+                var start1 = ClampPoint(minX - 1, minZ - 1, clampX, clampZ);
+                var end1 = ClampPoint(maxX, maxZ - 1, clampX, clampZ);
+
+                var start2 = ClampPoint(minX - 1, minZ, clampX, clampZ);
+                var end2 = ClampPoint(maxX, maxZ, clampX, clampZ);
+
+                return (new AxisAlignedLine(start1, end1), new AxisAlignedLine(start2, end2));
+            }
+        }
+
+        private Point2 ClampPoint(int x, int z, int maxX, int maxZ)
+        {
+            return new Point2(
+                Math.Min(maxX - 1, Math.Max(0, x)),
+                Math.Min(maxZ - 1, Math.Max(0, z)));
+        }
     }
 }

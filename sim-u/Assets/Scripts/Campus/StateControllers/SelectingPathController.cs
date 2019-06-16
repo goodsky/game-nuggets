@@ -67,9 +67,10 @@ namespace Campus
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
+                bool isValid = Game.Campus.IsValidForPath(new AxisAlignedLine(args.GridSelection), out bool[] _);
                 _cursor.Place(args.GridSelection);
                 _cursor.SetMaterial(
-                    IsValidTerrain() ?
+                    isValid ?
                         _validMaterial :
                         _invalidMaterial);
             }
@@ -89,31 +90,16 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (IsValidTerrain())
+                if (Game.Campus.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] _))
                 {
                     Transition(GameState.PlacingPath, args);
                 }
             }
-
-            // DEBUGGING:
-            if (args.Button == MouseButton.Right && _cursor.Position != Point2.Null)
+            else if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; Grid Use: {2}", 
-                    IsValidTerrain(), 
-                    Game.Campus.CheckLineSmoothAndFree(new AxisAlignedLine(_cursor.Position))[0],
-                    Game.Campus.GetGridUse(_cursor.Position));
+                bool testIsValid = Game.Campus.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] testGridValid);
+                GameLogger.Info("SelectingPathCheck: {0} isValid: {1} gridValid: [{2}]", _cursor.Position, testIsValid, string.Join(",", testGridValid));
             }
-        }
-
-        /// <summary>
-        /// Gets a value representing whether or not the grid under the cursor is valid for path.
-        /// </summary>
-        /// <returns>True if the grid is valid, false otherwise.</returns>
-        private bool IsValidTerrain()
-        {
-            return
-                Game.Campus.CheckLineSmoothAndFree(new AxisAlignedLine(_cursor.Position))[0] ||
-                Game.Campus.GetGridUse(_cursor.Position) == CampusGridUse.Path;
         }
     }
 }

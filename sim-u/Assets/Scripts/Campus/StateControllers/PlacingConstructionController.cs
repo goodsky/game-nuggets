@@ -67,8 +67,10 @@ namespace Campus
         {
             if (args.GridSelection != Point3.Null)
             {
+                Game.Campus.IsValidForBuilding(_building, args.GridSelection, out bool[,] validGrids);
+
                 _cursors.Place(args.GridSelection);
-                _cursors.SetMaterials(GetValidTerrainUnderMouse());
+                _cursors.SetMaterials(validGrids);
             }
             else
             {
@@ -85,32 +87,12 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                var validTerrain = GetValidTerrainUnderMouse();
-                var footprint = _building.Footprint;
-
-                bool isValid = true;
-                for (int x = 0; x < footprint.GetLength(0); ++x)
-                    for (int z = 0; z < footprint.GetLength(1); ++z)
-                        if (footprint[x, z] && !validTerrain[x, z])
-                            isValid = false;
-
-                if (isValid)
+                if (Game.Campus.IsValidForBuilding(_building, args.GridSelection, out bool[,] _))
                 {
                     Game.Campus.ConstructBuilding(_building, args.GridSelection);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
             }
-        }
-
-        /// <summary>
-        /// Get a boolean array representing valid construction terrain underneath the cursor.
-        /// </summary>
-        /// <returns>A boolean array representing the valid terrain beneath the cursor.</returns>
-        private bool[,] GetValidTerrainUnderMouse()
-        {
-            int footprintSizeX = _building.Footprint.GetLength(0);
-            int footprintSizeZ = _building.Footprint.GetLength(1);
-            return Game.Campus.CheckFlatAndFree(_cursors.Position.x, _cursors.Position.z, footprintSizeX, footprintSizeZ);
         }
     }
 }

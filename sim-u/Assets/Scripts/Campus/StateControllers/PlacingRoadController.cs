@@ -2,7 +2,6 @@
 using Common;
 using GameData;
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace Campus
@@ -46,13 +45,13 @@ namespace Campus
         {
             var args = context as TerrainClickedArgs;
             if (args == null)
-                GameLogger.FatalError("EditingTerrainController was given incorrect context.");
+                GameLogger.FatalError("PlacingRoadController was given incorrect context.");
 
             _vertexLine = new AxisAlignedLine(args.VertexSelection);
 
-            (AxisAlignedLine line1, AxisAlignedLine line2) = GetRoadGridLines();
-            _cursor1.Place(line1, IsValidForRoadAlongLine(line1));
-            _cursor2.Place(line2, IsValidForRoadAlongLine(line2));
+            Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
+            _cursor1.Place(lines[0], validGrids[0]);
+            _cursor2.Place(lines[1], validGrids[1]);
         }
 
         /// <summary>
@@ -71,9 +70,7 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                (AxisAlignedLine line1, AxisAlignedLine line2) = GetRoadGridLines();
-                if (IsValidForRoadAlongLine(line1).All(x => x) &&
-                    IsValidForRoadAlongLine(line2).All(x => x))
+                if (Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __))
                 {
                     Game.Campus.ConstructRoad(_vertexLine);
                 }
@@ -94,9 +91,9 @@ namespace Campus
             {
                 _vertexLine.UpdateEndPointAlongAxis(args.VertexSelection);
 
-                (AxisAlignedLine line1, AxisAlignedLine line2) = GetRoadGridLines();
-                _cursor1.Place(line1, IsValidForRoadAlongLine(line1));
-                _cursor2.Place(line2, IsValidForRoadAlongLine(line2));
+                Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
+                _cursor1.Place(lines[0], validGrids[0]);
+                _cursor2.Place(lines[1], validGrids[1]);
             }
         }
 
@@ -112,93 +109,6 @@ namespace Campus
                 // Cancel placing path.
                 Transition(GameState.SelectingRoad);
             }
-        }
-
-        /// <summary>
-        /// Get a boolean array representing whether the grids selected are valid for path.
-        /// </summary>
-        /// <returns>A boolean array representing the valid terrain along the line.</returns>
-        private bool[] IsValidForRoadAlongLine(AxisAlignedLine line)
-        {
-            bool[] gridcheck = Game.Campus.CheckLineSmoothAndFree(line);
-            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
-            {
-                if (!gridcheck[lineIndex])
-                {
-                    // We can build over existing road
-                    // NB: Assumes currently built roads are smooth
-                    gridcheck[lineIndex] = Game.Campus.GetGridUse(point) == CampusGridUse.Road;
-                }
-
-                if (gridcheck[lineIndex])
-                {
-                    // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly.
-                    //       Don't do it!
-                    int roadVertexCount = 0;
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        int vertX = point.x + GridConverter.GridToVertexDx[i];
-                        int vertZ = point.z + GridConverter.GridToVertexDz[i];
-
-                        if (_terrain.VertexInBounds(vertX, vertZ))
-                        {
-                            Point2 roadVertex = new Point2(vertX, vertZ);
-                            if (Game.Campus.GetVertexUse(roadVertex) == CampusGridUse.Road ||
-                                _vertexLine.IsPointOnLine(roadVertex))
-                            {
-                                ++roadVertexCount;
-                            }
-                        }
-                    }
-
-                    if (roadVertexCount == 4)
-                    {
-                        gridcheck[lineIndex] = false;
-                    }
-                }
-            }
-
-            return gridcheck;
-        }
-
-        /// <summary>
-        /// Converts the single Vertex Line into two Grid Lines for checking terrain and placing the cursor.
-        /// </summary>
-        /// <returns>Two grid lines.</returns>
-        private (AxisAlignedLine, AxisAlignedLine) GetRoadGridLines()
-        {
-            int minX = Math.Min(_vertexLine.Start.x, _vertexLine.End.x);
-            int maxX = Math.Max(_vertexLine.Start.x, _vertexLine.End.x);
-            int minZ = Math.Min(_vertexLine.Start.z, _vertexLine.End.z);
-            int maxZ = Math.Max(_vertexLine.Start.z, _vertexLine.End.z);
-
-            if (_vertexLine.Alignment == AxisAlignment.ZAxis)
-            {
-                var start1 = ClampPoint(minX - 1, minZ - 1);
-                var end1 = ClampPoint(maxX - 1, maxZ);
-
-                var start2 = ClampPoint(minX, minZ - 1);
-                var end2 = ClampPoint(maxX, maxZ);
-
-                return (new AxisAlignedLine(start1, end1), new AxisAlignedLine(start2, end2));
-            }
-            else
-            {
-                var start1 = ClampPoint(minX - 1, minZ - 1);
-                var end1 = ClampPoint(maxX, maxZ - 1);
-
-                var start2 = ClampPoint(minX - 1, minZ);
-                var end2 = ClampPoint(maxX, maxZ);
-
-                return (new AxisAlignedLine(start1, end1), new AxisAlignedLine(start2, end2));
-            }
-        }
-
-        private Point2 ClampPoint(int x, int z)
-        {
-            return new Point2(
-                Math.Min(_terrain.CountX - 1, Math.Max(0, x)),
-                Math.Min(_terrain.CountZ - 1, Math.Max(0, z)));
         }
     }
 }
