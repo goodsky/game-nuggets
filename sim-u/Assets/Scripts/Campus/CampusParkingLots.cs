@@ -1,7 +1,6 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
-using System;
 using System.Collections.Generic;
 
 namespace Campus
@@ -11,395 +10,229 @@ namespace Campus
     /// </summary>
     public class CampusParkingLots
     {
-        private readonly GridMesh _terrain;
-        private readonly bool[,] _road;
-        private readonly int _roadSubmaterialStartIndex;
+        private class ParkingLot
+        {
+            public ParkingLot(Rectangle footprint)
+            {
+                Footprint = footprint;
+            }
+
+            public Rectangle Footprint { get; private set; }
+        }
+
+        private GridMesh _terrain;
+        private ParkingLot[,] _lots;
+
+        private int _startIndex;
+        private int _invalidIndex;
+        private int _emptyIndex;
 
         public CampusParkingLots(CampusData campusData, GridMesh terrain)
         {
             _terrain = terrain;
-            _road = new bool[campusData.Terrain.GridCountX + 1, campusData.Terrain.GridCountZ + 1];
-            SetupRoadMapping(
-                emptyGrassIndex: campusData.Terrain.SubmaterialEmptyGrassIndex,
-                invalidIndex: campusData.Terrain.SubmaterialInvalidIndex,
-                roadStartIndex: campusData.Terrain.SubmaterialRoadsIndex);
+            _lots = new ParkingLot[terrain.CountX, terrain.CountZ];
 
-            _roadSubmaterialStartIndex = campusData.Terrain.SubmaterialRoadsIndex;
+            _startIndex = campusData.Terrain.SubmaterialParkingLotsIndex;
+            _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
+            _emptyIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
         }
 
         /// <summary>
-        /// Gets a value representing whether or not there is a road at grid position.
-        /// Note: The Roads values stored in this class are vertex based, but his 
-        ///       query is grid based.
+        /// Checks if a parking lot exists at a given grid point.
         /// </summary>
         /// <param name="pos">Grid position to query.</param>
-        /// <returns>True if there is a raod, false otherwise.</returns>
-        public bool RoadAtGrid(Point2 pos)
+        /// <returns>True if a lot exists at position, false otherwise.</returns>
+        public bool ParkingLotAtPosition(Point2 pos)
         {
-            return  _road[pos.x, pos.z] ||
-                    _road[pos.x + 1, pos.z] ||
-                    _road[pos.x, pos.z + 1] ||
-                    _road[pos.x + 1, pos.z + 1];
+            return _lots[pos.x, pos.z] != null;
         }
 
         /// <summary>
-        /// Gets a value representing whether or not there is a road at vertex position.
+        /// Build a parking lot in the rectangle.
         /// </summary>
-        /// <param name="pos">Vertex position to query.</param>
-        /// <returns>True if there is a road, false otherwise.</returns>
-        public bool RoadAtVertex(Point2 pos)
-        {
-            return _road[pos.x, pos.z];
-        }
-
-        /// <summary>
-        /// Gets a value representing whether or not the position is valid for a crosswalk.
-        /// </summary>
-        /// <param name="pos">Grid position to query.</param>
-        /// <returns>True if the road is valid for a crosswalk, false otherwise.</returns>
-        public bool IsValidForCrosswalk(Point2 pos)
-        {
-            // TODO: This is a shortcut for now.
-            //       Later we could make this check for "hypothetical" roads as well during road construction.
-            //       Later we could make this check that there are two valid road positions (a full valid crossing).
-            (int submaterial, var _, var __) = GetRoadMaterial(pos);
-            return submaterial == _roadSubmaterialStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
-        }
-
-        /// <summary>
-        /// Build a road along the provided line
-        /// </summary>
-        /// <param name="line">An axis-aligned vertex line to build road at.</param>
+        /// <param name="rectangle">The parking lot footprint.</param>
         /// <returns>The points on the terrain that have been modified.</returns>
-        public IEnumerable<Point2> ConstructRoad(AxisAlignedLine line)
+        public IEnumerable<Point2> ConstructParkingLot(Rectangle rectangle)
         {
-            foreach ((int lineIndex, Point2 vertexPoint) in line.GetPointsAlongLine())
+            var parkingLot = new ParkingLot(rectangle);
+
+            for (int x = rectangle.MinX; x <= rectangle.MaxX; ++x)
             {
-                if (!_road[vertexPoint.x, vertexPoint.z])
+                for (int z = rectangle.MinZ; z <= rectangle.MaxZ; ++z)
                 {
-                    _road[vertexPoint.x, vertexPoint.z] = true;
+                    _lots[x, z] = parkingLot;
                 }
             }
 
-            // Return all the potentially modified grids around the road for updating.
-            // This scan has an extra grid on each side due to updates to intersection status.
-            for (int scanX = Math.Min(line.Start.x, line.End.x) - 2; scanX <= Math.Max(line.Start.x, line.End.x) + 1; ++scanX)
-                for (int scanZ = Math.Min(line.Start.z, line.End.z) - 2; scanZ <= Math.Max(line.Start.z, line.End.z) + 1; ++scanZ)
+            // Return all the potentially modified grids around the parking lot for updating.
+            for (int scanX = rectangle.MinX - 1; scanX <= rectangle.MaxX + 1; ++scanX)
+                for (int scanZ = rectangle.MinZ - 1; scanZ <= rectangle.MaxZ + 1; ++scanZ)
                     if (_terrain.GridInBounds(scanX, scanZ))
                         yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
-        /// Remove a path at the position.
+        /// Remove a parking lot that exists at the requested position.
         /// </summary>
-        /// <param name="pos">The position to remove the path at.</param>
+        /// <param name="pos">The position to remove the parking lot at.</param>
         /// <returns>The points on the terrain that have been modified.</returns>
-        public IEnumerable<Point2> DestroyRoadAt(Point2 pos)
+        public IEnumerable<Point2> DestroyParkingLotAt(Point2 pos)
         {
-            for (int i = 0; i < 4; ++i)
+            ParkingLot parkingLot = _lots[pos.x, pos.z];
+            if (parkingLot == null)
             {
-                int vertX = pos.x + GridConverter.GridToVertexDx[i];
-                int vertZ = pos.z + GridConverter.GridToVertexDz[i];
-                _road[vertX, vertZ] = false;
+                yield break;
             }
 
-            // Set the updated materials and whether the grid squares are anchored
-            // NB: This search must be one wider than you think due to the way roads are set up.
-            for (int scanX = pos.x - 2; scanX <= pos.x + 2; ++scanX)
+            for (int x = parkingLot.Footprint.MinX; x <= parkingLot.Footprint.MaxX; ++x)
             {
-                for (int scanZ = pos.z - 2; scanZ <= pos.z + 2; ++scanZ)
+                for (int z = parkingLot.Footprint.MinZ; z <= parkingLot.Footprint.MaxZ; ++z)
                 {
-                    if (_terrain.GridInBounds(scanX, scanZ))
-                    {
-                        Point2 scan = new Point2(scanX, scanZ);
-
-                        // Crosswalks may need to be destroyed.
-                        if (Game.Campus.GetGridUse(scan) == CampusGridUse.Crosswalk &&
-                            !IsValidForCrosswalk(scan))
-                        {
-                            Game.Campus.DestroyAt(scan, filter: CampusGridUse.Crosswalk);
-                        }
-
-                        yield return scan;
-                    }
+                    _lots[x, z] = null;
                 }
             }
+
+            // Return all the potentially modified grids around the parking lot for updating.
+            for (int scanX = parkingLot.Footprint.MinX - 1; scanX <= parkingLot.Footprint.MaxX + 1; ++scanX)
+                for (int scanZ = parkingLot.Footprint.MinZ - 1; scanZ <= parkingLot.Footprint.MaxZ + 1; ++scanZ)
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
-        /// Update the material of the grid to look like the path.
+        /// Update the material of the grid to look like a parking lot.
         /// </summary>
-        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetRoadMaterial(Point2 pos, bool isPathPresent = false)
+        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetParkingLotMaterial(Point2 pos)
         {
-            // check the 4 adjacent road vertices to pick the correct image
-            int[] adj = new int[4];
+            ParkingLot parkingLot = _lots[pos.x, pos.z];
+
+            if (parkingLot == null)
+            {
+                return (_emptyIndex, SubmaterialRotation.deg0, SubmaterialInversion.None);
+            }
+
+            // check 4 adjacent grids for parking lots
+            // check 4 adjacent grids for paths
+            // check 4 adjacent vertices for roads
+            bool[] adjLots = new bool[4];
+            bool[] adjPath = new bool[4];
+            bool[] adjRoad = new bool[4];
             for (int i = 0; i < 4; ++i)
             {
-                int checkX = pos.x + GridConverter.GridToVertexDx[i];
-                int checkZ = pos.z + GridConverter.GridToVertexDz[i];
+                int gridX = pos.x + GridConverter.AdjacentGridDx[i];
+                int gridZ = pos.z + GridConverter.AdjacentGridDz[i];
 
-                adj[i] = 0;
+                int vertX = pos.x + GridConverter.AdjacentVertexDx[i];
+                int vertZ = pos.z + GridConverter.AdjacentVertexDz[i];
 
-                if (_terrain.VertexInBounds(checkX, checkZ) && _road[checkX, checkZ])
+                adjLots[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ));
+                adjPath[i] = _terrain.GridInBounds(gridX, gridZ) && (Game.Campus.GetGridUse(new Point2(gridX, gridZ)) & CampusGridUse.Path) == CampusGridUse.Path;
+                adjRoad[i] = _terrain.VertexInBounds(vertX, vertZ) && (Game.Campus.GetVertexUse(new Point2(vertX, vertZ)) & CampusGridUse.Road) == CampusGridUse.Road;
+            }
+
+            // NB: The logic for parking lots is more complex than other managers.
+            //     Therefore it has not been precomputed into a multidimensional array.
+            (var submaterial, var rotation, var inversion) = CalculateSubmaterial(adjLots, adjPath, adjRoad);
+
+            int submaterialIndex;
+            if (submaterial == ParkingLotSubmaterialIndex.Invalid)
+            {
+                submaterialIndex = _invalidIndex;
+            }
+            else
+            {
+                submaterialIndex = _startIndex + (int)submaterial;
+            }
+
+            return (submaterialIndex, rotation, inversion);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="adjLots">Adjacency array of parking lots.</param>
+        /// <param name="adjPath">Adjacency array of paths.</param>
+        /// <param name="adjRoad">Adjacency array of roads.</param>
+        /// <returns></returns>
+        private (ParkingLotSubmaterialIndex submaterial, SubmaterialRotation rotation, SubmaterialInversion inversion) CalculateSubmaterial(bool[] adjLots, bool[] adjPath, bool[] adjRoad)
+        {
+            bool topLots = adjLots[0]; bool rightLots = adjLots[1]; bool bottomLots = adjLots[2]; bool leftLots = adjLots[3];
+            bool topPath = adjPath[0]; bool rightPath = adjPath[1]; bool bottomPath = adjPath[2]; bool leftPath = adjPath[3];
+            bool trRoad = adjRoad[0]; bool brRoad = adjRoad[1]; bool blRoad = adjRoad[2]; bool tlRoad = adjRoad[3];
+
+            // four adjacent parking lots -------------------------
+            if (adjLots[0] && adjLots[1] && adjLots[2] && adjLots[3])
+            {
+                return (ParkingLotSubmaterialIndex.LotBlank, SubmaterialRotation.deg0, SubmaterialInversion.None);
+            }
+
+            for (int i = 0; i < 4; ++i)
+            {
+                int i0 = i;
+                int i1 = (i + 1) % 4;
+                int i2 = (i + 2) % 4;
+                int i3 = (i + 3) % 4;
+
+                // three adjacent parking lots (edge) ---------------------------
+                if (adjLots[i0] && adjLots[i1] && adjLots[i2] && !adjLots[i3])
                 {
-                    int adjacentRoadVertexCount = 0;
-                    for (int j = 0; j < 4; ++j)
+                    // one path
+                    if (adjPath[i3])
                     {
-                        int interCheckX = checkX + GridConverter.AdjacentVertexDx[j];
-                        int interCheckZ = checkZ + GridConverter.AdjacentVertexDz[j];
-
-                        if (_terrain.VertexInBounds(interCheckX, interCheckZ) && _road[interCheckX, interCheckZ])
-                        {
-                            ++adjacentRoadVertexCount;
-                        }
+                        return (ParkingLotSubmaterialIndex.StraightEdgeOnePath, (SubmaterialRotation)i, SubmaterialInversion.None);
                     }
+                    // no path
+                    if (!adjPath[i3])
+                    {
+                        return (ParkingLotSubmaterialIndex.StraightEdge, (SubmaterialRotation)i, SubmaterialInversion.None);
+                    }
+                }
 
-                    // roads can have intersections or non-intersection vertices
-                    // more than 2 paths out of a vertex means it's an intersection
-                    adj[i] = adjacentRoadVertexCount > 2 ? 2 : 1;
+                // two adjacent parking lots (corner) ----------------------------
+                if (adjLots[i0] && adjLots[i1] && !adjLots[i2] && !adjLots[i3])
+                {
+                    // two paths
+                    if (adjPath[i2] && adjPath[i3])
+                    {
+                        return (ParkingLotSubmaterialIndex.CornerEdgeTwoPath, (SubmaterialRotation)i, SubmaterialInversion.None);
+                    }
+                    // one path (i2)
+                    if (adjPath[i2] && !adjPath[i3])
+                    {
+                        return (ParkingLotSubmaterialIndex.CornerEdgeOnePath, (SubmaterialRotation)i, SubmaterialInversion.None);
+                    }
+                    // one path (i3)
+                    if (!adjPath[i2] && adjPath[i3])
+                    {
+                        int iRotated = (i + 3) % 4;
+                        int altInv = 1 + (i % 2);
+                        return (ParkingLotSubmaterialIndex.CornerEdgeOnePath, (SubmaterialRotation)iRotated, (SubmaterialInversion)altInv);
+                    }
+                    // no path
+                    if (!adjPath[i2] && !adjPath[i3])
+                    {
+                        return (ParkingLotSubmaterialIndex.CornerEdge, (SubmaterialRotation)i, SubmaterialInversion.None);
+                    }
                 }
             }
 
-            int SubmaterialIndex = _mat[adj[0], adj[1], adj[2], adj[3]];
-            if (isPathPresent && IsValidForCrosswalk(pos))
-            {
-                SubmaterialIndex = _roadSubmaterialStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertexWithCrosswalk;
-            }
-
-            return (SubmaterialIndex, _rot[adj[0], adj[1], adj[2], adj[3]], _inv[adj[0], adj[1], adj[2], adj[3]]);
-        }
-
-        // mapping from adjacent road vertices to the material + rotation
-        // [top-right, bottom-right, bottom-left, top-left]
-        // TL--TR
-        // |   |
-        // BL--BR
-        // *** adjacent roads can either be an non-intersection [1] or intersection [2]
-        // *** this is a beautiful artisanal 4 dimensional array. it will cost you extra.
-        private int[,,,] _mat;
-        private SubmaterialRotation[,,,] _rot;
-        private SubmaterialInversion[,,,] _inv;
-        private void SetupRoadMapping(int emptyGrassIndex, int invalidIndex, int roadStartIndex)
-        {
-            _mat = new int[3, 3, 3, 3];
-            _rot = new SubmaterialRotation[3, 3, 3, 3];
-            _inv = new SubmaterialInversion[3, 3, 3, 3];
-
-            // initialize with invalid material
-            for (int i0 = 0; i0 < 3; ++i0)
-                for (int i1 = 0; i1 < 3; ++i1)
-                    for (int i2 = 0; i2 < 3; ++i2)
-                        for (int i3 = 0; i3 < 3; ++i3)
-                            _mat[i0, i1, i2, i3] = invalidIndex;
-
-            // no adjacent ---
-            _mat[0, 0, 0, 0] = emptyGrassIndex;
-            _rot[0, 0, 0, 0] = SubmaterialRotation.deg0;
-
-            // one adjacent ---
-            // top-right
-            _mat[1, 0, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
-            _rot[1, 0, 0, 0] = SubmaterialRotation.deg0;
-            // bottom-right
-            _mat[0, 1, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
-            _rot[0, 1, 0, 0] = SubmaterialRotation.deg90;
-            // bottom-left
-            _mat[0, 0, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
-            _rot[0, 0, 1, 0] = SubmaterialRotation.deg180;
-            // top-left
-            _mat[0, 0, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
-            _rot[0, 0, 0, 1] = SubmaterialRotation.deg270;
-
-            // two adjacent non-intersection (straight) ---
-            // top-right & bottom-right
-            _mat[1, 1, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
-            _rot[1, 1, 0, 0] = SubmaterialRotation.deg0;
-            // bottom-right & bottom-left
-            _mat[0, 1, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
-            _rot[0, 1, 1, 0] = SubmaterialRotation.deg90;
-            // bottom-left & top-left
-            _mat[0, 0, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
-            _rot[0, 0, 1, 1] = SubmaterialRotation.deg180;
-            // top-left & top-right
-            _mat[1, 0, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
-            _rot[1, 0, 0, 1] = SubmaterialRotation.deg270;
-
-            // two adjacent (angled) ---
-            // top-right & bottom-left
-            _mat[1, 0, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentAngledVertex;
-            _rot[1, 0, 1, 0] = SubmaterialRotation.deg0;
-            // bottom-right & top-left
-            _mat[0, 1, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentAngledVertex;
-            _rot[0, 1, 0, 1] = SubmaterialRotation.deg90;
-
-            // three adjacent ---
-            // top-right & bottom-right & bottom-left
-            _mat[1, 1, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
-            _rot[1, 1, 1, 0] = SubmaterialRotation.deg0;
-            // bottom-right & bottom-left & top-left
-            _mat[0, 1, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
-            _rot[0, 1, 1, 1] = SubmaterialRotation.deg90;
-            // bottom-left & top-left & top-right
-            _mat[1, 0, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
-            _rot[1, 0, 1, 1] = SubmaterialRotation.deg180;
-            // top-left & top-right & bottom-right
-            _mat[1, 1, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
-            _rot[1, 1, 0, 1] = SubmaterialRotation.deg270;
-
-            // two adjacent intersection (I) (straight) ---
-            // (I)top-right & bottom-right
-            _mat[2, 1, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[2, 1, 0, 0] = SubmaterialRotation.deg0;
-            _inv[2, 1, 0, 0] = SubmaterialInversion.None;
-            // top-right & (I)bottom-right
-            _mat[1, 2, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[1, 2, 0, 0] = SubmaterialRotation.deg0;
-            _inv[1, 2, 0, 0] = SubmaterialInversion.InvertZ;
-            // (I)bottom-right & bottom-left
-            _mat[0, 2, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[0, 2, 1, 0] = SubmaterialRotation.deg90;
-            _inv[0, 2, 1, 0] = SubmaterialInversion.None;
-            // bottom-right & (I)bottom-left
-            _mat[0, 1, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[0, 1, 2, 0] = SubmaterialRotation.deg90;
-            _inv[0, 1, 2, 0] = SubmaterialInversion.InvertX;
-            // (I)bottom-left & top-left
-            _mat[0, 0, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[0, 0, 2, 1] = SubmaterialRotation.deg180;
-            _inv[0, 0, 2, 1] = SubmaterialInversion.None;
-            // bottom-left & (I)top-left
-            _mat[0, 0, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[0, 0, 1, 2] = SubmaterialRotation.deg180;
-            _inv[0, 0, 1, 2] = SubmaterialInversion.InvertZ;
-            // (I)top-left & top-right
-            _mat[1, 0, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[1, 0, 0, 2] = SubmaterialRotation.deg270;
-            _inv[1, 0,0, 2] = SubmaterialInversion.None;
-            // top-left & (I)top-right
-            _mat[2, 0, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
-            _rot[2, 0, 0, 1] = SubmaterialRotation.deg270;
-            _inv[2, 0, 0, 1] = SubmaterialInversion.InvertX;
-
-            // three adjacent center intersection (I) ---
-            // top-right & (I)bottom-right & bottom-left
-            _mat[1, 2, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
-            _rot[1, 2, 1, 0] = SubmaterialRotation.deg0;
-            _inv[1, 2, 1, 0] = SubmaterialInversion.None;
-            // bottom-right & (I)bottom-left & top-left
-            _mat[0, 1, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
-            _rot[0, 1, 2, 1] = SubmaterialRotation.deg90;
-            _inv[0, 1, 2, 1] = SubmaterialInversion.None;
-            // bottom-left & (I)top-left & top-right
-            _mat[1, 0, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
-            _rot[1, 0, 1, 2] = SubmaterialRotation.deg180;
-            _inv[1, 0, 1, 2] = SubmaterialInversion.None;
-            // top-left & (I)top-right & bottom-right
-            _mat[2, 1, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
-            _rot[2, 1, 0, 1] = SubmaterialRotation.deg270;
-            _inv[2, 1, 0, 1] = SubmaterialInversion.None;
-
-            // three adjacent corner intersection (I) ---
-            // (I)top-right & bottom-right & bottom-left
-            _mat[2, 1, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[2, 1, 1, 0] = SubmaterialRotation.deg0;
-            _inv[2, 1, 1, 0] = SubmaterialInversion.None;
-            // top-right & bottom-right & (I)bottom-left
-            _mat[1, 1, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[1, 1, 2, 0] = SubmaterialRotation.deg90;
-            _inv[1, 1, 2, 0] = SubmaterialInversion.InvertX;
-            // (I)bottom-right & bottom-left & top-left
-            _mat[0, 2, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[0, 2, 1, 1] = SubmaterialRotation.deg90;
-            _inv[0, 2, 1, 1] = SubmaterialInversion.None;
-            // bottom-right & bottom-left & (I)top-left
-            _mat[0, 1, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[0, 1, 1, 2] = SubmaterialRotation.deg180;
-            _inv[0, 1, 1, 2] = SubmaterialInversion.InvertZ;
-            // (I)bottom-left & top-left & top-right
-            _mat[1, 0, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[1, 0, 2, 1] = SubmaterialRotation.deg180;
-            _inv[1, 0, 2, 1] = SubmaterialInversion.None;
-            // bottom-left & top-left & (I)top-right
-            _mat[2, 0, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[2, 0, 1, 1] = SubmaterialRotation.deg270;
-            _inv[2, 0, 1, 1] = SubmaterialInversion.InvertX;
-            // (I)top-left & top-right & bottom-right
-            _mat[1, 1, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[1, 1, 0, 2] = SubmaterialRotation.deg270;
-            _inv[1, 1, 0, 2] = SubmaterialInversion.None;
-            // top-left & top-right & (I)bottom-right
-            _mat[1, 2, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
-            _rot[1, 2, 0, 1] = SubmaterialRotation.deg0;
-            _inv[1, 2, 0, 1] = SubmaterialInversion.InvertZ;
-
-            // three adjacent 2 straight intersection (I) ---
-            // (I)top-right & (I)bottom-right & bottom-left
-            _mat[2, 2, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[2, 2, 1, 0] = SubmaterialRotation.deg0;
-            _inv[2, 2, 1, 0] = SubmaterialInversion.None;
-            // top-right & (I)bottom-right & (I)bottom-left
-            _mat[1, 2, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[1, 2, 2, 0] = SubmaterialRotation.deg90;
-            _inv[1, 2, 2, 0] = SubmaterialInversion.InvertX;
-            // (I)bottom-right & (I)bottom-left & top-left
-            _mat[0, 2, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[0, 2, 2, 1] = SubmaterialRotation.deg90;
-            _inv[0, 2, 2, 1] = SubmaterialInversion.None;
-            // bottom-right & (I)bottom-left & (I)top-left
-            _mat[0, 1, 2, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[0, 1, 2, 2] = SubmaterialRotation.deg180;
-            _inv[0, 1, 2, 2] = SubmaterialInversion.InvertZ;
-            // (I)bottom-left & (I)top-left & top-right
-            _mat[1, 0, 2, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[1, 0, 2, 2] = SubmaterialRotation.deg180;
-            _inv[1, 0, 2, 2] = SubmaterialInversion.None;
-            // bottom-left & (I)top-left & (I)top-right
-            _mat[2, 0, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[2, 0, 1, 2] = SubmaterialRotation.deg270;
-            _inv[2, 0, 1, 2] = SubmaterialInversion.InvertX;
-            // (I)top-left & (I)top-right & bottom-right
-            _mat[2, 1, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[2, 1, 0, 2] = SubmaterialRotation.deg270;
-            _inv[2, 1, 0, 2] = SubmaterialInversion.None;
-            // top-left & (I)top-right & (I)bottom-right
-            _mat[2, 2, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
-            _rot[2, 2, 0, 1] = SubmaterialRotation.deg0;
-            _inv[2, 2, 0, 1] = SubmaterialInversion.InvertZ;
-
-            // three adjacent 2 angled intersection (I) ---
-            // (I)top-right & bottom-right & (I)bottom-left
-            _mat[2, 1, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
-            _rot[2, 1, 2, 0] = SubmaterialRotation.deg0;
-            _inv[2, 1, 2, 0] = SubmaterialInversion.None;
-            // (I)bottom-right & bottom-left & (I)top-left
-            _mat[0, 2, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
-            _rot[0, 2, 1, 2] = SubmaterialRotation.deg90;
-            _inv[0, 2, 1, 2] = SubmaterialInversion.None;
-            // (I)bottom-left & top-left & (I)top-right
-            _mat[2, 0, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
-            _rot[2, 0, 2, 1] = SubmaterialRotation.deg180;
-            _inv[2, 0, 2, 1] = SubmaterialInversion.None;
-            // (I)top-left & top-right & (I)bottom-right
-            _mat[1, 2, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
-            _rot[1, 2, 0, 2] = SubmaterialRotation.deg270;
-            _inv[1, 2, 0, 2] = SubmaterialInversion.None;
+            return (ParkingLotSubmaterialIndex.Invalid, SubmaterialRotation.deg0, SubmaterialInversion.None);
         }
 
         /// <summary>
         /// This enum encodes the expected order of submaterials on the paths/roads sprite sheet.
         /// </summary>
-        private enum RoadsSubmaterialIndex
+        private enum ParkingLotSubmaterialIndex
         {
-            OneAdjacentVertex = 0,
-            TwoAdjacentStraightVertex = 1,
-            TwoAdjacentAngledVertex = 2,
-            ThreeAdjacentVertex = 3,
-            TwoAdjacentStraightIntersectionVertex = 4,
-            ThreeAdjacentCenterIntersectionVertex = 5,
-            ThreeAdjacentCornerIntersectionVertex = 6,
-            ThreeAdjacentStraightIntersectionVertex = 7,
-            ThreeAdjacentAngledIntersectionVertex = 8,
-            TwoAdjacentStraightVertexWithCrosswalk = 9,
+            CornerEdge = 0,
+            CornerEdgeOnePath = 1,
+            CornerEdgeTwoPath = 2,
+            StraightEdge = 3,
+            LotBlank = 4,
+            LotParkingSpots = 5,
+            StraightEdgeOnePath = 6,
+            StraightEdgeRoad = 7,
+            Invalid
         }
     }
 }

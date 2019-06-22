@@ -18,10 +18,11 @@ namespace Campus
         Empty       = 0,
         Path        = (1 << 1),
         Road        = (1 << 2),
-        ParkingLot  = (1 << 3),
+        Parking     = (1 << 3),
         Building    = (1 << 4),
 
         Crosswalk = Path | Road,
+        ParkingLot = Path | Road | Parking,
     }
 
     /// <summary>
@@ -35,6 +36,7 @@ namespace Campus
         private CampusBuildings _buildings;
         private CampusPaths _paths;
         private CampusRoads _roads;
+        private CampusParkingLots _lots;
 
         private int _defaultMaterialIndex;
 
@@ -62,12 +64,18 @@ namespace Campus
                 use = use | CampusGridUse.Road;
             }
 
+            if (_lots.ParkingLotAtPosition(pos))
+            {
+                use = use | CampusGridUse.ParkingLot;
+            }
+
             // DEBUG: assert that only valid enums are created
             switch (use)
             {
                 case CampusGridUse.Empty:
                 case CampusGridUse.Path:
                 case CampusGridUse.Road:
+                case CampusGridUse.ParkingLot:
                 case CampusGridUse.Building:
                 case CampusGridUse.Crosswalk:
                     break;
@@ -301,34 +309,33 @@ namespace Campus
         /// <summary>
         /// Checks that the requested area is valid for a new path.
         /// </summary>
-        /// <param name="start">The starting point for the parking lot rectangle.</param>
-        /// <param name="end">The ending point for the parking lot rectangle.</param>
+        /// <param name="rectangle">The parking lot footprint.</param>
         /// <param name="validGrids">Output: The valid grids for path building. Used for updating cursors.</param>
         /// <returns>True if the line is valid for a parking lot, false otherwise.</returns>
-        public bool IsValidForParkingLot(Point3 start, Point3 end, out bool[,] validGrids)
+        public bool IsValidForParkingLot(Rectangle rectangle, out bool[,] validGrids, bool ignoreSizeConstraint = false)
         {
-            int minX = Math.Min(start.x, end.x);
-            int maxX = Math.Max(start.x, end.x);
-            int minZ = Math.Min(start.z, end.z);
-            int maxZ = Math.Max(start.z, end.z);
+            // Parking lots must be at least 4x4 grids
+            bool isLargeEnough = (rectangle.SizeX >= 4 && rectangle.SizeZ >= 4);
 
-            int dx = maxX - minX;
-            int dz = maxZ - minZ;
+            if (ignoreSizeConstraint)
+            {
+                isLargeEnough = true;
+            }
 
-            validGrids = new bool[dx + 1, dz + 1];
+            validGrids = new bool[rectangle.SizeX, rectangle.SizeZ];
 
             bool isValid = true;
-            for (int x = 0; x <= dx; ++x)
+            for (int x = 0; x < rectangle.SizeX; ++x)
             {
-                for (int z = 0; z <= dz; ++z)
+                for (int z = 0; z < rectangle.SizeZ; ++z)
                 {
-                    int gridX = minX + x;
-                    int gridZ = minZ + z;
+                    int gridX = rectangle.MinX + x;
+                    int gridZ = rectangle.MinZ + z;
 
                     bool isInBoundsFlatAndFree =
+                        isLargeEnough &&
                         _terrain.GridInBounds(gridX, gridZ) &&
                         _terrain.IsGridFlat(gridX, gridZ) &&
-                        _terrain.GetSquareHeight(gridX, gridZ) == start.y &&
                         GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
 
                     validGrids[x, z] = isInBoundsFlatAndFree;
@@ -342,11 +349,10 @@ namespace Campus
         /// <summary>
         /// Build a parking lot at the requested location.
         /// </summary>
-        /// <param name="start">Starting point of the lot.</param>
-        /// <param name="end">Ending point of the lot.</param>
-        public void ConstructParkingLot(Point3 start, Point3 end)
+        /// <param name="rectangle">The parking lot footprint.</param>
+        public void ConstructParkingLot(Rectangle rectangle)
         {
-            // TODO: Something... anything.
+            UpdateGrids(_lots.ConstructParkingLot(rectangle));
         }
 
         /// <summary>
@@ -374,6 +380,10 @@ namespace Campus
 
                 case CampusGridUse.Road:
                     updatedPoints = _roads.DestroyRoadAt(pos);
+                    break;
+
+                case CampusGridUse.ParkingLot:
+                    updatedPoints = _lots.DestroyParkingLotAt(pos);
                     break;
 
                 case CampusGridUse.Building:
@@ -425,6 +435,7 @@ namespace Campus
             _buildings = new CampusBuildings(terrain);
             _paths = new CampusPaths(gameData, terrain);
             _roads = new CampusRoads(gameData, terrain);
+            _lots = new CampusParkingLots(gameData, terrain);
 
             _defaultMaterialIndex = gameData.Terrain.SubmaterialEmptyGrassIndex;
 
@@ -502,6 +513,12 @@ namespace Campus
                     (materialIndex,
                      materialRotation,
                      materialInversion) = _roads.GetRoadMaterial(pos, isPathPresent: true);
+                    break;
+
+                case CampusGridUse.ParkingLot:
+                    (materialIndex,
+                     materialRotation,
+                     materialInversion) = _lots.GetParkingLotMaterial(pos);
                     break;
             }
 

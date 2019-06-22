@@ -14,17 +14,20 @@ namespace Campus
         private GridMesh _terrain;
         private bool[,] _path;
 
-        private int _emptyGrassSubmaterialIndex;
+        private int _startIndex;
+        private int _invalidIndex;
+        private int _emptyIndex;
 
         public CampusPaths(CampusData campusData, GridMesh terrain)
         {
             _terrain = terrain;
             _path = new bool[_terrain.CountX, _terrain.CountZ];
-            _emptyGrassSubmaterialIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
 
-            SetupPathMapping(
-                invalidIndex: campusData.Terrain.SubmaterialInvalidIndex,
-                startIndex: campusData.Terrain.SubmaterialPathsIndex);
+            SetupPathMapping();
+
+            _startIndex = campusData.Terrain.SubmaterialPathsIndex;
+            _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
+            _emptyIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
         }
 
         /// <summary>
@@ -84,7 +87,7 @@ namespace Campus
         {
             if (!_path[pos.x, pos.z])
             {
-                return (_emptyGrassSubmaterialIndex, SubmaterialRotation.deg0, SubmaterialInversion.None);
+                return (_emptyIndex, SubmaterialRotation.deg0, SubmaterialInversion.None);
             }
             else
             {
@@ -96,11 +99,23 @@ namespace Campus
                     int checkZ = pos.z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
                         (_terrain.GridInBounds(checkX, checkZ) &&
-                         _path[checkX, checkZ])
+                        (Game.Campus.GetGridUse(new Point2(checkX, checkZ)) & CampusGridUse.Path) == CampusGridUse.Path)
                          ? 1 : 0;
                 }
 
-                return (_mat[adj[0], adj[1], adj[2], adj[3]], _rot[adj[0], adj[1], adj[2], adj[3]], SubmaterialInversion.None);
+                PathSubmaterialIndex submaterial = _mat[adj[0], adj[1], adj[2], adj[3]];
+
+                int submaterialIndex;
+                if (submaterial == PathSubmaterialIndex.Invalid)
+                {
+                    submaterialIndex = _invalidIndex;
+                }
+                else
+                {
+                    submaterialIndex = _startIndex + (int)submaterial;
+                }
+
+                return (submaterialIndex, _rot[adj[0], adj[1], adj[2], adj[3]], SubmaterialInversion.None);
             }
         }
 
@@ -111,11 +126,11 @@ namespace Campus
         // D|  |B
         //--+--+--
         //  |C |
-        private int[,,,] _mat;
+        private PathSubmaterialIndex[,,,] _mat;
         private SubmaterialRotation[,,,] _rot;
-        private void SetupPathMapping(int invalidIndex, int startIndex)
+        private void SetupPathMapping()
         {
-            _mat = new int[2, 2, 2, 2];
+            _mat = new PathSubmaterialIndex[2, 2, 2, 2];
             _rot = new SubmaterialRotation[2, 2, 2, 2];
 
             // initialize with invalid material
@@ -123,64 +138,64 @@ namespace Campus
                 for (int i1 = 0; i1 < 2; ++i1)
                     for (int i2 = 0; i2 < 2; ++i2)
                         for (int i3 = 0; i3 < 2; ++i3)
-                            _mat[i0, i1, i2, i3] = invalidIndex;
+                            _mat[i0, i1, i2, i3] = PathSubmaterialIndex.Invalid;
 
             // no adjacent ---
-            _mat[0, 0, 0, 0] = startIndex + (int)PathSubmaterialIndex.NoAdjacent;
+            _mat[0, 0, 0, 0] = PathSubmaterialIndex.NoAdjacent;
             _rot[0, 0, 0, 0] = SubmaterialRotation.deg0;
 
             // one adjacent ---
             // top
-            _mat[1, 0, 0, 0] = startIndex + (int)PathSubmaterialIndex.OneAdjacent;
+            _mat[1, 0, 0, 0] = PathSubmaterialIndex.OneAdjacent;
             _rot[1, 0, 0, 0] = SubmaterialRotation.deg0;
             // right
-            _mat[0, 1, 0, 0] = startIndex + (int)PathSubmaterialIndex.OneAdjacent;
+            _mat[0, 1, 0, 0] = PathSubmaterialIndex.OneAdjacent;
             _rot[0, 1, 0, 0] = SubmaterialRotation.deg90;
             // bottom
-            _mat[0, 0, 1, 0] = startIndex + (int)PathSubmaterialIndex.OneAdjacent;
+            _mat[0, 0, 1, 0] = PathSubmaterialIndex.OneAdjacent;
             _rot[0, 0, 1, 0] = SubmaterialRotation.deg180;
             // left
-            _mat[0, 0, 0, 1] = startIndex + (int)PathSubmaterialIndex.OneAdjacent;
+            _mat[0, 0, 0, 1] = PathSubmaterialIndex.OneAdjacent;
             _rot[0, 0, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent (angled) ---
             // top & right
-            _mat[1, 1, 0, 0] = startIndex + (int)PathSubmaterialIndex.TwoAdjacentAngled;
+            _mat[1, 1, 0, 0] = PathSubmaterialIndex.TwoAdjacentAngled;
             _rot[1, 1, 0, 0] = SubmaterialRotation.deg0;
             // right & bottom
-            _mat[0, 1, 1, 0] = startIndex + (int)PathSubmaterialIndex.TwoAdjacentAngled;
+            _mat[0, 1, 1, 0] = PathSubmaterialIndex.TwoAdjacentAngled;
             _rot[0, 1, 1, 0] = SubmaterialRotation.deg90;
             // bottom & left
-            _mat[0, 0, 1, 1] = startIndex + (int)PathSubmaterialIndex.TwoAdjacentAngled;
+            _mat[0, 0, 1, 1] = PathSubmaterialIndex.TwoAdjacentAngled;
             _rot[0, 0, 1, 1] = SubmaterialRotation.deg180;
             // left & top
-            _mat[1, 0, 0, 1] = startIndex + (int)PathSubmaterialIndex.TwoAdjacentAngled;
+            _mat[1, 0, 0, 1] = PathSubmaterialIndex.TwoAdjacentAngled;
             _rot[1, 0, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent (straight) ---
             // top & bottom
-            _mat[1, 0, 1, 0] = startIndex + (int)PathSubmaterialIndex.TwoAdjacentStraight;
+            _mat[1, 0, 1, 0] = PathSubmaterialIndex.TwoAdjacentStraight;
             _rot[1, 0, 1, 0] = SubmaterialRotation.deg0;
             // right & left
-            _mat[0, 1, 0, 1] = startIndex + (int)PathSubmaterialIndex.TwoAdjacentStraight;
+            _mat[0, 1, 0, 1] = PathSubmaterialIndex.TwoAdjacentStraight;
             _rot[0, 1, 0, 1] = SubmaterialRotation.deg90;
 
             // three adjacent ---
             // not left
-            _mat[1, 1, 1, 0] = startIndex + (int)PathSubmaterialIndex.ThreeAdjacent;
+            _mat[1, 1, 1, 0] = PathSubmaterialIndex.ThreeAdjacent;
             _rot[1, 1, 1, 0] = SubmaterialRotation.deg0;
             // not top
-            _mat[0, 1, 1, 1] = startIndex + (int)PathSubmaterialIndex.ThreeAdjacent;
+            _mat[0, 1, 1, 1] = PathSubmaterialIndex.ThreeAdjacent;
             _rot[0, 1, 1, 1] = SubmaterialRotation.deg90;
             // not right
-            _mat[1, 0, 1, 1] = startIndex + (int)PathSubmaterialIndex.ThreeAdjacent;
+            _mat[1, 0, 1, 1] = PathSubmaterialIndex.ThreeAdjacent;
             _rot[1, 0, 1, 1] = SubmaterialRotation.deg180;
             // not bottom
-            _mat[1, 1, 0, 1] = startIndex + (int)PathSubmaterialIndex.ThreeAdjacent;
+            _mat[1, 1, 0, 1] = PathSubmaterialIndex.ThreeAdjacent;
             _rot[1, 1, 0, 1] = SubmaterialRotation.deg270;
 
             // four adjacent ---
-            _mat[1, 1, 1, 1] = startIndex + (int)PathSubmaterialIndex.FourAdjacent;
+            _mat[1, 1, 1, 1] = PathSubmaterialIndex.FourAdjacent;
             _rot[1, 1, 1, 1] = SubmaterialRotation.deg0;
         }
 
@@ -194,7 +209,8 @@ namespace Campus
             TwoAdjacentAngled = 2,
             TwoAdjacentStraight = 3,
             ThreeAdjacent = 4,
-            FourAdjacent = 5
+            FourAdjacent = 5,
+            Invalid
         }
     }
 }

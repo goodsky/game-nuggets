@@ -67,7 +67,7 @@ namespace Campus
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
-                bool isValid = Game.Campus.IsValidForParkingLot(args.GridSelection, args.GridSelection, out bool[,] _);
+                bool isValid = Game.Campus.IsValidForParkingLot(new Rectangle(args.GridSelection), out bool[,] _, ignoreSizeConstraint: true);
                 _cursor.Place(args.GridSelection);
                 _cursor.SetMaterial(
                     isValid ?
@@ -90,7 +90,7 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (Game.Campus.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] _))
+                if (Game.Campus.IsValidForParkingLot(new Rectangle(args.GridSelection), out bool[,] _, ignoreSizeConstraint: true))
                 {
                     Transition(GameState.PlacingParkingLot, args);
                 }

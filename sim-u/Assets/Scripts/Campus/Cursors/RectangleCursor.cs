@@ -9,7 +9,7 @@ namespace Campus
     /// A group of mesh cursors.
     /// This time, in a rectangle.
     /// </summary>
-    public class RectCursor
+    public class RectangleCursor
     {
         private GridMesh _terrain;
         private Material _validMaterial;
@@ -23,7 +23,7 @@ namespace Campus
         /// <param name="terrain">The terrain to put cursors on.</param>
         /// <param name="validMaterial">The material to use when a footprint location is valid.</param>
         /// <param name="invalidMaterial">The material to use when a footprint location is invalid.</param>
-        public RectCursor(GridMesh terrain, Material validMaterial, Material invalidMaterial)
+        public RectangleCursor(GridMesh terrain, Material validMaterial, Material invalidMaterial)
         {
             _terrain = terrain;
             _validMaterial = validMaterial;
@@ -40,24 +40,15 @@ namespace Campus
         /// <summary>
         /// Place the line cursor between two points.
         /// </summary>
-        /// <param name="start">The starting point of the rectangle.</param>
-        /// <param name="end">The ending point of the rectangle.</param>
+        /// <param name="rectangle">The rectangle to place the cursor on.</param>
         /// <param name="isValid">Booleans representing whether each position is valid or not.</param>
-        public void Place(Point3 start, Point3 end, bool[,] isValid)
+        public void Place(Rectangle rectangle, bool[,] isValid)
         {
-            int minX = Math.Min(start.x, end.x);
-            int maxX = Math.Max(start.x, end.x);
-            int minZ = Math.Min(start.z, end.z);
-            int maxZ = Math.Max(start.z, end.z);
-
-            int dx = maxX - minX;
-            int dz = maxZ - minZ;
-
             for (int x = 0; x < _cursors.GetLength(0); ++x)
             {
                 for (int z = 0; z < _cursors.GetLength(1); ++z)
                 {
-                    if (x > dx || z > dz)
+                    if (x >= rectangle.SizeX || z >= rectangle.SizeZ)
                     {
                         _cursors[x, z].Deactivate();
                         continue;
@@ -65,7 +56,7 @@ namespace Campus
 
                     _cursors[x, z].Activate();
                     _cursors[x, z].SetMaterial(isValid[x, z] ? _validMaterial : _invalidMaterial);
-                    _cursors[x, z].Place(new Point2(minX + x, minZ + z));
+                    _cursors[x, z].Place(new Point2(rectangle.MinX + x, rectangle.MinZ + z));
                 }
             }
         }

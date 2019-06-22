@@ -13,18 +13,20 @@ namespace Campus
     {
         private readonly GridMesh _terrain;
         private readonly bool[,] _road;
-        private readonly int _roadSubmaterialStartIndex;
+
+        private readonly int _startIndex;
+        private readonly int _invalidIndex;
+        private readonly int _emptyGrassIndex;
 
         public CampusRoads(CampusData campusData, GridMesh terrain)
         {
             _terrain = terrain;
             _road = new bool[campusData.Terrain.GridCountX + 1, campusData.Terrain.GridCountZ + 1];
-            SetupRoadMapping(
-                emptyGrassIndex: campusData.Terrain.SubmaterialEmptyGrassIndex,
-                invalidIndex: campusData.Terrain.SubmaterialInvalidIndex,
-                roadStartIndex: campusData.Terrain.SubmaterialRoadsIndex);
+            SetupRoadMapping();
 
-            _roadSubmaterialStartIndex = campusData.Terrain.SubmaterialRoadsIndex;
+            _startIndex = campusData.Terrain.SubmaterialRoadsIndex;
+            _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
+            _emptyGrassIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
         }
 
         /// <summary>
@@ -63,7 +65,7 @@ namespace Campus
             //       Later we could make this check for "hypothetical" roads as well during road construction.
             //       Later we could make this check that there are two valid road positions (a full valid crossing).
             (int submaterial, var _, var __) = GetRoadMaterial(pos);
-            return submaterial == _roadSubmaterialStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
+            return submaterial == _startIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
         }
 
         /// <summary>
@@ -160,13 +162,28 @@ namespace Campus
                 }
             }
 
-            int SubmaterialIndex = _mat[adj[0], adj[1], adj[2], adj[3]];
-            if (isPathPresent && IsValidForCrosswalk(pos))
+            RoadsSubmaterialIndex submaterial = _mat[adj[0], adj[1], adj[2], adj[3]];
+
+            int submaterialIndex;
+            if (submaterial == RoadsSubmaterialIndex.Empty)
             {
-                SubmaterialIndex = _roadSubmaterialStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertexWithCrosswalk;
+                submaterialIndex = _emptyGrassIndex;
+            }
+            else if (submaterial == RoadsSubmaterialIndex.Invalid)
+            {
+                submaterialIndex = _invalidIndex;
+            }
+            else
+            {
+                submaterialIndex = _startIndex + (int)submaterial;
             }
 
-            return (SubmaterialIndex, _rot[adj[0], adj[1], adj[2], adj[3]], _inv[adj[0], adj[1], adj[2], adj[3]]);
+            if (isPathPresent)
+            {
+                submaterialIndex = _startIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertexWithCrosswalk;
+            }
+
+            return (submaterialIndex, _rot[adj[0], adj[1], adj[2], adj[3]], _inv[adj[0], adj[1], adj[2], adj[3]]);
         }
 
         // mapping from adjacent road vertices to the material + rotation
@@ -176,12 +193,12 @@ namespace Campus
         // BL--BR
         // *** adjacent roads can either be an non-intersection [1] or intersection [2]
         // *** this is a beautiful artisanal 4 dimensional array. it will cost you extra.
-        private int[,,,] _mat;
+        private RoadsSubmaterialIndex[,,,] _mat;
         private SubmaterialRotation[,,,] _rot;
         private SubmaterialInversion[,,,] _inv;
-        private void SetupRoadMapping(int emptyGrassIndex, int invalidIndex, int roadStartIndex)
+        private void SetupRoadMapping()
         {
-            _mat = new int[3, 3, 3, 3];
+            _mat = new RoadsSubmaterialIndex[3, 3, 3, 3];
             _rot = new SubmaterialRotation[3, 3, 3, 3];
             _inv = new SubmaterialInversion[3, 3, 3, 3];
 
@@ -190,197 +207,197 @@ namespace Campus
                 for (int i1 = 0; i1 < 3; ++i1)
                     for (int i2 = 0; i2 < 3; ++i2)
                         for (int i3 = 0; i3 < 3; ++i3)
-                            _mat[i0, i1, i2, i3] = invalidIndex;
+                            _mat[i0, i1, i2, i3] = RoadsSubmaterialIndex.Invalid;
 
             // no adjacent ---
-            _mat[0, 0, 0, 0] = emptyGrassIndex;
+            _mat[0, 0, 0, 0] = RoadsSubmaterialIndex.Empty;
             _rot[0, 0, 0, 0] = SubmaterialRotation.deg0;
 
             // one adjacent ---
             // top-right
-            _mat[1, 0, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
+            _mat[1, 0, 0, 0] = RoadsSubmaterialIndex.OneAdjacentVertex;
             _rot[1, 0, 0, 0] = SubmaterialRotation.deg0;
             // bottom-right
-            _mat[0, 1, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
+            _mat[0, 1, 0, 0] = RoadsSubmaterialIndex.OneAdjacentVertex;
             _rot[0, 1, 0, 0] = SubmaterialRotation.deg90;
             // bottom-left
-            _mat[0, 0, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
+            _mat[0, 0, 1, 0] = RoadsSubmaterialIndex.OneAdjacentVertex;
             _rot[0, 0, 1, 0] = SubmaterialRotation.deg180;
             // top-left
-            _mat[0, 0, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.OneAdjacentVertex;
+            _mat[0, 0, 0, 1] = RoadsSubmaterialIndex.OneAdjacentVertex;
             _rot[0, 0, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent non-intersection (straight) ---
             // top-right & bottom-right
-            _mat[1, 1, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
+            _mat[1, 1, 0, 0] = RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
             _rot[1, 1, 0, 0] = SubmaterialRotation.deg0;
             // bottom-right & bottom-left
-            _mat[0, 1, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
+            _mat[0, 1, 1, 0] = RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
             _rot[0, 1, 1, 0] = SubmaterialRotation.deg90;
             // bottom-left & top-left
-            _mat[0, 0, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
+            _mat[0, 0, 1, 1] = RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
             _rot[0, 0, 1, 1] = SubmaterialRotation.deg180;
             // top-left & top-right
-            _mat[1, 0, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
+            _mat[1, 0, 0, 1] = RoadsSubmaterialIndex.TwoAdjacentStraightVertex;
             _rot[1, 0, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent (angled) ---
             // top-right & bottom-left
-            _mat[1, 0, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentAngledVertex;
+            _mat[1, 0, 1, 0] = RoadsSubmaterialIndex.TwoAdjacentAngledVertex;
             _rot[1, 0, 1, 0] = SubmaterialRotation.deg0;
             // bottom-right & top-left
-            _mat[0, 1, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentAngledVertex;
+            _mat[0, 1, 0, 1] = RoadsSubmaterialIndex.TwoAdjacentAngledVertex;
             _rot[0, 1, 0, 1] = SubmaterialRotation.deg90;
 
             // three adjacent ---
             // top-right & bottom-right & bottom-left
-            _mat[1, 1, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
+            _mat[1, 1, 1, 0] = RoadsSubmaterialIndex.ThreeAdjacentVertex;
             _rot[1, 1, 1, 0] = SubmaterialRotation.deg0;
             // bottom-right & bottom-left & top-left
-            _mat[0, 1, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
+            _mat[0, 1, 1, 1] = RoadsSubmaterialIndex.ThreeAdjacentVertex;
             _rot[0, 1, 1, 1] = SubmaterialRotation.deg90;
             // bottom-left & top-left & top-right
-            _mat[1, 0, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
+            _mat[1, 0, 1, 1] = RoadsSubmaterialIndex.ThreeAdjacentVertex;
             _rot[1, 0, 1, 1] = SubmaterialRotation.deg180;
             // top-left & top-right & bottom-right
-            _mat[1, 1, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentVertex;
+            _mat[1, 1, 0, 1] = RoadsSubmaterialIndex.ThreeAdjacentVertex;
             _rot[1, 1, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent intersection (I) (straight) ---
             // (I)top-right & bottom-right
-            _mat[2, 1, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[2, 1, 0, 0] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[2, 1, 0, 0] = SubmaterialRotation.deg0;
             _inv[2, 1, 0, 0] = SubmaterialInversion.None;
             // top-right & (I)bottom-right
-            _mat[1, 2, 0, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[1, 2, 0, 0] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[1, 2, 0, 0] = SubmaterialRotation.deg0;
             _inv[1, 2, 0, 0] = SubmaterialInversion.InvertZ;
             // (I)bottom-right & bottom-left
-            _mat[0, 2, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[0, 2, 1, 0] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[0, 2, 1, 0] = SubmaterialRotation.deg90;
             _inv[0, 2, 1, 0] = SubmaterialInversion.None;
             // bottom-right & (I)bottom-left
-            _mat[0, 1, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[0, 1, 2, 0] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[0, 1, 2, 0] = SubmaterialRotation.deg90;
             _inv[0, 1, 2, 0] = SubmaterialInversion.InvertX;
             // (I)bottom-left & top-left
-            _mat[0, 0, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[0, 0, 2, 1] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[0, 0, 2, 1] = SubmaterialRotation.deg180;
             _inv[0, 0, 2, 1] = SubmaterialInversion.None;
             // bottom-left & (I)top-left
-            _mat[0, 0, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[0, 0, 1, 2] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[0, 0, 1, 2] = SubmaterialRotation.deg180;
             _inv[0, 0, 1, 2] = SubmaterialInversion.InvertZ;
             // (I)top-left & top-right
-            _mat[1, 0, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[1, 0, 0, 2] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[1, 0, 0, 2] = SubmaterialRotation.deg270;
             _inv[1, 0,0, 2] = SubmaterialInversion.None;
             // top-left & (I)top-right
-            _mat[2, 0, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
+            _mat[2, 0, 0, 1] = RoadsSubmaterialIndex.TwoAdjacentStraightIntersectionVertex;
             _rot[2, 0, 0, 1] = SubmaterialRotation.deg270;
             _inv[2, 0, 0, 1] = SubmaterialInversion.InvertX;
 
             // three adjacent center intersection (I) ---
             // top-right & (I)bottom-right & bottom-left
-            _mat[1, 2, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
+            _mat[1, 2, 1, 0] = RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
             _rot[1, 2, 1, 0] = SubmaterialRotation.deg0;
             _inv[1, 2, 1, 0] = SubmaterialInversion.None;
             // bottom-right & (I)bottom-left & top-left
-            _mat[0, 1, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
+            _mat[0, 1, 2, 1] = RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
             _rot[0, 1, 2, 1] = SubmaterialRotation.deg90;
             _inv[0, 1, 2, 1] = SubmaterialInversion.None;
             // bottom-left & (I)top-left & top-right
-            _mat[1, 0, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
+            _mat[1, 0, 1, 2] = RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
             _rot[1, 0, 1, 2] = SubmaterialRotation.deg180;
             _inv[1, 0, 1, 2] = SubmaterialInversion.None;
             // top-left & (I)top-right & bottom-right
-            _mat[2, 1, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
+            _mat[2, 1, 0, 1] = RoadsSubmaterialIndex.ThreeAdjacentCenterIntersectionVertex;
             _rot[2, 1, 0, 1] = SubmaterialRotation.deg270;
             _inv[2, 1, 0, 1] = SubmaterialInversion.None;
 
             // three adjacent corner intersection (I) ---
             // (I)top-right & bottom-right & bottom-left
-            _mat[2, 1, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[2, 1, 1, 0] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[2, 1, 1, 0] = SubmaterialRotation.deg0;
             _inv[2, 1, 1, 0] = SubmaterialInversion.None;
             // top-right & bottom-right & (I)bottom-left
-            _mat[1, 1, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[1, 1, 2, 0] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[1, 1, 2, 0] = SubmaterialRotation.deg90;
             _inv[1, 1, 2, 0] = SubmaterialInversion.InvertX;
             // (I)bottom-right & bottom-left & top-left
-            _mat[0, 2, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[0, 2, 1, 1] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[0, 2, 1, 1] = SubmaterialRotation.deg90;
             _inv[0, 2, 1, 1] = SubmaterialInversion.None;
             // bottom-right & bottom-left & (I)top-left
-            _mat[0, 1, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[0, 1, 1, 2] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[0, 1, 1, 2] = SubmaterialRotation.deg180;
             _inv[0, 1, 1, 2] = SubmaterialInversion.InvertZ;
             // (I)bottom-left & top-left & top-right
-            _mat[1, 0, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[1, 0, 2, 1] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[1, 0, 2, 1] = SubmaterialRotation.deg180;
             _inv[1, 0, 2, 1] = SubmaterialInversion.None;
             // bottom-left & top-left & (I)top-right
-            _mat[2, 0, 1, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[2, 0, 1, 1] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[2, 0, 1, 1] = SubmaterialRotation.deg270;
             _inv[2, 0, 1, 1] = SubmaterialInversion.InvertX;
             // (I)top-left & top-right & bottom-right
-            _mat[1, 1, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[1, 1, 0, 2] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[1, 1, 0, 2] = SubmaterialRotation.deg270;
             _inv[1, 1, 0, 2] = SubmaterialInversion.None;
             // top-left & top-right & (I)bottom-right
-            _mat[1, 2, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
+            _mat[1, 2, 0, 1] = RoadsSubmaterialIndex.ThreeAdjacentCornerIntersectionVertex;
             _rot[1, 2, 0, 1] = SubmaterialRotation.deg0;
             _inv[1, 2, 0, 1] = SubmaterialInversion.InvertZ;
 
             // three adjacent 2 straight intersection (I) ---
             // (I)top-right & (I)bottom-right & bottom-left
-            _mat[2, 2, 1, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[2, 2, 1, 0] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[2, 2, 1, 0] = SubmaterialRotation.deg0;
             _inv[2, 2, 1, 0] = SubmaterialInversion.None;
             // top-right & (I)bottom-right & (I)bottom-left
-            _mat[1, 2, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[1, 2, 2, 0] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[1, 2, 2, 0] = SubmaterialRotation.deg90;
             _inv[1, 2, 2, 0] = SubmaterialInversion.InvertX;
             // (I)bottom-right & (I)bottom-left & top-left
-            _mat[0, 2, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[0, 2, 2, 1] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[0, 2, 2, 1] = SubmaterialRotation.deg90;
             _inv[0, 2, 2, 1] = SubmaterialInversion.None;
             // bottom-right & (I)bottom-left & (I)top-left
-            _mat[0, 1, 2, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[0, 1, 2, 2] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[0, 1, 2, 2] = SubmaterialRotation.deg180;
             _inv[0, 1, 2, 2] = SubmaterialInversion.InvertZ;
             // (I)bottom-left & (I)top-left & top-right
-            _mat[1, 0, 2, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[1, 0, 2, 2] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[1, 0, 2, 2] = SubmaterialRotation.deg180;
             _inv[1, 0, 2, 2] = SubmaterialInversion.None;
             // bottom-left & (I)top-left & (I)top-right
-            _mat[2, 0, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[2, 0, 1, 2] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[2, 0, 1, 2] = SubmaterialRotation.deg270;
             _inv[2, 0, 1, 2] = SubmaterialInversion.InvertX;
             // (I)top-left & (I)top-right & bottom-right
-            _mat[2, 1, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[2, 1, 0, 2] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[2, 1, 0, 2] = SubmaterialRotation.deg270;
             _inv[2, 1, 0, 2] = SubmaterialInversion.None;
             // top-left & (I)top-right & (I)bottom-right
-            _mat[2, 2, 0, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
+            _mat[2, 2, 0, 1] = RoadsSubmaterialIndex.ThreeAdjacentStraightIntersectionVertex;
             _rot[2, 2, 0, 1] = SubmaterialRotation.deg0;
             _inv[2, 2, 0, 1] = SubmaterialInversion.InvertZ;
 
             // three adjacent 2 angled intersection (I) ---
             // (I)top-right & bottom-right & (I)bottom-left
-            _mat[2, 1, 2, 0] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
+            _mat[2, 1, 2, 0] = RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
             _rot[2, 1, 2, 0] = SubmaterialRotation.deg0;
             _inv[2, 1, 2, 0] = SubmaterialInversion.None;
             // (I)bottom-right & bottom-left & (I)top-left
-            _mat[0, 2, 1, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
+            _mat[0, 2, 1, 2] = RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
             _rot[0, 2, 1, 2] = SubmaterialRotation.deg90;
             _inv[0, 2, 1, 2] = SubmaterialInversion.None;
             // (I)bottom-left & top-left & (I)top-right
-            _mat[2, 0, 2, 1] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
+            _mat[2, 0, 2, 1] = RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
             _rot[2, 0, 2, 1] = SubmaterialRotation.deg180;
             _inv[2, 0, 2, 1] = SubmaterialInversion.None;
             // (I)top-left & top-right & (I)bottom-right
-            _mat[1, 2, 0, 2] = roadStartIndex + (int)RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
+            _mat[1, 2, 0, 2] = RoadsSubmaterialIndex.ThreeAdjacentAngledIntersectionVertex;
             _rot[1, 2, 0, 2] = SubmaterialRotation.deg270;
             _inv[1, 2, 0, 2] = SubmaterialInversion.None;
         }
@@ -400,6 +417,8 @@ namespace Campus
             ThreeAdjacentStraightIntersectionVertex = 7,
             ThreeAdjacentAngledIntersectionVertex = 8,
             TwoAdjacentStraightVertexWithCrosswalk = 9,
+            Empty,
+            Invalid,
         }
     }
 }

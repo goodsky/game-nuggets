@@ -12,10 +12,9 @@ namespace Campus
     internal class PlacingParkingLotController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
-        private Point3 _startPoint;
-        private Point3 _endPoint;
+        private Rectangle _rect;
 
-        private RectCursor _cursor;
+        private RectangleCursor _cursor;
 
         /// <summary>
         /// Instantiates an instance of the controller.
@@ -24,7 +23,7 @@ namespace Campus
         public PlacingParkingLotController(GridMesh terrain)
         {
             _terrain = terrain;
-            _cursor = new RectCursor(
+            _cursor = new RectangleCursor(
                 terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
@@ -43,10 +42,10 @@ namespace Campus
             if (args == null)
                 GameLogger.FatalError("PlacingPathController was given incorrect context.");
 
-            _startPoint = _endPoint = args.GridSelection;
+            _rect = new Rectangle(args.GridSelection);
 
-            Game.Campus.IsValidForParkingLot(_startPoint, _endPoint, out bool[,] validGrids);
-            _cursor.Place(_startPoint, _endPoint, validGrids);
+            Game.Campus.IsValidForParkingLot(_rect, out bool[,] validGrids);
+            _cursor.Place(_rect, validGrids);
         }
 
         /// <summary>
@@ -64,12 +63,16 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Game.Campus.IsValidForParkingLot(_startPoint, _endPoint, out bool[,] validGrids))
+                if (Game.Campus.IsValidForParkingLot(_rect, out bool[,] validGrids))
                 {
-                    Game.Campus.ConstructParkingLot(_startPoint, _endPoint);
+                    Game.Campus.ConstructParkingLot(_rect);
+                    SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
+                }
+                else
+                {
+                    Transition(GameState.SelectingParkingLot);
                 }
 
-                Transition(GameState.SelectingParkingLot);
                 return;
             }
         }
@@ -83,15 +86,15 @@ namespace Campus
         {
             if (args.GridSelection != Point3.Null)
             {
-                _endPoint = args.GridSelection;
+                _rect.UpdateEndPoint(args.GridSelection);
             }
             else
             {
-                _endPoint = _startPoint;
+                _rect.UpdateEndPoint(_rect.Start);
             }
 
-            Game.Campus.IsValidForParkingLot(_startPoint, _endPoint, out bool[,] validGrids);
-            _cursor.Place(_startPoint, _endPoint, validGrids);
+            Game.Campus.IsValidForParkingLot(_rect, out bool[,] validGrids);
+            _cursor.Place(_rect, validGrids);
         }
 
         /// <summary>
@@ -104,7 +107,7 @@ namespace Campus
             if (args.Button == MouseButton.Right)
             {
                 // Cancel placing path.
-                Transition(GameState.SelectingPath);
+                Transition(GameState.SelectingParkingLot);
             }
         }
     }

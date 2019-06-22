@@ -14,12 +14,6 @@ namespace Campus
         private GridMesh _terrain;
         private Building[,] _building;
 
-        /// <summary>
-        /// Ctor.
-        /// </summary>
-        /// <param name="terrain">The grid terrain.</param>
-        /// <param name="onBuild">Action to execute</param>
-        /// <param name="onDestroy"></param>
         public CampusBuildings(GridMesh terrain)
         {
             _terrain = terrain;
@@ -38,7 +32,6 @@ namespace Campus
 
         /// <summary>
         /// Build a building at the location.
-        /// Registers the taken grid location with the Safe Terrain Editor.
         /// </summary>
         /// <param name="buildingData">The building to construct.</param>
         /// <param name="location">The location of the building.</param>

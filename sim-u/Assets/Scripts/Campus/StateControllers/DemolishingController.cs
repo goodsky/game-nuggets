@@ -16,6 +16,8 @@ namespace Campus
         private Material _invalidMaterial;
         private GridCursor _cursor;
 
+        private Point2 _lastDemolishedGrid = Point2.Null;
+
         public DemolishingController(GridMesh terrain)
         {
             _terrain = terrain;
@@ -52,11 +54,18 @@ namespace Campus
         {
             if (Input.GetMouseButton(0))
             {
-                if (HasDemolishableTile())
+                if (_cursor.Position != _lastDemolishedGrid && HasDemolishableTile())
                 {
                     Game.Campus.DestroyAt(_cursor.Position);
                     _cursor.SetMaterial(_invalidMaterial);
+
+                    // Only one demolish per mouse down (don't delete multiple improvements at once).
+                    _lastDemolishedGrid = _cursor.Position;
                 }
+            }
+            else
+            {
+                _lastDemolishedGrid = Point2.Null;
             }
         }
 

@@ -23,6 +23,9 @@ namespace GameData
         [XmlElement("SubmaterialRoadsIndex")]
         public int SubmaterialRoadsIndex { get; set; }
 
+        [XmlElement("SubmaterialParkingLotsIndex")]
+        public int SubmaterialParkingLotsIndex { get; set; }
+
         [ResourceLoader(ResourceType.Materials, ResourceCategory.Terrain, nameof(TerrainMaterialName))]
         public Material TerrainMaterial { get; set; }
 
