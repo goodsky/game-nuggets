@@ -37,6 +37,12 @@
           <OnSelect x:type="OpenWindowAction" windowName="Roads"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+        <Button name="ParkingLots">
+          <Tooltip>Campus Parking Lots</Tooltip>
+          <IconImage>icon-parking-lot</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="ParkingLots"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
         <Button name="EditTerrain">
           <Tooltip>Campus Terrain</Tooltip>
           <IconImage>icon-edit-terrain</IconImage>
@@ -86,6 +92,7 @@
     <Window name="EditingTerrain" prefab="TerrainEditingWindow" />
     <Window name="Paths" prefab="PathsWindow" />
     <Window name="Roads" prefab="RoadsWindow" />
+    <Window name="ParkingLots" prefab="ParkingLotWindow" />
     <Window name="Demolishing" prefab="DemolishingWindow" />
   </Windows>
   

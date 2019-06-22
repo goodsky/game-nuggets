@@ -1,5 +1,4 @@
 ﻿using Campus.GridTerrain;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,6 +32,12 @@ namespace Common
 
         /// <summary>Creating the road.</summary>
         PlacingRoad,
+
+        /// <summary>Selecting the start position of the road.</summary>
+        SelectingParkingLot,
+
+        /// <summary>Creating the road.</summary>
+        PlacingParkingLot,
 
         /// <summary>Constructing a new entity on the campus.</summary>
         PlacingConstruction,
@@ -104,6 +109,7 @@ namespace Common
                 case GameState.PlacingConstruction:
                 case GameState.SelectingPath:
                 case GameState.SelectingRoad:
+                case GameState.SelectingParkingLot:
                 case GameState.Demolishing:
                     Transition(newState, context);
                     break;

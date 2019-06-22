@@ -18,7 +18,8 @@ namespace Campus
         Empty       = 0,
         Path        = (1 << 1),
         Road        = (1 << 2),
-        Building    = (1 << 3),
+        ParkingLot  = (1 << 3),
+        Building    = (1 << 4),
 
         Crosswalk = Path | Road,
     }
@@ -298,6 +299,57 @@ namespace Campus
         }
 
         /// <summary>
+        /// Checks that the requested area is valid for a new path.
+        /// </summary>
+        /// <param name="start">The starting point for the parking lot rectangle.</param>
+        /// <param name="end">The ending point for the parking lot rectangle.</param>
+        /// <param name="validGrids">Output: The valid grids for path building. Used for updating cursors.</param>
+        /// <returns>True if the line is valid for a parking lot, false otherwise.</returns>
+        public bool IsValidForParkingLot(Point3 start, Point3 end, out bool[,] validGrids)
+        {
+            int minX = Math.Min(start.x, end.x);
+            int maxX = Math.Max(start.x, end.x);
+            int minZ = Math.Min(start.z, end.z);
+            int maxZ = Math.Max(start.z, end.z);
+
+            int dx = maxX - minX;
+            int dz = maxZ - minZ;
+
+            validGrids = new bool[dx + 1, dz + 1];
+
+            bool isValid = true;
+            for (int x = 0; x <= dx; ++x)
+            {
+                for (int z = 0; z <= dz; ++z)
+                {
+                    int gridX = minX + x;
+                    int gridZ = minZ + z;
+
+                    bool isInBoundsFlatAndFree =
+                        _terrain.GridInBounds(gridX, gridZ) &&
+                        _terrain.IsGridFlat(gridX, gridZ) &&
+                        _terrain.GetSquareHeight(gridX, gridZ) == start.y &&
+                        GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
+
+                    validGrids[x, z] = isInBoundsFlatAndFree;
+                    isValid = isValid && isInBoundsFlatAndFree;
+                }
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Build a parking lot at the requested location.
+        /// </summary>
+        /// <param name="start">Starting point of the lot.</param>
+        /// <param name="end">Ending point of the lot.</param>
+        public void ConstructParkingLot(Point3 start, Point3 end)
+        {
+            // TODO: Something... anything.
+        }
+
+        /// <summary>
         /// Destroys the campus improvement at the desired position.
         /// </summary>
         /// <param name="pos">The position to delete at.</param>
@@ -383,6 +435,8 @@ namespace Campus
             Game.State.RegisterController(GameState.PlacingPath, new PlacingPathController(terrain));
             Game.State.RegisterController(GameState.SelectingRoad, new SelectingRoadController(terrain));
             Game.State.RegisterController(GameState.PlacingRoad, new PlacingRoadController(terrain));
+            Game.State.RegisterController(GameState.SelectingParkingLot, new SelectingParkingLotController(terrain));
+            Game.State.RegisterController(GameState.PlacingParkingLot, new PlacingParkingLotController(terrain));
             Game.State.RegisterController(GameState.Demolishing, new DemolishingController(terrain));
 
             var footprintCreatorObject = new GameObject("FootprintCreator");
@@ -463,9 +517,11 @@ namespace Campus
             bool isAnchored = false;
             switch (GetGridUse(pos))
             {
-                case CampusGridUse.Building:
                 case CampusGridUse.Path:
                 case CampusGridUse.Road:
+                case CampusGridUse.ParkingLot:
+                case CampusGridUse.Building:
+                case CampusGridUse.Crosswalk:
                     isAnchored = true;
                     break;
             }
