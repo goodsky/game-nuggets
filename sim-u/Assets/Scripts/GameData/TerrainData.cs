@@ -29,9 +29,6 @@ namespace GameData
         [ResourceLoader(ResourceType.Materials, ResourceCategory.Terrain, nameof(TerrainMaterialName))]
         public Material TerrainMaterial { get; set; }
 
-        [ResourceLoader(ResourceType.Prefabs, ResourceCategory.Terrain, resourceName: "terrain-skirt")]
-        public GameObject TerrainSkirt { get; set; }
-
         [XmlElement("GridCountX")]
         public int GridCountX { get; set; }
 

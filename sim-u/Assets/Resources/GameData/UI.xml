@@ -81,6 +81,13 @@
           <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Really Weird Building"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+
+        <Button name="BuildArrow">
+          <Tooltip>Build Arrow Building</Tooltip>
+          <IconImage>icon-test1</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Arrow Building"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
       </Buttons>
     </SubButtonGroup>
   </ButtonGroups>

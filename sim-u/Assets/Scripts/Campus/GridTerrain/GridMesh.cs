@@ -31,9 +31,6 @@ namespace Campus.GridTerrain
         /// <summary>Material to use on the grid.</summary>
         public Material GridMaterial = null;
 
-        /// <summary>Prefab to wrap around the grid mesh.</summary>
-        public GameObject SkirtPrefab = null;
-
         /// <summary>The size of the grid squares on the material.</summary>
         public int SubmaterialSize = 64;
     }
@@ -180,15 +177,6 @@ namespace Campus.GridTerrain
                 minTerrainY: args.StartingHeight * -GridStepSize);
 
             Editor = new SafeTerrainEditor(this);
-
-            if (args.SkirtPrefab != null)
-            {
-                var skirtObject = UnityEngine.Object.Instantiate(args.SkirtPrefab);
-                skirtObject.transform.parent = GameObject.transform;
-
-                // the skirt prefab is rotated 90 degrees, so scale y-axis instead of z
-                skirtObject.transform.localScale = new Vector3(CountX * GridSquareSize, CountZ * GridSquareSize, 1.0f);
-            }
 
             GenerateMesh();
             Flatten(args.StartingHeight);

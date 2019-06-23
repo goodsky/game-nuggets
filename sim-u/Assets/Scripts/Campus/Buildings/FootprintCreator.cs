@@ -34,8 +34,8 @@ namespace Campus
             Assert.AreApproximatelyEqual(0.0f, bounds.size.x % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. x-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.x));
             Assert.AreApproximatelyEqual(0.0f, bounds.size.z % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. z-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.z));
 
-            int gridSizeX = Mathf.RoundToInt(bounds.size.x / gridSize);
-            int gridSizeZ = Mathf.RoundToInt(bounds.size.z / gridSize);
+            int gridSizeX = Mathf.CeilToInt(bounds.size.x / gridSize);
+            int gridSizeZ = Mathf.CeilToInt(bounds.size.z / gridSize);
 
             var footprint = new bool[gridSizeX, gridSizeZ];
 
@@ -53,7 +53,6 @@ namespace Campus
 
                     RaycastHit hit;
                     bool isSolid = _meshCollider.Raycast(ray, out hit, castDistance);
-
                     footprint[x, z] = isSolid;
                 }
             }

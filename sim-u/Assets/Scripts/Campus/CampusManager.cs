@@ -431,7 +431,6 @@ namespace Campus
                 StartingHeight = gameData.Terrain.StartingHeight,
                 GridMaterial = gameData.Terrain.TerrainMaterial,
                 SubmaterialSize = gameData.Terrain.SubmaterialSquareSize,
-                SkirtPrefab = gameData.Terrain.TerrainSkirt,
             };
 
             GridMesh terrain;
