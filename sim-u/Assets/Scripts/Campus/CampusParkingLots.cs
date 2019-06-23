@@ -10,16 +10,6 @@ namespace Campus
     /// </summary>
     public class CampusParkingLots
     {
-        private class ParkingLot
-        {
-            public ParkingLot(Rectangle footprint)
-            {
-                Footprint = footprint;
-            }
-
-            public Rectangle Footprint { get; private set; }
-        }
-
         private GridMesh _terrain;
         private ParkingLot[,] _lots;
 
@@ -138,6 +128,10 @@ namespace Campus
                 for (int z = parkingLot.Footprint.MinZ; z <= parkingLot.Footprint.MaxZ; ++z)
                 {
                     _lots[x, z] = null;
+
+                    // Clean up the path and the road while we are at it
+                    Game.Campus.DestroyAt(new Point2(x, z), CampusGridUse.Path);
+                    Game.Campus.DestroyAt(new Point2(x, z), CampusGridUse.Road);
                 }
             }
 
@@ -161,9 +155,11 @@ namespace Campus
             }
 
             // check 4 adjacent grids for parking lots
+            // check 4 adjacent grids for parking spots (for drawing lines)
             // check 4 adjacent grids for paths
             // check 4 adjacent vertices for roads
             bool[] adjLots = new bool[4];
+            bool[] adjSpot = new bool[5];
             bool[] adjPath = new bool[4];
             bool[] adjRoad = new bool[4];
             for (int i = 0; i < 4; ++i)
@@ -171,17 +167,24 @@ namespace Campus
                 int gridX = pos.x + GridConverter.AdjacentGridDx[i];
                 int gridZ = pos.z + GridConverter.AdjacentGridDz[i];
 
+                int spotX = gridX - parkingLot.Footprint.MinX;
+                int spotZ = gridZ - parkingLot.Footprint.MinZ;
+
                 int vertX = pos.x + GridConverter.GridToVertexDx[i];
                 int vertZ = pos.z + GridConverter.GridToVertexDz[i];
 
                 adjLots[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ));
+                adjSpot[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ)) && parkingLot.LotLines[spotX, spotZ];
                 adjPath[i] = _terrain.GridInBounds(gridX, gridZ) && (Game.Campus.GetGridUse(new Point2(gridX, gridZ)) & CampusGridUse.Path) == CampusGridUse.Path;
                 adjRoad[i] = _terrain.VertexInBounds(vertX, vertZ) && (Game.Campus.GetVertexUse(new Point2(vertX, vertZ)) & CampusGridUse.Road) == CampusGridUse.Road;
             }
 
+            // spots also need to check if they themselves are a parking spot
+            adjSpot[4] = parkingLot.LotLines[pos.x - parkingLot.Footprint.MinX, pos.z - parkingLot.Footprint.MinZ];
+
             // NB: The logic for parking lots is more complex than other managers.
             //     Therefore it has not been precomputed into a multidimensional array.
-            (var submaterial, var rotation, var inversion) = CalculateSubmaterial(adjLots, adjPath, adjRoad);
+            (var submaterial, var rotation, var inversion) = CalculateSubmaterial(adjLots, adjSpot, adjPath, adjRoad);
 
             int submaterialIndex;
             if (submaterial == ParkingLotSubmaterialIndex.Invalid)
@@ -200,27 +203,37 @@ namespace Campus
         /// 
         /// </summary>
         /// <param name="adjLots">Adjacency array of parking lots.</param>
+        /// <param name="adjSpot">Adjacency array of parking spots.</param>
         /// <param name="adjPath">Adjacency array of paths.</param>
         /// <param name="adjRoad">Adjacency array of roads.</param>
         /// <returns></returns>
-        private (ParkingLotSubmaterialIndex submaterial, SubmaterialRotation rotation, SubmaterialInversion inversion) CalculateSubmaterial(bool[] adjLots, bool[] adjPath, bool[] adjRoad)
+        private (ParkingLotSubmaterialIndex submaterial, SubmaterialRotation rotation, SubmaterialInversion inversion) CalculateSubmaterial(bool[] adjLots, bool[] adjSpot, bool[] adjPath, bool[] adjRoad)
         {
-            bool topLots = adjLots[0]; bool rightLots = adjLots[1]; bool bottomLots = adjLots[2]; bool leftLots = adjLots[3];
-            bool topPath = adjPath[0]; bool rightPath = adjPath[1]; bool bottomPath = adjPath[2]; bool leftPath = adjPath[3];
-            bool trRoad = adjRoad[0]; bool brRoad = adjRoad[1]; bool blRoad = adjRoad[2]; bool tlRoad = adjRoad[3];
-
-            // four adjacent parking lots -------------------------
-            if (adjLots[0] && adjLots[1] && adjLots[2] && adjLots[3])
-            {
-                return (ParkingLotSubmaterialIndex.LotBlank, SubmaterialRotation.deg0, SubmaterialInversion.None);
-            }
-
             for (int i = 0; i < 4; ++i)
             {
                 int i0 = i;
                 int i1 = (i + 1) % 4;
                 int i2 = (i + 2) % 4;
                 int i3 = (i + 3) % 4;
+
+                // four adjacent parking lots -------------------------
+                if (adjLots[i0] && adjLots[i1] && adjLots[i2] && adjLots[i3])
+                {
+                    // parking spot lines
+                    if (adjSpot[4] /* NB: Index 4 is special and references the current grid instead of adjacent grids */)
+                    {
+                        // three adjacent parking spots (edge) - the only supported format
+                        if (adjSpot[i0] && adjSpot[i1] && adjSpot[i2] && !adjSpot[i3])
+                        {
+                            return (ParkingLotSubmaterialIndex.LotParkingSpots, (SubmaterialRotation)i, SubmaterialInversion.None);
+                        }
+                    }
+                    // blank parking lot
+                    else
+                    {
+                        return (ParkingLotSubmaterialIndex.LotBlank, SubmaterialRotation.deg0, SubmaterialInversion.None);
+                    }
+                }
 
                 // three adjacent parking lots (edge) ---------------------------
                 if (adjLots[i0] && adjLots[i1] && adjLots[i2] && !adjLots[i3])
@@ -293,6 +306,64 @@ namespace Campus
             StraightEdgeOnePath = 6,
             StraightEdgeRoad = 7,
             Invalid
+        }
+
+        /// <summary>
+        /// Keeper of Parking Lot information.
+        /// </summary>
+        private class ParkingLot
+        {
+            public ParkingLot(Rectangle footprint)
+            {
+                Footprint = footprint;
+                LotLines = GenerateLotLines(footprint);
+            }
+
+            public Rectangle Footprint { get; private set; }
+            public bool[,] LotLines { get; private set; }
+
+            private bool[,] GenerateLotLines(Rectangle footprint)
+            {
+                bool[,] lotSpaces = new bool[footprint.SizeX, footprint.SizeZ];
+
+                AxisAlignment alignment = footprint.SizeX > footprint.SizeZ ? AxisAlignment.XAxis : AxisAlignment.ZAxis;
+
+                int minorAxisSize, majorAxisSize;
+                if (alignment == AxisAlignment.XAxis)
+                {
+                    minorAxisSize = footprint.SizeZ;
+                    majorAxisSize = footprint.SizeX;
+                }
+                else
+                {
+                    minorAxisSize = footprint.SizeX;
+                    majorAxisSize = footprint.SizeZ;
+                }
+
+                // adjust the blank space between even and odd size lots
+                int adjustBlankSpaces = (minorAxisSize % 2);
+                for (int i = 0; i < minorAxisSize; ++i)
+                {
+                    if ((i + adjustBlankSpaces) % 3 == 0)
+                    {
+                        continue; // leave a blank space between parking lots
+                    }
+
+                    for (int j = 0; j < majorAxisSize; ++j)
+                    {
+                        if (alignment == AxisAlignment.XAxis)
+                        {
+                            lotSpaces[j, i] = true;
+                        }
+                        else
+                        {
+                            lotSpaces[i, j] = true;
+                        }
+                    }
+                }
+
+                return lotSpaces;
+            }
         }
     }
 }
