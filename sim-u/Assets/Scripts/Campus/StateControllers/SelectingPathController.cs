@@ -97,8 +97,7 @@ namespace Campus
             }
             else if (args.Button == MouseButton.Right)
             {
-                bool testIsValid = Game.Campus.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] testGridValid);
-                GameLogger.Info("SelectingPathCheck: {0} isValid: {1} gridValid: [{2}]", _cursor.Position, testIsValid, string.Join(",", testGridValid));
+                GameLogger.Info("SelectingPathCheck: {0} = {1}", _cursor.Position, Game.Campus.GetGridUse(_cursor.Position));
             }
         }
     }

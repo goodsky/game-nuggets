@@ -95,6 +95,10 @@ namespace Campus
                     Transition(GameState.PlacingRoad, args);
                 }
             }
+            if (args.Button == MouseButton.Right)
+            {
+                GameLogger.Info("Checking Vertex Use: {0} = {1}", _vertexLine.Start, Game.Campus.GetVertexUse(_vertexLine.Start));
+            }
         }
     }
 }

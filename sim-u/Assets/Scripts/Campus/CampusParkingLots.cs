@@ -94,6 +94,25 @@ namespace Campus
                 }
             }
 
+            // Register the sidewalk around the edge
+            Point2 p1 = new Point2(rectangle.MinX, rectangle.MinZ);
+            Point2 p2 = new Point2(rectangle.MinX, rectangle.MaxZ);
+            Point2 p3 = new Point2(rectangle.MaxX, rectangle.MaxZ);
+            Point2 p4 = new Point2(rectangle.MaxX, rectangle.MinZ);
+            Game.Campus.ConstructPath(new AxisAlignedLine(p1, p2));
+            Game.Campus.ConstructPath(new AxisAlignedLine(p2, p3));
+            Game.Campus.ConstructPath(new AxisAlignedLine(p3, p4));
+            Game.Campus.ConstructPath(new AxisAlignedLine(p4, p1));
+
+            // Register the road inside the lot
+            for (int x = rectangle.MinX + 1; x <= rectangle.MaxX; ++x)
+            {
+                // NB: Roads are built on vertices. Only fill the inner vertices.
+                Point2 vp1 = new Point2(x, rectangle.MinZ + 1);
+                Point2 vp2 = new Point2(x, rectangle.MaxZ);
+                Game.Campus.ConstructRoad(new AxisAlignedLine(vp1, vp2));
+            }
+
             // Return all the potentially modified grids around the parking lot for updating.
             for (int scanX = rectangle.MinX - 1; scanX <= rectangle.MaxX + 1; ++scanX)
                 for (int scanZ = rectangle.MinZ - 1; scanZ <= rectangle.MaxZ + 1; ++scanZ)
@@ -206,23 +225,23 @@ namespace Campus
                 // three adjacent parking lots (edge) ---------------------------
                 if (adjLots[i0] && adjLots[i1] && adjLots[i2] && !adjLots[i3])
                 {
-                    // one path
-                    if (adjPath[i3] && !adjRoad[i2] && !adjRoad[i3])
-                    {
-                        return (ParkingLotSubmaterialIndex.StraightEdgeOnePath, (SubmaterialRotation)i, SubmaterialInversion.None);
-                    }
                     // one road (i2)
-                    if (!adjPath[i3] && adjRoad[i2] && !adjRoad[i3])
+                    if (adjRoad[i2] && !adjRoad[i3])
                     {
                         int altInv = 1 + ((i + 1) % 2);
                         return (ParkingLotSubmaterialIndex.StraightEdgeRoad, (SubmaterialRotation)i, (SubmaterialInversion)altInv);
                     }
                     // one road (i3)
-                    if (!adjPath[i3] && !adjRoad[i2] && adjRoad[i3])
+                    if (!adjRoad[i2] && adjRoad[i3])
                     {
                         return (ParkingLotSubmaterialIndex.StraightEdgeRoad, (SubmaterialRotation)i, SubmaterialInversion.None);
                     }
-                    // no path
+                    // one path
+                    if (adjPath[i3] && !adjRoad[i2] && !adjRoad[i3])
+                    {
+                        return (ParkingLotSubmaterialIndex.StraightEdgeOnePath, (SubmaterialRotation)i, SubmaterialInversion.None);
+                    }
+                    // no path or road
                     if (!adjPath[i3] && !adjRoad[i2] && !adjRoad[i3])
                     {
                         return (ParkingLotSubmaterialIndex.StraightEdge, (SubmaterialRotation)i, SubmaterialInversion.None);
