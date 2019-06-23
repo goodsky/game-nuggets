@@ -42,9 +42,39 @@ namespace Campus
         /// </summary>
         /// <param name="pos">Grid position to query.</param>
         /// <returns>True if a lot exists at position, false otherwise.</returns>
-        public bool ParkingLotAtPosition(Point2 pos)
+        public bool IsParkingLotAtPosition(Point2 pos)
         {
             return _lots[pos.x, pos.z] != null;
+        }
+
+        /// <summary>
+        /// Checks if a point is on the edge of a parking lot.
+        /// The edge of parking lots are a magical special place.
+        /// Roads and paths can combine here. That's why this check exists.
+        /// </summary>
+        /// <param name="pos">Grid position to query.</param>
+        /// <returns>True if a lot edge exists at position, false otherwise.</returns>
+        public bool IsOnEdgeOfParkingLot(Point2 pos, bool disallowCorners = false)
+        {
+            ParkingLot lot = _lots[pos.x, pos.z];
+            if (lot != null)
+            {
+                Rectangle rect = lot.Footprint;
+
+                // Roads aren't allowed to build on corners. Therefore this.
+                if (disallowCorners &&
+                    (pos.x == rect.MinX || pos.x == rect.MaxX) &&
+                    (pos.z == rect.MinZ || pos.z == rect.MaxZ))
+                    return false;
+
+                return
+                    (pos.x == rect.MinX && rect.MinZ <= pos.z && pos.z <= rect.MaxZ) ||
+                    (pos.x == rect.MaxX && rect.MinZ <= pos.z && pos.z <= rect.MaxZ) ||
+                    (pos.z == rect.MinZ && rect.MinX <= pos.x && pos.x <= rect.MaxX) ||
+                    (pos.z == rect.MaxZ && rect.MinX <= pos.x && pos.x <= rect.MaxX);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -122,8 +152,8 @@ namespace Campus
                 int gridX = pos.x + GridConverter.AdjacentGridDx[i];
                 int gridZ = pos.z + GridConverter.AdjacentGridDz[i];
 
-                int vertX = pos.x + GridConverter.AdjacentVertexDx[i];
-                int vertZ = pos.z + GridConverter.AdjacentVertexDz[i];
+                int vertX = pos.x + GridConverter.GridToVertexDx[i];
+                int vertZ = pos.z + GridConverter.GridToVertexDz[i];
 
                 adjLots[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ));
                 adjPath[i] = _terrain.GridInBounds(gridX, gridZ) && (Game.Campus.GetGridUse(new Point2(gridX, gridZ)) & CampusGridUse.Path) == CampusGridUse.Path;
@@ -177,12 +207,23 @@ namespace Campus
                 if (adjLots[i0] && adjLots[i1] && adjLots[i2] && !adjLots[i3])
                 {
                     // one path
-                    if (adjPath[i3])
+                    if (adjPath[i3] && !adjRoad[i2] && !adjRoad[i3])
                     {
                         return (ParkingLotSubmaterialIndex.StraightEdgeOnePath, (SubmaterialRotation)i, SubmaterialInversion.None);
                     }
+                    // one road (i2)
+                    if (!adjPath[i3] && adjRoad[i2] && !adjRoad[i3])
+                    {
+                        int altInv = 1 + ((i + 1) % 2);
+                        return (ParkingLotSubmaterialIndex.StraightEdgeRoad, (SubmaterialRotation)i, (SubmaterialInversion)altInv);
+                    }
+                    // one road (i3)
+                    if (!adjPath[i3] && !adjRoad[i2] && adjRoad[i3])
+                    {
+                        return (ParkingLotSubmaterialIndex.StraightEdgeRoad, (SubmaterialRotation)i, SubmaterialInversion.None);
+                    }
                     // no path
-                    if (!adjPath[i3])
+                    if (!adjPath[i3] && !adjRoad[i2] && !adjRoad[i3])
                     {
                         return (ParkingLotSubmaterialIndex.StraightEdge, (SubmaterialRotation)i, SubmaterialInversion.None);
                     }

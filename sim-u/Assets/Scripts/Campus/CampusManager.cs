@@ -64,7 +64,7 @@ namespace Campus
                 use = use | CampusGridUse.Road;
             }
 
-            if (_lots.ParkingLotAtPosition(pos))
+            if (_lots.IsParkingLotAtPosition(pos))
             {
                 use = use | CampusGridUse.ParkingLot;
             }
@@ -197,6 +197,9 @@ namespace Campus
                     case CampusGridUse.Road:
                         isGridAvailable = _roads.IsValidForCrosswalk(point);
                         break;
+                    case CampusGridUse.ParkingLot:
+                        isGridAvailable = _lots.IsOnEdgeOfParkingLot(point);
+                        break;
                     default:
                         isGridAvailable = false;
                         break;
@@ -256,6 +259,9 @@ namespace Campus
                         case CampusGridUse.Path:
                             isGridAvailable = false; // TODO: build crosswalks here?
                             break;
+                        case CampusGridUse.ParkingLot:
+                            isGridAvailable = _lots.IsOnEdgeOfParkingLot(point, disallowCorners: true);
+                            break;
                         default:
                             isGridAvailable = false;
                             break;
@@ -264,7 +270,7 @@ namespace Campus
                     bool isTightTurn = false;
                     if (isValidTerrain && isGridAvailable)
                     {
-                        // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly.
+                        // Rule: You can't make a tight turn with roads. It messes up my lanes. And it's ugly. Don't do it.
                         int roadVertexCount = 0;
                         for (int i = 0; i < 4; ++i)
                         {
