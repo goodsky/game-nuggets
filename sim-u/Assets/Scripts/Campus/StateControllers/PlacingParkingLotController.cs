@@ -44,7 +44,7 @@ namespace Campus
 
             _rect = new Rectangle(args.GridSelection);
 
-            Game.Campus.IsValidForParkingLot(_rect, out bool[,] validGrids);
+            Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids);
             _cursor.Place(_rect, validGrids);
         }
 
@@ -63,9 +63,9 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Game.Campus.IsValidForParkingLot(_rect, out bool[,] validGrids))
+                if (Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids))
                 {
-                    Game.Campus.ConstructParkingLot(_rect);
+                    Accessor.CampusManager.ConstructParkingLot(_rect);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
                 else
@@ -93,7 +93,7 @@ namespace Campus
                 _rect.UpdateEndPoint(_rect.Start);
             }
 
-            Game.Campus.IsValidForParkingLot(_rect, out bool[,] validGrids);
+            Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids);
             _cursor.Place(_rect, validGrids);
         }
 

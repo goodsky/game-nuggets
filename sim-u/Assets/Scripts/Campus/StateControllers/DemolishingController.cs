@@ -56,7 +56,7 @@ namespace Campus
             {
                 if (_cursor.Position != _lastDemolishedGrid && HasDemolishableTile())
                 {
-                    Game.Campus.DestroyAt(_cursor.Position);
+                    Accessor.CampusManager.DestroyAt(_cursor.Position);
                     _cursor.SetMaterial(_invalidMaterial);
 
                     // Only one demolish per mouse down (don't delete multiple improvements at once).
@@ -114,7 +114,7 @@ namespace Campus
         /// <returns>True if a demolishable tile exists under the mouse, otherwise false.</returns>
         private bool HasDemolishableTile()
         {
-            return Game.Campus.GetGridUse(_cursor.Position) != CampusGridUse.Empty;
+            return Accessor.CampusManager.GetGridUse(_cursor.Position) != CampusGridUse.Empty;
         }
     }
 }

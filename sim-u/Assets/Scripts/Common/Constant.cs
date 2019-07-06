@@ -18,6 +18,11 @@
         public const float GridStepSize = 0.25f;
 
         /// <summary>
+        /// The size of submaterials on the terrain sprite sheet.
+        /// </summary>
+        public const int SubmaterialGridSize = 64;
+
+        /// <summary>
         /// Epsilon for uv mapping.
         /// </summary>
         public const float uvEpsilon = 1.25e-3f;

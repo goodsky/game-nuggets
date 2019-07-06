@@ -12,6 +12,7 @@ namespace UI
     /// </summary>
     public class WindowManager : MonoBehaviour
     {
+        private GameAccessor _accessor = new GameAccessor();
         private Dictionary<string, Window> _windows = new Dictionary<string, Window>();
 
         /// <summary>The active window.</summary>
@@ -49,7 +50,7 @@ namespace UI
         /// <param name="dataName">Name of the data to pass to the window.</param>
         public void OpenWindow(string name, GameDataType type, string dataName)
         {
-            object data = Game.Data.Get(type, dataName);
+            object data = _accessor.GameData.Get(type, dataName);
             OpenWindow(name, data);
         }
 

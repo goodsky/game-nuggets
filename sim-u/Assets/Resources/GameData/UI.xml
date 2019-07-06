@@ -55,6 +55,18 @@
           <OnSelect x:type="OpenWindowAction" windowName="Demolishing"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+        <Button name="SaveGame">
+          <Tooltip>Save Game</Tooltip>
+          <IconImage>icon-save</IconImage>
+          <OnSelect x:type="TransitionGameStateAction" state="SavingGame"/>
+          <OnDeselect x:type="TransitionGameStateAction" state="Selecting"/>
+        </Button>
+        <Button name="LoadGame">
+          <Tooltip>Load Game</Tooltip>
+          <IconImage>icon-load</IconImage>
+          <OnSelect x:type="TransitionGameStateAction" state="LoadingGame"/>
+          <OnDeselect x:type="TransitionGameStateAction" state="Selecting"/>
+        </Button>
       </Buttons>
     </MainButtonGroup>
 

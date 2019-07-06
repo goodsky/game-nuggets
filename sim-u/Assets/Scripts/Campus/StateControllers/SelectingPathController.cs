@@ -67,7 +67,7 @@ namespace Campus
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
-                bool isValid = Game.Campus.IsValidForPath(new AxisAlignedLine(args.GridSelection), out bool[] _);
+                bool isValid = Accessor.CampusManager.IsValidForPath(new AxisAlignedLine(args.GridSelection), out bool[] _);
                 _cursor.Place(args.GridSelection);
                 _cursor.SetMaterial(
                     isValid ?
@@ -90,14 +90,14 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (Game.Campus.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] _))
+                if (Accessor.CampusManager.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] _))
                 {
                     Transition(GameState.PlacingPath, args);
                 }
             }
             else if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("SelectingPathCheck: {0} = {1}", _cursor.Position, Game.Campus.GetGridUse(_cursor.Position));
+                GameLogger.Info("SelectingPathCheck: {0} = {1}", _cursor.Position, Accessor.CampusManager.GetGridUse(_cursor.Position));
             }
         }
     }

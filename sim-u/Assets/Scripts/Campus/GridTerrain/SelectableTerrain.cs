@@ -9,6 +9,8 @@ namespace Campus.GridTerrain
     /// </summary>
     public class SelectableTerrain : Selectable
     {
+        private GameAccessor _accessor = new GameAccessor();
+
         public GridMesh Terrain;
 
         private Vector3 _mousePosition;
@@ -57,7 +59,7 @@ namespace Campus.GridTerrain
                 _mouseGridLocation = currentGridSelection;
 
                 var args = new TerrainGridUpdateArgs(_mouseGridLocation);
-                Game.State.UpdateTerrainGridSelection(args);
+                _accessor.StateMachine.UpdateTerrainGridSelection(args);
             }
 
             if (currentVertexSelection != _mouseVertexLocation)
@@ -65,7 +67,7 @@ namespace Campus.GridTerrain
                 _mouseVertexLocation = currentVertexSelection;
 
                 var args = new TerrainVertexUpdateArgs(_mouseVertexLocation);
-                Game.State.UpdateTerrainVertexSelection(args);
+                _accessor.StateMachine.UpdateTerrainVertexSelection(args);
             }
         }
 
@@ -76,7 +78,7 @@ namespace Campus.GridTerrain
         private void Clicked(MouseButton mouse)
         {
             var args = new TerrainClickedArgs(mouse, _mouseGridLocation, _mouseVertexLocation);
-            Game.State.ClickedTerrain(args);
+            _accessor.StateMachine.ClickedTerrain(args);
         }
     }
 

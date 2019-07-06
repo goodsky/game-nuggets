@@ -49,7 +49,7 @@ namespace Campus
 
             _vertexLine = new AxisAlignedLine(args.VertexSelection);
 
-            Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
+            Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
             _cursor1.Place(lines[0], validGrids[0]);
             _cursor2.Place(lines[1], validGrids[1]);
         }
@@ -70,9 +70,9 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __))
+                if (Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __))
                 {
-                    Game.Campus.ConstructRoad(_vertexLine);
+                    Accessor.CampusManager.ConstructRoad(_vertexLine);
                 }
 
                 Transition(GameState.SelectingRoad);
@@ -91,7 +91,7 @@ namespace Campus
             {
                 _vertexLine.UpdateEndPointAlongAxis(args.VertexSelection);
 
-                Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
+                Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
                 _cursor1.Place(lines[0], validGrids[0]);
                 _cursor2.Place(lines[1], validGrids[1]);
             }

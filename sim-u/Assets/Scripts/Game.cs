@@ -15,18 +15,6 @@ public class Game : MonoBehaviour
     [Header("Campus Configuration")]
     public TextAsset CampusConfig;
 
-    /// <summary>Global GameData store</summary>
-    public static GameDataStore Data { get; private set; }
-
-    /// <summary>Global game state machine</summary>
-    public static GameStateMachine State { get; private set; }
-
-    /// <summary>Global User Interface Manager</summary>
-    public static UIManager UI { get; private set; }
-
-    /// <summary>Global Campus Manager</summary>
-    public static CampusManager Campus { get; private set; }
-
     private static object _singletonLock = new object();
     private static Game _singleton = null;
 
@@ -59,6 +47,11 @@ public class Game : MonoBehaviour
     {
         GameLogger.Info("Game exiting.");
         GameLogger.Close();
+
+        lock (_singletonLock)
+        {
+            _singleton = null;
+        }
     }
 
     /// <summary>
@@ -81,15 +74,14 @@ public class Game : MonoBehaviour
     {
         UIFactory.LoadEventSystem(gameObject);
 
-        Data = new GameDataStore();
+        gameObject.AddComponent<GameDataStore>();
+        gameObject.AddComponent<GameStateMachine>();
 
-        State = gameObject.AddComponent<GameStateMachine>();
+        GameObject ui = UIFactory.LoadUICanvas(gameObject);
+        GameDataLoader<UIData>.SetGameData<UIManager>(ui, UIConfig);
 
-        var ui = UIFactory.LoadUICanvas(gameObject);
-        UI = GameDataLoader<UIData>.SetGameData<UIManager>(ui, UIConfig);
-
-        var campus = UIFactory.GenerateEmpty("Campus", transform);
-        Campus = GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, CampusConfig);
+        GameObject campus = UIFactory.GenerateEmpty("Campus", transform);
+        GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, CampusConfig);
         
         TooltipManager.Initialize(ui.gameObject.transform);
     }

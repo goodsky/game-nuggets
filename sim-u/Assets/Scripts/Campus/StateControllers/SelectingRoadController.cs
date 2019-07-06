@@ -70,7 +70,7 @@ namespace Campus
             {
                 _vertexLine = new AxisAlignedLine(args.VertexSelection);
 
-                Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
+                Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
                 _cursor1.Place(lines[0], validGrids[0]);
                 _cursor2.Place(lines[1], validGrids[1]);
             }
@@ -90,14 +90,14 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (Game.Campus.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __))
+                if (Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __))
                 {
                     Transition(GameState.PlacingRoad, args);
                 }
             }
             if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("Checking Vertex Use: {0} = {1}", _vertexLine.Start, Game.Campus.GetVertexUse(_vertexLine.Start));
+                GameLogger.Info("Checking Vertex Use: {0} = {1}", _vertexLine.Start, Accessor.CampusManager.GetVertexUse(_vertexLine.Start));
             }
         }
     }

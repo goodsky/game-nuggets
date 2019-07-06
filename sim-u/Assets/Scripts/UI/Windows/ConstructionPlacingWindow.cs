@@ -35,8 +35,8 @@ namespace UI
                 GameLogger.FatalError("ConstructionPlacingWindow was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
             }
 
-            Game.Campus.SetTerrainSelectionParent(this);
-            Game.State.StartDoing(GameState.PlacingConstruction, data);
+            Accessor.CampusManager.SetTerrainSelectionParent(this);
+            Accessor.StateMachine.StartDoing(GameState.PlacingConstruction, data);
 
             TitleText.text = string.Format("Constructing {0}", buildingData.Name);
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
@@ -47,8 +47,8 @@ namespace UI
         /// </summary>
         public override void Close()
         {
-            Game.Campus.SetTerrainSelectionParent(null);
-            Game.State.StopDoing();
+            Accessor.CampusManager.SetTerrainSelectionParent(null);
+            Accessor.StateMachine.StopDoing();
         }
     }
 }

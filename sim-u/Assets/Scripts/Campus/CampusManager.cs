@@ -30,6 +30,7 @@ namespace Campus
     /// </summary>
     public class CampusManager : GameDataLoader<CampusData>
     {
+        private GameAccessor _accessor = new GameAccessor();
         private Dictionary<string, BuildingData> _buildingRegistry = new Dictionary<string, BuildingData>();
 
         private GridMesh _terrain;
@@ -280,7 +281,7 @@ namespace Campus
                             if (_terrain.VertexInBounds(vertX, vertZ))
                             {
                                 Point2 roadVertex = new Point2(vertX, vertZ);
-                                if (Game.Campus.GetVertexUse(roadVertex) == CampusGridUse.Road ||
+                                if (GetVertexUse(roadVertex) == CampusGridUse.Road ||
                                     line.IsPointOnLine(roadVertex))
                                 {
                                     ++roadVertexCount;
@@ -416,6 +417,18 @@ namespace Campus
         }
 
         /// <summary>
+        /// Snapshot the campus state and return the save data.
+        /// </summary>
+        /// <returns></returns>
+        public CampusSaveState SaveGameState()
+        {
+            return new CampusSaveState
+            {
+                Terrain = _terrain.SaveGameState(),
+            };
+        }
+
+        /// <summary>
         /// Load the campus game data.
         /// </summary>
         /// <param name="gameData">Campus game data.</param>
@@ -425,12 +438,12 @@ namespace Campus
             {
                 GridSquareSize = Constant.GridSize,
                 GridStepSize = Constant.GridStepSize,
+                SubmaterialSize = Constant.SubmaterialGridSize,
                 CountX = gameData.Terrain.GridCountX,
                 CountZ = gameData.Terrain.GridCountZ,
                 CountY = gameData.Terrain.GridCountY,
                 StartingHeight = gameData.Terrain.StartingHeight,
                 GridMaterial = gameData.Terrain.TerrainMaterial,
-                SubmaterialSize = gameData.Terrain.SubmaterialSquareSize,
             };
 
             GridMesh terrain;
@@ -444,16 +457,16 @@ namespace Campus
 
             _defaultMaterialIndex = gameData.Terrain.SubmaterialEmptyGrassIndex;
 
-            Game.State.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
-            Game.State.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
-            Game.State.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
-            Game.State.RegisterController(GameState.SelectingPath, new SelectingPathController(terrain));
-            Game.State.RegisterController(GameState.PlacingPath, new PlacingPathController(terrain));
-            Game.State.RegisterController(GameState.SelectingRoad, new SelectingRoadController(terrain));
-            Game.State.RegisterController(GameState.PlacingRoad, new PlacingRoadController(terrain));
-            Game.State.RegisterController(GameState.SelectingParkingLot, new SelectingParkingLotController(terrain));
-            Game.State.RegisterController(GameState.PlacingParkingLot, new PlacingParkingLotController(terrain));
-            Game.State.RegisterController(GameState.Demolishing, new DemolishingController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.SelectingPath, new SelectingPathController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.PlacingPath, new PlacingPathController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.SelectingRoad, new SelectingRoadController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.PlacingRoad, new PlacingRoadController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.SelectingParkingLot, new SelectingParkingLotController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.PlacingParkingLot, new PlacingParkingLotController(terrain));
+            _accessor.StateMachine.RegisterController(GameState.Demolishing, new DemolishingController(terrain));
 
             var footprintCreatorObject = new GameObject("FootprintCreator");
             using (var footprintCreator = footprintCreatorObject.AddComponent<FootprintCreator>())

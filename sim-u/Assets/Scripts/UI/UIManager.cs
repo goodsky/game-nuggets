@@ -10,6 +10,7 @@ namespace UI
     /// </summary>
     public class UIManager : GameDataLoader<UIData>
     {
+        private GameAccessor _accessor = new GameAccessor();
         private Dictionary<string, ButtonGroup> _buttonGroups = new Dictionary<string, ButtonGroup>();
         private WindowManager _windowManager;
         private GameObject _statusBar;
@@ -114,10 +115,15 @@ namespace UI
                     var button = buttonGroup.Buttons[i];
 
                     // Link OnSelect Action -----------------------
-                    if (buttonData.OnSelect is OpenSubMenuAction)
+                    if (buttonData.OnSelect is TransitionGameStateAction)
+                    {
+                        var transitionGameAction = buttonData.OnSelect as TransitionGameStateAction;
+                        button.OnSelect = () => _accessor.StateMachine.StartDoing(transitionGameAction.State);
+                    }
+                    else if (buttonData.OnSelect is OpenSubMenuAction)
                     {
                         var openSubMenuAction = buttonData.OnSelect as OpenSubMenuAction;
-                        var openSubMenuButtons = Game.Data.Get<ButtonGroup>(GameDataType.ButtonGroup, openSubMenuAction.ButtonGroupName);
+                        var openSubMenuButtons = _accessor.GameData.Get<ButtonGroup>(GameDataType.ButtonGroup, openSubMenuAction.ButtonGroupName);
                         if (openSubMenuButtons == null)
                         {
                             GameLogger.FatalError("OpenSubMenuAction could not link to non-existant button group '{0}'", openSubMenuAction.ButtonGroupName);
@@ -146,7 +152,12 @@ namespace UI
                     }
 
                     // Link OnDeselect Action -----------------------
-                    if (buttonData.OnDeselect is CloseSubMenuAction)
+                    if (buttonData.OnDeselect is TransitionGameStateAction)
+                    {
+                        var transitionGameAction = buttonData.OnDeselect as TransitionGameStateAction;
+                        button.OnDeselect = () => _accessor.StateMachine.StartDoing(transitionGameAction.State);
+                    }
+                    else if (buttonData.OnDeselect is CloseSubMenuAction)
                     {
                         button.OnDeselect = () => toolbar.CloseSubMenu();
                     }

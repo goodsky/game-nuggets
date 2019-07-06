@@ -8,8 +8,8 @@ namespace GameData
         [XmlElement("TerrainMaterial")]
         public string TerrainMaterialName { get; set; }
 
-        [XmlElement("SubmaterialSquareSize")]
-        public int SubmaterialSquareSize { get; set; }
+        [ResourceLoader(ResourceType.Materials, ResourceCategory.Terrain, nameof(TerrainMaterialName))]
+        public Material TerrainMaterial { get; set; }
 
         [XmlElement("SubmaterialEmptyGrassIndex")]
         public int SubmaterialEmptyGrassIndex { get; set; }
@@ -25,9 +25,6 @@ namespace GameData
 
         [XmlElement("SubmaterialParkingLotsIndex")]
         public int SubmaterialParkingLotsIndex { get; set; }
-
-        [ResourceLoader(ResourceType.Materials, ResourceCategory.Terrain, nameof(TerrainMaterialName))]
-        public Material TerrainMaterial { get; set; }
 
         [XmlElement("GridCountX")]
         public int GridCountX { get; set; }

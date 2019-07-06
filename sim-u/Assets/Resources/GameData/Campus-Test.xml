@@ -3,7 +3,6 @@
   <!-- Size of the campus terrain -->
   <Terrain>
     <TerrainMaterial>grass-material</TerrainMaterial>
-    <SubmaterialSquareSize>64</SubmaterialSquareSize>
     <SubmaterialEmptyGrassIndex>0</SubmaterialEmptyGrassIndex>
     <SubmaterialInvalidIndex>1</SubmaterialInvalidIndex>
     <SubmaterialPathsIndex>2</SubmaterialPathsIndex>

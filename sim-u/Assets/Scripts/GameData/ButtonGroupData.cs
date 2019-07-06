@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Common;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
 
@@ -44,12 +45,20 @@ namespace GameData
     }
 
     /// <summary>Defines an Action that can be invoked by a Button.</summary>
+    [XmlInclude(typeof(TransitionGameStateAction))]
     [XmlInclude(typeof(OpenSubMenuAction))]
     [XmlInclude(typeof(CloseSubMenuAction))]
     [XmlInclude(typeof(OpenWindowAction))]
     [XmlInclude(typeof(OpenWindowWithDataAction))]
     [XmlInclude(typeof(CloseWindowAction))]
     public abstract class ButtonAction { }
+
+    /// <summary>Action to transition the game state machine to a new state.</summary>
+    public class TransitionGameStateAction : ButtonAction
+    {
+        [XmlAttribute("state")]
+        public GameState State { get; set; }
+    }
 
     /// <summary>Action to pop up the sub menu.</summary>
     public class OpenSubMenuAction : ButtonAction

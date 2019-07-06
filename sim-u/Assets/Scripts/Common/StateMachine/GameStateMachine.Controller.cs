@@ -11,6 +11,11 @@ namespace Common
         public abstract class Controller
         {
             /// <summary>
+            /// Accessor for game components.
+            /// </summary>
+            protected GameAccessor Accessor = new GameAccessor();
+
+            /// <summary>
             /// Called each game step while this state is active.
             /// </summary>
             public abstract void Update();
@@ -63,7 +68,7 @@ namespace Common
             /// <param name="context">Optional context to pass.</param>
             protected void Transition(GameState next, object context = null)
             {
-                Game.State.Transition(next, context);
+                Accessor.StateMachine.Transition(next, context);
             }
         }
     }

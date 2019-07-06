@@ -11,6 +11,7 @@ namespace Campus
     /// </summary>
     public class CampusBuildings
     {
+        private GameAccessor _accessor = new GameAccessor();
         private GridMesh _terrain;
         private Building[,] _building;
 
@@ -40,7 +41,7 @@ namespace Campus
         {
             var building = CampusFactory.GenerateBuilding(
                         buildingData,
-                        Game.Campus.transform,
+                        _accessor.CampusManager.transform,
                         _terrain.Convert.GridToWorld(location) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/,
                         Quaternion.identity);
 

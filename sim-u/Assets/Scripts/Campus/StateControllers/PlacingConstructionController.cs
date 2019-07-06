@@ -67,7 +67,7 @@ namespace Campus
         {
             if (args.GridSelection != Point3.Null)
             {
-                Game.Campus.IsValidForBuilding(_building, args.GridSelection, out bool[,] validGrids);
+                Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, out bool[,] validGrids);
 
                 _cursors.Place(args.GridSelection);
                 _cursors.SetMaterials(validGrids);
@@ -87,9 +87,9 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (Game.Campus.IsValidForBuilding(_building, args.GridSelection, out bool[,] _))
+                if (Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, out bool[,] _))
                 {
-                    Game.Campus.ConstructBuilding(_building, args.GridSelection);
+                    Accessor.CampusManager.ConstructBuilding(_building, args.GridSelection);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
             }

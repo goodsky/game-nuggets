@@ -41,6 +41,12 @@ namespace Common
 
         /// <summary>Constructing a new entity on the campus.</summary>
         PlacingConstruction,
+
+        /// <summary>Saving the game state.</summary>
+        SavingGame,
+
+        /// <summary>Loading the game state.</summary>
+        LoadingGame,
     }
 
     /// <summary>
@@ -69,6 +75,9 @@ namespace Common
         protected void Start()
         {
             Current = GameState.Selecting;
+
+            RegisterController(GameState.SavingGame, new SaveGameController());
+            RegisterController(GameState.LoadingGame, new LoadGameController());
         }
 
         /// <summary>
@@ -105,12 +114,15 @@ namespace Common
         {
             switch (newState)
             {
+                case GameState.Selecting:
                 case GameState.SelectingTerrain:
                 case GameState.PlacingConstruction:
                 case GameState.SelectingPath:
                 case GameState.SelectingRoad:
                 case GameState.SelectingParkingLot:
                 case GameState.Demolishing:
+                case GameState.SavingGame:
+                case GameState.LoadingGame:
                     Transition(newState, context);
                     break;
 

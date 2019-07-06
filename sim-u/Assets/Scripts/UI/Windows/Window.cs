@@ -5,6 +5,9 @@ namespace UI
 {
     public abstract class Window : Selectable
     {
+        /// <summary>Accessor for game components.</summary>
+        protected GameAccessor Accessor = new GameAccessor();
+
         /// <summary>Window buttons. Allows UI Factories to set the color scheme.</summary>
         public abstract List<Button> Buttons { get; }
 

@@ -1,4 +1,5 @@
 ﻿using Common;
+using GameData;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -516,6 +517,20 @@ namespace Campus.GridTerrain
             }
 
             _mesh.uv = _uv;
+        }
+
+        /// <summary>
+        /// Save a snapshot of the grid mesh for game saving.
+        /// </summary>
+        /// <returns></returns>
+        public TerrainSaveState SaveGameState()
+        {
+            return new TerrainSaveState
+            {
+               VertexHeight = _vertexHeight,
+               GridAnchored = Editor.GridAnchored,
+               VertexAnchored = Editor.VertexAnchored,
+            };
         }
 
         /// <summary>

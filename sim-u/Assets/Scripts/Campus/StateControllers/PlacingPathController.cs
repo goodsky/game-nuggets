@@ -43,7 +43,7 @@ namespace Campus
 
             _line = new AxisAlignedLine(args.GridSelection);
 
-            Game.Campus.IsValidForPath(_line, out bool[] validGrids);
+            Accessor.CampusManager.IsValidForPath(_line, out bool[] validGrids);
             _cursor.Place(_line, validGrids);
         }
 
@@ -62,9 +62,9 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Game.Campus.IsValidForPath(_line, out bool[] _))
+                if (Accessor.CampusManager.IsValidForPath(_line, out bool[] _))
                 {
-                    Game.Campus.ConstructPath(_line);
+                    Accessor.CampusManager.ConstructPath(_line);
                 }
 
                 Transition(GameState.SelectingPath);
@@ -96,7 +96,7 @@ namespace Campus
                     _line.UpdateEndPointAlongAxis(new Point2(_line.End.x, _terrain.CountZ - 1));
             }
 
-            Game.Campus.IsValidForPath(_line, out bool[] validGrids);
+            Accessor.CampusManager.IsValidForPath(_line, out bool[] validGrids);
             _cursor.Place(_line, validGrids);
         }
 

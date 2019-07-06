@@ -28,8 +28,8 @@ namespace UI
         /// <param name="data">The game data</param>
         public override void Open(object data)
         {
-            Game.Campus.SetTerrainSelectionParent(this);
-            Game.State.StartDoing(GameState.SelectingParkingLot, data);
+            Accessor.CampusManager.SetTerrainSelectionParent(this);
+            Accessor.StateMachine.StartDoing(GameState.SelectingParkingLot, data);
 
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
@@ -39,8 +39,8 @@ namespace UI
         /// </summary>
         public override void Close()
         {
-            Game.Campus.SetTerrainSelectionParent(null);
-            Game.State.StopDoing();
+            Accessor.CampusManager.SetTerrainSelectionParent(null);
+            Accessor.StateMachine.StopDoing();
         }
     }
 }

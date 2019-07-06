@@ -10,6 +10,7 @@ namespace Campus
     /// </summary>
     public class CampusParkingLots
     {
+        private GameAccessor _accessor = new GameAccessor();
         private GridMesh _terrain;
         private ParkingLot[,] _lots;
 
@@ -89,10 +90,10 @@ namespace Campus
             Point2 p2 = new Point2(rectangle.MinX, rectangle.MaxZ);
             Point2 p3 = new Point2(rectangle.MaxX, rectangle.MaxZ);
             Point2 p4 = new Point2(rectangle.MaxX, rectangle.MinZ);
-            Game.Campus.ConstructPath(new AxisAlignedLine(p1, p2));
-            Game.Campus.ConstructPath(new AxisAlignedLine(p2, p3));
-            Game.Campus.ConstructPath(new AxisAlignedLine(p3, p4));
-            Game.Campus.ConstructPath(new AxisAlignedLine(p4, p1));
+            _accessor.CampusManager.ConstructPath(new AxisAlignedLine(p1, p2));
+            _accessor.CampusManager.ConstructPath(new AxisAlignedLine(p2, p3));
+            _accessor.CampusManager.ConstructPath(new AxisAlignedLine(p3, p4));
+            _accessor.CampusManager.ConstructPath(new AxisAlignedLine(p4, p1));
 
             // Register the road inside the lot
             for (int x = rectangle.MinX + 1; x <= rectangle.MaxX; ++x)
@@ -100,7 +101,7 @@ namespace Campus
                 // NB: Roads are built on vertices. Only fill the inner vertices.
                 Point2 vp1 = new Point2(x, rectangle.MinZ + 1);
                 Point2 vp2 = new Point2(x, rectangle.MaxZ);
-                Game.Campus.ConstructRoad(new AxisAlignedLine(vp1, vp2));
+                _accessor.CampusManager.ConstructRoad(new AxisAlignedLine(vp1, vp2));
             }
 
             // Return all the potentially modified grids around the parking lot for updating.
@@ -130,8 +131,8 @@ namespace Campus
                     _lots[x, z] = null;
 
                     // Clean up the path and the road while we are at it
-                    Game.Campus.DestroyAt(new Point2(x, z), CampusGridUse.Path);
-                    Game.Campus.DestroyAt(new Point2(x, z), CampusGridUse.Road);
+                    _accessor.CampusManager.DestroyAt(new Point2(x, z), CampusGridUse.Path);
+                    _accessor.CampusManager.DestroyAt(new Point2(x, z), CampusGridUse.Road);
                 }
             }
 
@@ -175,8 +176,8 @@ namespace Campus
 
                 adjLots[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ));
                 adjSpot[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ)) && parkingLot.LotLines[spotX, spotZ];
-                adjPath[i] = _terrain.GridInBounds(gridX, gridZ) && (Game.Campus.GetGridUse(new Point2(gridX, gridZ)) & CampusGridUse.Path) == CampusGridUse.Path;
-                adjRoad[i] = _terrain.VertexInBounds(vertX, vertZ) && (Game.Campus.GetVertexUse(new Point2(vertX, vertZ)) & CampusGridUse.Road) == CampusGridUse.Road;
+                adjPath[i] = _terrain.GridInBounds(gridX, gridZ) && (_accessor.CampusManager.GetGridUse(new Point2(gridX, gridZ)) & CampusGridUse.Path) == CampusGridUse.Path;
+                adjRoad[i] = _terrain.VertexInBounds(vertX, vertZ) && (_accessor.CampusManager.GetVertexUse(new Point2(vertX, vertZ)) & CampusGridUse.Road) == CampusGridUse.Road;
             }
 
             // spots also need to check if they themselves are a parking spot

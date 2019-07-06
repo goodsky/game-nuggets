@@ -31,6 +31,20 @@ namespace Campus.GridTerrain
                     _vertexAnchored[i, j] = (i == 0 || j == 0 || i == _terrain.CountX || j == _terrain.CountZ) ? true : false;
         }
 
+        /// <summary>Get and set anchor grids. Used for saving and loading games.</summary>
+        public bool[,] GridAnchored
+        {
+            get { return _gridAnchored; }
+            set { _gridAnchored = value; }
+        }
+
+        /// <summary>Get and set anchor vertices. Used for saving and loading games.</summary>
+        public bool[,] VertexAnchored
+        {
+            get { return _vertexAnchored; }
+            set { _vertexAnchored = value; }
+        }
+
         /// <summary>
         /// Get if the queried vertex is anchored.
         /// </summary>

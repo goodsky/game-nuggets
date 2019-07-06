@@ -61,7 +61,7 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                Game.State.StopDoing();
+                Accessor.StateMachine.StopDoing();
                 return;
             }
 

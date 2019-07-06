@@ -1,6 +1,7 @@
 ﻿using Common;
 using System;
 using UI;
+using UnityEngine;
 
 namespace GameData
 {
@@ -18,8 +19,10 @@ namespace GameData
     /// Global router of all Game Data and where it should be stored.
     /// Use it to get references to the runtime instances of game data.
     /// </summary>
-    public class GameDataStore
+    public class GameDataStore : MonoBehaviour
     {
+        private GameAccessor _accessor = new GameAccessor();
+
         /// <summary>
         /// Gets data from a well-known location.
         /// </summary>
@@ -37,7 +40,7 @@ namespace GameData
             {
                 case GameDataType.ButtonGroup:
                     ButtonGroup buttonGroup;
-                    if (Game.UI.TryGetButtonGroup(dataName, out buttonGroup))
+                    if (_accessor.UiManager.TryGetButtonGroup(dataName, out buttonGroup))
                     {
                         data = buttonGroup;
                     }
@@ -45,7 +48,7 @@ namespace GameData
 
                 case GameDataType.Window:
                     Window window;
-                    if (Game.UI.TryGetWindow(dataName, out window))
+                    if (_accessor.UiManager.TryGetWindow(dataName, out window))
                     {
                         data = window;
                     }
@@ -53,7 +56,7 @@ namespace GameData
 
                 case GameDataType.Building:
                     BuildingData buildingData;
-                    if (Game.Campus.TryGetBuildingData(dataName, out buildingData))
+                    if (_accessor.CampusManager.TryGetBuildingData(dataName, out buildingData))
                     {
                         data = buildingData;
                     }

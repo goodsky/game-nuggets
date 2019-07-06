@@ -89,7 +89,7 @@ namespace UI
             Description = WriteDescription(buildingData);
             ConstructionImage.sprite = buildingData.Icon;
 
-            BuildButton.OnSelect = () => { Game.UI.OpenWindow("ConstructionPlacing", buildingData); };
+            BuildButton.OnSelect = () => { Accessor.UiManager.OpenWindow("ConstructionPlacing", buildingData); };
             CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent); };
         }
 
