@@ -39,6 +39,8 @@ namespace GameData
                     GameLogger.Error("Tried to load an invalid game save version. Version = {0}; Current Version = {1};", state.Version, GameSaveState.CurrentVersion);
                     return false;
                 }
+
+                GameLogger.Info("Successfully loaded game state from file '{0}'. Save Version = {1}.", path, state.Version);
             }
 
             return true;

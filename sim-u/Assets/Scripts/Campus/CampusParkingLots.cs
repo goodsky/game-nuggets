@@ -2,6 +2,7 @@
 using Common;
 using GameData;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Campus
 {
@@ -12,7 +13,7 @@ namespace Campus
     {
         private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
-        private readonly ParkingLot[,] _lots;
+        private readonly ParkingLot[,] _lotAtGridPosition;
 
         private readonly int _startIndex;
         private readonly int _invalidIndex;
@@ -22,11 +23,48 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
-            _lots = new ParkingLot[_terrain.CountX, _terrain.CountZ];
+            _lotAtGridPosition = new ParkingLot[_terrain.CountX, _terrain.CountZ];
 
             _startIndex = campusData.Terrain.SubmaterialParkingLotsIndex;
             _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
             _emptyIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
+        }
+
+        /// <summary>
+        /// Gets the internal save state for campus parking lots.
+        /// </summary>
+        public ParkingLotSaveState[] SaveGameState()
+        {
+            return Utils.GetDistinct(_lotAtGridPosition)
+                .Select(lot =>
+                {
+                    return new ParkingLotSaveState
+                    {
+                        StartX = lot.Footprint.Start.x,
+                        StartZ = lot.Footprint.Start.z,
+                        EndX = lot.Footprint.End.x,
+                        EndZ = lot.Footprint.End.z,
+                    };
+                })
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Load the save game state.
+        /// </summary>
+        public void LoadGameState(ParkingLotSaveState[] parkingLotState)
+        {
+            if (parkingLotState != null)
+            {
+                foreach (ParkingLotSaveState savedParkingLot in parkingLotState)
+                {
+                    Rectangle footprint = new Rectangle(
+                        new Point2(savedParkingLot.StartX, savedParkingLot.StartZ),
+                        new Point2(savedParkingLot.EndX, savedParkingLot.EndZ));
+
+                    _campusManager.ConstructParkingLot(footprint);
+                }
+            }
         }
 
         /// <summary>
@@ -36,7 +74,7 @@ namespace Campus
         /// <returns>True if a lot exists at position, false otherwise.</returns>
         public bool IsParkingLotAtPosition(Point2 pos)
         {
-            return _lots[pos.x, pos.z] != null;
+            return _lotAtGridPosition[pos.x, pos.z] != null;
         }
 
         /// <summary>
@@ -48,7 +86,7 @@ namespace Campus
         /// <returns>True if a lot edge exists at position, false otherwise.</returns>
         public bool IsOnEdgeOfParkingLot(Point2 pos, bool disallowCorners = false)
         {
-            ParkingLot lot = _lots[pos.x, pos.z];
+            ParkingLot lot = _lotAtGridPosition[pos.x, pos.z];
             if (lot != null)
             {
                 Rectangle rect = lot.Footprint;
@@ -82,7 +120,7 @@ namespace Campus
             {
                 for (int z = rectangle.MinZ; z <= rectangle.MaxZ; ++z)
                 {
-                    _lots[x, z] = parkingLot;
+                    _lotAtGridPosition[x, z] = parkingLot;
                 }
             }
 
@@ -119,7 +157,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> DestroyParkingLotAt(Point2 pos)
         {
-            ParkingLot parkingLot = _lots[pos.x, pos.z];
+            ParkingLot parkingLot = _lotAtGridPosition[pos.x, pos.z];
             if (parkingLot == null)
             {
                 yield break;
@@ -129,7 +167,7 @@ namespace Campus
             {
                 for (int z = parkingLot.Footprint.MinZ; z <= parkingLot.Footprint.MaxZ; ++z)
                 {
-                    _lots[x, z] = null;
+                    _lotAtGridPosition[x, z] = null;
 
                     // Clean up the path and the road while we are at it
                     _campusManager.DestroyAt(new Point2(x, z), CampusGridUse.Path);
@@ -149,7 +187,7 @@ namespace Campus
         /// </summary>
         public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetParkingLotMaterial(Point2 pos)
         {
-            ParkingLot parkingLot = _lots[pos.x, pos.z];
+            ParkingLot parkingLot = _lotAtGridPosition[pos.x, pos.z];
 
             if (parkingLot == null)
             {

@@ -23,12 +23,31 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
-            _road = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
+            
             SetupRoadMapping();
 
             _startIndex = campusData.Terrain.SubmaterialRoadsIndex;
             _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
             _emptyGrassIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
+
+            _road = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
+        }
+
+        /// <summary>
+        /// Gets the internal save state for campus roads.
+        /// </summary>
+        /// <returns></returns>
+        public bool[,] SaveGameState()
+        {
+            return _road;
+        }
+
+        /// <summary>
+        /// Load the save game state.
+        /// </summary>
+        public void LoadGameState(bool[,] savedRoadData)
+        {
+            Utils.CopyArray(savedRoadData, _road);
         }
 
         /// <summary>

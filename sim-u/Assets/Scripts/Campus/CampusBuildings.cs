@@ -2,6 +2,7 @@
 using Common;
 using GameData;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Campus
@@ -12,14 +13,54 @@ namespace Campus
     public class CampusBuildings
     {
         private readonly CampusManager _campusManager;
+        private readonly GameDataStore _gameData;
         private readonly GridMesh _terrain;
-        private readonly Building[,] _building;
+
+        private readonly Building[,] _buildingAtGridPosition;
 
         public CampusBuildings(CampusData campusData, GameAccessor accessor)
         {
             _campusManager = accessor.CampusManager;
+            _gameData = accessor.GameData;
             _terrain = accessor.Terrain;
-            _building = new Building[_terrain.CountX, _terrain.CountZ];
+            _buildingAtGridPosition = new Building[_terrain.CountX, _terrain.CountZ];
+        }
+
+        /// <summary>
+        /// Gets the internal save state for campus buildings.
+        /// </summary>
+        public BuildingSaveState[] SaveGameState()
+        {
+            return Utils.GetDistinct(_buildingAtGridPosition)
+                .Select(building =>
+                {
+                    Point3 location = _terrain.Convert.WorldToGrid(building.transform.position);
+                    return new BuildingSaveState
+                    {
+                        BuildingDataName = building.Data.Name,
+                        PositionX = location.x,
+                        PositionY = location.y,
+                        PositionZ = location.z,
+                        Rotation = building.transform.rotation.z, // TODO: Rotations should happen eventually.
+                    };
+                })
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Load the save game state.
+        /// </summary>
+        public void LoadGameState(BuildingSaveState[] buildingState)
+        {
+            if (buildingState != null)
+            {
+                foreach (BuildingSaveState savedBuilding in buildingState)
+                {
+                    BuildingData buildingData = _gameData.Get<BuildingData>(GameDataType.Building, savedBuilding.BuildingDataName);
+                    Point3 position = new Point3(savedBuilding.PositionX, savedBuilding.PositionY, savedBuilding.PositionZ);
+                    _campusManager.ConstructBuilding(buildingData, position);
+                }
+            }
         }
 
         /// <summary>
@@ -29,7 +70,7 @@ namespace Campus
         /// <returns>True if a building exists at position, false otherwise.</returns>
         public bool BuildingAtPosition(Point2 pos)
         {
-            return _building[pos.x, pos.z] != null;
+            return _buildingAtGridPosition[pos.x, pos.z] != null;
         }
 
         /// <summary>
@@ -57,7 +98,7 @@ namespace Campus
 
                     if (buildingData.Footprint[dx, dz])
                     {
-                        _building[gridX, gridZ] = building;
+                        _buildingAtGridPosition[gridX, gridZ] = building;
                         yield return new Point2(gridX, gridZ);
                     }
                 }
@@ -71,7 +112,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> DestroyBuildingAt(Point2 pos)
         {
-            Building building = _building[pos.x, pos.z];
+            Building building = _buildingAtGridPosition[pos.x, pos.z];
             if (building != null)
             {
                 // Potential Bug: Does this WorldToGrid always work?
@@ -89,7 +130,7 @@ namespace Campus
 
                         if (building.Data.Footprint[dx, dz])
                         {
-                            _building[gridX, gridZ] = null;
+                            _buildingAtGridPosition[gridX, gridZ] = null;
                             yield return new Point2(gridX, gridZ);
                         }
                     }

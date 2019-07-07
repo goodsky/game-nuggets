@@ -425,6 +425,10 @@ namespace Campus
             return new CampusSaveState
             {
                 Terrain = _terrain.SaveGameState(),
+                Buildings = _buildings.SaveGameState(),
+                PathGrids = _paths.SaveGameState(),
+                RoadVertices = _roads.SaveGameState(),
+                ParkingLots = _lots.SaveGameState(),
             };
         }
 
@@ -460,6 +464,16 @@ namespace Campus
         /// <param name="gameData">Campus game data.</param>
         protected override void LinkData(CampusData gameData)
         {
+            // The link step runs after all intial data has been loaded.
+            // The perfect time to load the saved game data.
+            CampusSaveState savedGame = gameData.SavedData?.Campus;
+            if (savedGame != null)
+            {
+                _buildings.LoadGameState(savedGame.Buildings);
+                _paths.LoadGameState(savedGame.PathGrids);
+                _roads.LoadGameState(savedGame.RoadVertices);
+                _lots.LoadGameState(savedGame.ParkingLots);
+            }
         }
 
         /// <summary>

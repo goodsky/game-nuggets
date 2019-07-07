@@ -478,6 +478,8 @@ namespace Campus.GridTerrain
 
             var grid = _gridData[x, z];
             grid.SubmaterialIndex = submaterialId;
+            grid.Rotation = rotation;
+            grid.Inversion = inversion;
 
             _uv[grid.VertexIndex + (Vertex.BottomLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.BottomRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);

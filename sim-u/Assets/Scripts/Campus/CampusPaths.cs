@@ -23,13 +23,30 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
-            _path = new bool[_terrain.CountX, _terrain.CountZ];
 
             SetupPathMapping();
 
             _startIndex = campusData.Terrain.SubmaterialPathsIndex;
             _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
             _emptyIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
+
+            _path = new bool[_terrain.CountX, _terrain.CountZ];
+        }
+
+        /// <summary>
+        /// Gets the internal save state for campus paths.
+        /// </summary>
+        public bool[,] SaveGameState()
+        {
+            return _path;
+        }
+
+        /// <summary>
+        /// Load the save game state.
+        /// </summary>
+        public void LoadGameState(bool[,] savedPathData)
+        {
+            Utils.CopyArray(savedPathData, _path);
         }
 
         /// <summary>
