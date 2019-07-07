@@ -75,9 +75,7 @@ namespace Common
         protected void Start()
         {
             Current = GameState.Selecting;
-
-            RegisterController(GameState.SavingGame, new SaveGameController());
-            RegisterController(GameState.LoadingGame, new LoadGameController());
+            LoadControllers();
         }
 
         /// <summary>
@@ -89,21 +87,6 @@ namespace Common
             {
                 controller.Update();
             }
-        }
-
-        /// <summary>
-        /// Register a new state controller with the state machine.
-        /// </summary>
-        /// <param name="state">The state to activate the controller for.</param>
-        /// <param name="controller">The controller to register.</param>
-        public void RegisterController(GameState state, Controller controller)
-        {
-            if (!_stateControllers.ContainsKey(state))
-            {
-                _stateControllers[state] = new List<Controller>();
-            }
-
-            _stateControllers[state].Add(controller);
         }
 
         /// <summary>
@@ -230,6 +213,24 @@ namespace Common
                         controller.TerrainVertexSelectionUpdate(_lastTerrainVertexSelection);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Use reflection to find controllers with the <see cref="StateControllerAttribute"/>.
+        /// Register them into the state machine.
+        /// </summary>
+        private void LoadControllers()
+        {
+            foreach ((GameState state, Controller controller) in StateControllerLoader.LoadControllers())
+            {
+                if (!_stateControllers.ContainsKey(state))
+                {
+                    _stateControllers[state] = new List<Controller>();
+                }
+
+                GameLogger.Debug("Registered StateController {0} for state {1}", controller.GetType().Name, state.ToString());
+                _stateControllers[state].Add(controller);
             }
         }
     }

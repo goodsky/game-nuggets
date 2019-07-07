@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingPath game state.
     /// </summary>
+    [StateController(HandledState = GameState.PlacingPath)]
     internal class PlacingPathController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -18,12 +19,11 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public PlacingPathController(GridMesh terrain)
+        public PlacingPathController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
             _cursor = new LineCursor(
-                terrain,
+                _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 

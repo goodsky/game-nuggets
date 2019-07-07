@@ -7,7 +7,8 @@ namespace Common
 {
     internal enum LogLevel
     {
-        Info = 0,       // Verbose information
+        Debug = 0,      // Verbose information
+        Info,           // Standard information
         Warning,        // Abnormal behavior
         Error,          // Critical errors
                         // It is important to order these enums from most verbose to least verbose!
@@ -40,9 +41,9 @@ namespace Common
 
                 if (Application.isEditor)
                 {
-                    GameLogger.CreateUnityLogger(LogLevel.Info);
+                    GameLogger.CreateUnityLogger(LogLevel.Debug);
                 }
-                GameLogger.CreateMyDocumentsStream("debug", LogLevel.Info);
+                GameLogger.CreateMyDocumentsStream("debug", LogLevel.Debug);
             }
             else if (existingLoggers.Length == 1)
             {
@@ -151,6 +152,16 @@ namespace Common
                     stream.Log(level, message, args);
                 }
             }
+        }
+
+        /// <summary>
+        /// Write a log message at Debug level.
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="args">The arguments to the message</param>
+        public static void Debug(string message, params object[] args)
+        {
+            Log(LogLevel.Debug, message, args);
         }
 
         /// <summary>
@@ -266,14 +277,15 @@ namespace Common
                 {
                     switch (level)
                     {
+                        case LogLevel.Debug:
                         case LogLevel.Info:
-                            Debug.LogFormat(message, args);
+                            UnityEngine.Debug.LogFormat(message, args);
                             break;
                         case LogLevel.Warning:
-                            Debug.LogWarningFormat(message, args);
+                            UnityEngine.Debug.LogWarningFormat(message, args);
                             break;
                         case LogLevel.Error:
-                            Debug.LogErrorFormat(message, args);
+                            UnityEngine.Debug.LogErrorFormat(message, args);
                             break;
                     }
                 }

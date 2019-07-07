@@ -11,14 +11,15 @@ namespace Campus
     /// </summary>
     public class CampusBuildings
     {
-        private GameAccessor _accessor = new GameAccessor();
-        private GridMesh _terrain;
-        private Building[,] _building;
+        private readonly CampusManager _campusManager;
+        private readonly GridMesh _terrain;
+        private readonly Building[,] _building;
 
-        public CampusBuildings(GridMesh terrain)
+        public CampusBuildings(CampusData campusData, GameAccessor accessor)
         {
-            _terrain = terrain;
-            _building = new Building[terrain.CountX, terrain.CountZ];
+            _campusManager = accessor.CampusManager;
+            _terrain = accessor.Terrain;
+            _building = new Building[_terrain.CountX, _terrain.CountZ];
         }
 
         /// <summary>
@@ -41,7 +42,7 @@ namespace Campus
         {
             var building = CampusFactory.GenerateBuilding(
                         buildingData,
-                        _accessor.CampusManager.transform,
+                        _campusManager.transform,
                         _terrain.Convert.GridToWorld(location) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/,
                         Quaternion.identity);
 

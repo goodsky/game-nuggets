@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingContruction game state.
     /// </summary>
+    [StateController(HandledState = GameState.PlacingConstruction)]
     internal class PlacingConstructionController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -18,13 +19,12 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public PlacingConstructionController(GridMesh terrain)
+        public PlacingConstructionController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
             _building = null;
             _cursors = new FootprintCursor(
-                terrain,
+                _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 

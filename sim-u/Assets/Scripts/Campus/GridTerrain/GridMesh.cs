@@ -49,7 +49,7 @@ namespace Campus.GridTerrain
     /// A mesh created of square grids. Wraps around Unity's mesh behaviours.
     /// Supports setting the material on individual grids using dynamic submeshes.
     /// </summary>
-    public class GridMesh : IDisposable
+    public class GridMesh : MonoBehaviour
     {
         /// <summary>Gets the length of the sides of a grid square in Unity world units.</summary>
         public float GridSquareSize { get; private set; }
@@ -84,9 +84,6 @@ namespace Campus.GridTerrain
         /// <summary>Gets the Unity collider for the terrain.</summary>
         public Collider Collider { get { return _collider; } }
 
-        /// <summary>Gets the Unity game object that the mesh behaviours are attached to.</summary>
-        public GameObject GameObject { get; private set; }
-
         /// <summary>Gets the selectable component of the grid. (Note: set after the constructor)</summary>
         public Selectable Selectable { get; set; }
 
@@ -117,17 +114,8 @@ namespace Campus.GridTerrain
         /// <param name="collider">The Unity MeshCollider behavior.</param>
         /// <param name="renderer">The Unity MeshRenderer behavior.</param>
         /// <param name="args">The arguments used to create the GridMesh.</param>
-        public GridMesh(Mesh mesh, MeshCollider collider, MeshRenderer renderer, GridMeshArgs args)
+        public void InitializeGridMesh(GridMeshArgs args)
         {
-            if (mesh == null)
-                throw new ArgumentNullException("mesh");
-
-            if (collider == null)
-                throw new ArgumentNullException("collider");
-
-            if (renderer == null)
-                throw new ArgumentNullException("renderer");
-
             if (args == null)
                 throw new ArgumentNullException("args");
 
@@ -140,10 +128,9 @@ namespace Campus.GridTerrain
                 args.GridMaterial == null ? "NULL" : args.GridMaterial.name,
                 args.SubmaterialSize);
 
-            _mesh = mesh;
-            _collider = collider;
-            _renderer = renderer;
-            GameObject = renderer.gameObject;
+            _mesh = GetComponent<MeshFilter>()?.mesh ?? throw new InvalidOperationException("GridMesh must have a Mesh");
+            _collider = GetComponent<MeshCollider>() ?? throw new InvalidOperationException("GridMesh must have a MeshCollider");
+            _renderer = GetComponent<MeshRenderer>() ?? throw new InvalidOperationException("GridMesh must have a MeshRenderer");
 
             GridSquareSize = args.GridSquareSize;
             GridStepSize = args.GridStepSize;
@@ -175,8 +162,8 @@ namespace Campus.GridTerrain
             Convert = new GridConverter(
                 gridSize: GridSquareSize,
                 gridStepSize: GridStepSize,
-                minTerrainX: GameObject.transform.position.x,
-                minTerrainZ: GameObject.transform.position.z,
+                minTerrainX: gameObject.transform.position.x,
+                minTerrainZ: gameObject.transform.position.z,
                 minTerrainY: MaxDepth * -GridStepSize);
 
             Editor = new SafeTerrainEditor(this);
@@ -686,17 +673,6 @@ namespace Campus.GridTerrain
 
             _collider.sharedMesh = _mesh;
             _renderer.materials = new[] { _material };
-        }
-
-        /// <summary>
-        /// Dispose dynamic resources.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_mesh != null)
-            {
-                _mesh.Clear();
-            }
         }
 
         /// <summary>

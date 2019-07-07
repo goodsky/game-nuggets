@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingParkingLot game state.
     /// </summary>
+    [StateController(HandledState = GameState.SelectingParkingLot)]
     internal class SelectingParkingLotController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -19,14 +20,13 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public SelectingParkingLotController(GridMesh terrain)
+        public SelectingParkingLotController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
 
             _validMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid");
             _invalidMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid");
-            _cursor = GridCursor.Create(terrain, _validMaterial);
+            _cursor = GridCursor.Create(_terrain, _validMaterial);
 
             OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;

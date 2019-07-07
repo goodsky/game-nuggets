@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game Controller that runs during the Demolishing State.
     /// </summary>
+    [StateController(HandledState = GameState.Demolishing)]
     internal class DemolishingController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -18,12 +19,12 @@ namespace Campus
 
         private Point2 _lastDemolishedGrid = Point2.Null;
 
-        public DemolishingController(GridMesh terrain)
+        public DemolishingController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
             _validMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid");
             _invalidMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid");
-            _cursor = GridCursor.Create(terrain, _validMaterial);
+            _cursor = GridCursor.Create(_terrain, _validMaterial);
 
             OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;

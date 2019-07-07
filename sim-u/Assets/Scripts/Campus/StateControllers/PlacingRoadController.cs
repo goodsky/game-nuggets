@@ -1,7 +1,6 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
-using System;
 using UnityEngine;
 
 namespace Campus
@@ -9,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingRoad game state.
     /// </summary>
+    [StateController(HandledState = GameState.PlacingRoad)]
     internal class PlacingRoadController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -20,16 +20,15 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public PlacingRoadController(GridMesh terrain)
+        public PlacingRoadController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
             _cursor1 = new LineCursor(
-                terrain,
+                _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
             _cursor2 = new LineCursor(
-                terrain,
+                _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 

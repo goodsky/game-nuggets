@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingTerrain game state.
     /// </summary>
+    [StateController(HandledState = GameState.EditingTerrain)]
     internal class EditingTerrainController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -20,11 +21,10 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to edit.</param>
-        public EditingTerrainController(GridMesh terrain)
+        public EditingTerrainController()
         {
-            _terrain = terrain;
-            _cursor = GridCursor.Create(terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain2"));
+            _terrain = Accessor.Terrain;
+            _cursor = GridCursor.Create(_terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain2"));
         }
 
         /// <summary>

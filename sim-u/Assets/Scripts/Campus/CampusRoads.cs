@@ -11,7 +11,7 @@ namespace Campus
     /// </summary>
     public class CampusRoads
     {
-        private readonly GameAccessor _accessor = new GameAccessor();
+        private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
         private readonly bool[,] _road;
 
@@ -19,10 +19,11 @@ namespace Campus
         private readonly int _invalidIndex;
         private readonly int _emptyGrassIndex;
 
-        public CampusRoads(CampusData campusData, GridMesh terrain)
+        public CampusRoads(CampusData campusData, GameAccessor accessor)
         {
-            _terrain = terrain;
-            _road = new bool[terrain.CountX + 1, terrain.CountZ + 1];
+            _campusManager = accessor.CampusManager;
+            _terrain = accessor.Terrain;
+            _road = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
             SetupRoadMapping();
 
             _startIndex = campusData.Terrain.SubmaterialRoadsIndex;
@@ -117,10 +118,10 @@ namespace Campus
                         Point2 scan = new Point2(scanX, scanZ);
 
                         // Crosswalks may need to be destroyed.
-                        if (_accessor.CampusManager.GetGridUse(scan) == CampusGridUse.Crosswalk &&
+                        if (_campusManager.GetGridUse(scan) == CampusGridUse.Crosswalk &&
                             !IsValidForCrosswalk(scan))
                         {
-                            _accessor.CampusManager.DestroyAt(scan, filter: CampusGridUse.Crosswalk);
+                            _campusManager.DestroyAt(scan, filter: CampusGridUse.Crosswalk);
                         }
 
                         yield return scan;

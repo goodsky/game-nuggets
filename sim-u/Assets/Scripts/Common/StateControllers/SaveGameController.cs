@@ -8,6 +8,7 @@ namespace Common
     /// <summary>
     /// Game Controller that runs during the SaveGame state.
     /// </summary>
+    [StateController(HandledState = GameState.SavingGame)]
     internal class SaveGameController : GameStateMachine.Controller
     {
         public SaveGameController()

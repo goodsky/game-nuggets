@@ -434,26 +434,13 @@ namespace Campus
         /// <param name="gameData">Campus game data.</param>
         protected override void LoadData(CampusData gameData)
         {
-            CampusFactory.GenerateTerrain(transform, gameData, out GridMesh terrain);
-
-            _terrain = terrain;
-            _buildings = new CampusBuildings(terrain);
-            _paths = new CampusPaths(gameData, terrain);
-            _roads = new CampusRoads(gameData, terrain);
-            _lots = new CampusParkingLots(gameData, terrain);
+            _terrain = CampusFactory.GenerateTerrain(transform, gameData);
+            _buildings = new CampusBuildings(gameData, _accessor);
+            _paths = new CampusPaths(gameData, _accessor);
+            _roads = new CampusRoads(gameData, _accessor);
+            _lots = new CampusParkingLots(gameData, _accessor);
 
             _defaultMaterialIndex = gameData.Terrain.SubmaterialEmptyGrassIndex;
-
-            _accessor.StateMachine.RegisterController(GameState.SelectingTerrain, new SelectingTerrainController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.EditingTerrain, new EditingTerrainController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.PlacingConstruction, new PlacingConstructionController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.SelectingPath, new SelectingPathController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.PlacingPath, new PlacingPathController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.SelectingRoad, new SelectingRoadController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.PlacingRoad, new PlacingRoadController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.SelectingParkingLot, new SelectingParkingLotController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.PlacingParkingLot, new PlacingParkingLotController(terrain));
-            _accessor.StateMachine.RegisterController(GameState.Demolishing, new DemolishingController(terrain));
 
             var footprintCreatorObject = new GameObject("FootprintCreator");
             using (var footprintCreator = footprintCreatorObject.AddComponent<FootprintCreator>())

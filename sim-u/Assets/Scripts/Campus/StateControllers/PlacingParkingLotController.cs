@@ -1,7 +1,6 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
-using System;
 using UnityEngine;
 
 namespace Campus
@@ -9,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the PlacingParkingLot game state.
     /// </summary>
+    [StateController(HandledState = GameState.PlacingParkingLot)]
     internal class PlacingParkingLotController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -19,12 +19,11 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public PlacingParkingLotController(GridMesh terrain)
+        public PlacingParkingLotController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
             _cursor = new RectangleCursor(
-                terrain,
+                _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 

@@ -42,7 +42,7 @@ namespace Campus
         public static GridCursor Create(GridMesh terrain, Material material)
         {
             GameObject cursorObject = new GameObject("GridCursor");
-            cursorObject.transform.parent = terrain.GameObject.transform;
+            cursorObject.transform.parent = terrain.gameObject.transform;
 
             var cursor = cursorObject.AddComponent<GridCursor>();
             cursor.Terrain = terrain;

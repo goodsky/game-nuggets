@@ -11,17 +11,18 @@ namespace Campus
     /// </summary>
     public class CampusPaths
     {
-        private GameAccessor _accessor = new GameAccessor();
-        private GridMesh _terrain;
-        private bool[,] _path;
+        private readonly CampusManager _campusManager;
+        private readonly GridMesh _terrain;
+        private readonly bool[,] _path;
 
-        private int _startIndex;
-        private int _invalidIndex;
-        private int _emptyIndex;
+        private readonly int _startIndex;
+        private readonly int _invalidIndex;
+        private readonly int _emptyIndex;
 
-        public CampusPaths(CampusData campusData, GridMesh terrain)
+        public CampusPaths(CampusData campusData, GameAccessor accessor)
         {
-            _terrain = terrain;
+            _campusManager = accessor.CampusManager;
+            _terrain = accessor.Terrain;
             _path = new bool[_terrain.CountX, _terrain.CountZ];
 
             SetupPathMapping();
@@ -100,7 +101,7 @@ namespace Campus
                     int checkZ = pos.z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
                         (_terrain.GridInBounds(checkX, checkZ) &&
-                        (_accessor.CampusManager.GetGridUse(new Point2(checkX, checkZ)) & CampusGridUse.Path) == CampusGridUse.Path)
+                        (_campusManager.GetGridUse(new Point2(checkX, checkZ)) & CampusGridUse.Path) == CampusGridUse.Path)
                          ? 1 : 0;
                 }
 

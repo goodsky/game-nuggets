@@ -8,6 +8,7 @@ namespace Common
     /// <summary>
     /// Game Controller that runs during the LoadGame state.
     /// </summary>
+    [StateController(HandledState = GameState.LoadingGame)]
     internal class LoadGameController : GameStateMachine.Controller
     {
         public LoadGameController()

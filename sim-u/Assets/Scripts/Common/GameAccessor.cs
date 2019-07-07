@@ -1,10 +1,7 @@
 ﻿using Campus;
+using Campus.GridTerrain;
 using GameData;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UI;
 using UnityEngine;
 
@@ -22,12 +19,14 @@ namespace Common
         private LazyGameObject<GameStateMachine> _lazyStateMachine = new LazyGameObject<GameStateMachine>();
         private LazyGameObject<UIManager> _lazyUiManager = new LazyGameObject<UIManager>();
         private LazyGameObject<CampusManager> _lazyCampusManager = new LazyGameObject<CampusManager>();
+        private LazyGameObject<GridMesh> _lazyTerrain = new LazyGameObject<GridMesh>();
 
         public Game Game => _lazyGame.Value;
         public GameDataStore GameData => _lazyGameData.Value;
         public GameStateMachine StateMachine => _lazyStateMachine.Value;
         public UIManager UiManager => _lazyUiManager.Value;
         public CampusManager CampusManager => _lazyCampusManager.Value;
+        public GridMesh Terrain => _lazyTerrain.Value;
 
         private class LazyGameObject<T> where T : UnityEngine.Object
         {
