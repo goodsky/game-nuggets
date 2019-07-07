@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Common
@@ -18,7 +17,7 @@ namespace Common
     /// Class to write logs out to a file or the Unity editor.
     /// Based on the setup configuration, the logs will be swallowed, printed to console, or printed to different files.
     /// </summary>
-    static class GameLogger
+    internal class GameLogger : MonoBehaviour
     {
         private static readonly int NumberOfFilesToKeepInMyDocuments = 10;
         private static readonly string LogsFolder = "SimU";
@@ -27,11 +26,50 @@ namespace Common
         private static string[] LogLevelStrings = Enum.GetNames(typeof(LogLevel));
 
         /// <summary>
-        /// Hook up with Unity at startup.
+        /// Ensure the singleton game logger gameobject exists.
         /// </summary>
-        static GameLogger()
+        public static void EnsureSingletonExists()
+        {
+            GameLogger[] existingLoggers = FindObjectsOfType<GameLogger>();
+
+            if (existingLoggers.Length == 0)
+            {
+                // Create the singleton GameLogger.
+                var logger = new GameObject(nameof(GameLogger));
+                logger.AddComponent<GameLogger>();
+
+                if (Application.isEditor)
+                {
+                    GameLogger.CreateUnityLogger(LogLevel.Info);
+                }
+                GameLogger.CreateMyDocumentsStream("debug", LogLevel.Info);
+            }
+            else if (existingLoggers.Length == 1)
+            {
+                GameLogger.Info("GameLogger already exists in scene.");
+            }
+            else if (existingLoggers.Length > 1)
+            {
+                GameLogger.FatalError("More than one GameLogger exists in the scene!");
+            }
+        }
+
+        /// <summary>
+        /// Unity ctor (kindof)
+        /// </summary>
+        protected void Awake()
         {
             Application.logMessageReceived += HandleUnityLog;
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        /// <summary>
+        /// Unity dtor (kindof)
+        /// </summary>
+        protected void OnApplicationQuit()
+        {
+            GameLogger.Info("Application is quiting.");
+            GameLogger.Close();
         }
 
         /// <summary>
@@ -213,6 +251,7 @@ namespace Common
                 if (_stream != null)
                 {
                     _stream.Close();
+                    _stream = null;
                 }
             }
 

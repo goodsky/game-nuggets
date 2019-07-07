@@ -114,6 +114,7 @@ namespace GameData
             {
                 var colorPalette = property.GetCustomAttribute<ColorPaletteAttribute>();
                 var resourceLoader = property.GetCustomAttribute<ResourceLoaderAttribute>();
+                var saveGameLoader = property.GetCustomAttribute<SavedGameLoaderAttribute>();
 
                 // Case 1) The property has a ColorPaletteAttribute. Load the Color.
                 if (colorPalette != null)
@@ -162,18 +163,33 @@ namespace GameData
                     UnityEngine.Object resource = ResourceLoader.Load(resourceLoader.Type, resourceLoader.Category, resourceName, property.PropertyType);
                     property.SetValue(gameData, resource);
                 }
-                // Case 3) The type is from the GameData namespace. Recursively attempt to load data.
+                // Case 3) The property has a SavedGameLoader. Try to load from the saved game state.
+                else if (saveGameLoader != null)
+                {
+                    string saveGamePath = Game.SavedGamePath;
+
+                    if (string.IsNullOrEmpty(saveGamePath))
+                    {
+                        GameLogger.Warning("Not loading any save game. SavedGamePath was null.");
+                        continue;
+                    }
+
+                    if (SavedGameLoader.TryReadFromDisk(saveGamePath, out GameSaveState save))
+                    {
+                        property.SetValue(gameData, save);
+                    }
+                }
+                // Case 4) The type is from the GameData namespace. Recursively attempt to load data.
                 else if (property.GetValue(gameData) != null && 
                     property.PropertyType.FullName.StartsWith("GameData"))
                 {
                     object propertyValue = property.GetValue(gameData);
                     LoadDataInternal(propertyValue);
                 }
-                // Case 4) The type is an IEnumerable. Unspool the objects and recursively load data.
+                // Case 5) The type is an IEnumerable. Unspool the objects and recursively load data.
                 else if (property.GetValue(gameData) != null &&
                     property.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
                 {
-                    // Case 2: Unspool an enumerable of GameData objects
                     foreach (object item in (IEnumerable)property.GetValue(gameData, null))
                     {
                         if (item.GetType().FullName.StartsWith("GameData"))

@@ -1,6 +1,5 @@
 ﻿using GameData;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEditor;
 using UnityEngine;
 
@@ -35,11 +34,8 @@ namespace Common
                     Version = GameSaveState.CurrentVersion,
                     Campus = Accessor.CampusManager.SaveGameState(),
                 };
-                using (Stream fout = new FileStream(path, FileMode.Create, FileAccess.Write))
-                {
-                    var bf = new BinaryFormatter();
-                    bf.Serialize(fout, state);
-                }
+
+                SavedGameLoader.WriteToDisk(path, state);
             }
 
             Accessor.StateMachine.StopDoing();

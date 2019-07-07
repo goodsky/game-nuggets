@@ -9,6 +9,9 @@ namespace GameData
     [XmlRoot("CampusData")]
     public class CampusData
     {
+        [SavedGameLoader]
+        public GameSaveState SavedData { get; set; }
+
         [XmlElement("Terrain")]
         public TerrainData Terrain { get; set; }
 

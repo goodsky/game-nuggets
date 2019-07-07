@@ -22,7 +22,7 @@ namespace Campus
         public CampusRoads(CampusData campusData, GridMesh terrain)
         {
             _terrain = terrain;
-            _road = new bool[campusData.Terrain.GridCountX + 1, campusData.Terrain.GridCountZ + 1];
+            _road = new bool[terrain.CountX + 1, terrain.CountZ + 1];
             SetupRoadMapping();
 
             _startIndex = campusData.Terrain.SubmaterialRoadsIndex;

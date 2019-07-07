@@ -1,8 +1,7 @@
-﻿using GameData;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+﻿using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Common
 {
@@ -29,14 +28,10 @@ namespace Common
             if (!string.IsNullOrEmpty(path))
             {
                 GameLogger.Info("Loading game from '{0}'.", path);
+                Game.SavedGamePath = path;
 
-                using (Stream fout = new FileStream(path, FileMode.Open, FileAccess.Read))
-                {
-                    var bf = new BinaryFormatter();
-                    GameSaveState state = (GameSaveState)bf.Deserialize(fout);
-
-                    // Accessor.Game.LoadGame(state);
-                }
+                // Reload the game scene.
+                SceneManager.LoadScene(Constant.GameSceneName);
             }
 
             Accessor.StateMachine.StopDoing();

@@ -7,6 +7,8 @@
     /// </summary>
     public static class Constant
     {
+        public const string GameSceneName = "sim-u";
+
         /// <summary>
         /// The size of a grid on the map in unity units.
         /// </summary>

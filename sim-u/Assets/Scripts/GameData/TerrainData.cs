@@ -26,16 +26,16 @@ namespace GameData
         [XmlElement("SubmaterialParkingLotsIndex")]
         public int SubmaterialParkingLotsIndex { get; set; }
 
-        [XmlElement("GridCountX")]
-        public int GridCountX { get; set; }
+        [XmlElement("DefaultGridCountX")]
+        public int DefaultGridCountX { get; set; }
 
-        [XmlElement("GridCountZ")]
-        public int GridCountZ { get; set; }
+        [XmlElement("DefaultGridCountZ")]
+        public int DefaultGridCountZ { get; set; }
 
-        [XmlElement("GridCountY")]
-        public int GridCountY { get; set; }
+        [XmlElement("DefaultGridCountY")]
+        public int DefaultGridCountY { get; set; }
 
-        [XmlElement("StartingHeight")]
-        public int StartingHeight { get; set; }
+        [XmlElement("DefaultMaxDepth")]
+        public int DefaultMaxDepth { get; set; }
     }
 }

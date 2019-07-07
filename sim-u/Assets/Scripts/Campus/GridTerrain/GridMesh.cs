@@ -12,28 +12,37 @@ namespace Campus.GridTerrain
     public class GridMeshArgs
     {
         /// <summary>Size of each square in Unity world units.</summary>
-        public float GridSquareSize = 1.0f;
+        public float GridSquareSize;
 
         /// <summary>Size of each vertical step in the grid in Unity world units.</summary>
-        public float GridStepSize = 0.4f;
-
-        /// <summary>Number of grid squares along the x-axis.</summary>
-        public int CountX = 16;
-
-        /// <summary>Number of grid steps along the y-axis.</summary>
-        public int CountY = 8;
-
-        /// <summary>Number of grid squares along the z-axis.</summary>
-        public int CountZ = 16;
-
-        /// <summary>The starting grid height of the mesh.</summary>
-        public int StartingHeight = 3;
-
-        /// <summary>Material to use on the grid.</summary>
-        public Material GridMaterial = null;
+        public float GridStepSize;
 
         /// <summary>The size of the grid squares on the material.</summary>
-        public int SubmaterialSize = 64;
+        public int SubmaterialSize;
+
+        /// <summary>Material to use on the grid.</summary>
+        public Material GridMaterial;
+
+        /// <summary>Number of grid squares along the x-axis.</summary>
+        public int CountX;
+
+        /// <summary>Number of grid steps along the y-axis.</summary>
+        public int CountY;
+
+        /// <summary>Number of grid squares along the z-axis.</summary>
+        public int CountZ;
+
+        /// <summary>The maximum number of grid steps down you can move the terrain.</summary>
+        public int MaxDepth;
+
+        /// <summary>The starting grid height of the mesh.</summary>
+        public int[,] VertexHeights;
+
+        /// <summary>The starting grid state of the mesh.</summary>
+        public GridData[,] GridData;
+
+        /// <summary>The starting anchored state of the mesh. (For safe terrain editor).</summary>
+        public bool[,] GridAnchored;
     }
 
     /// <summary>
@@ -57,6 +66,9 @@ namespace Campus.GridTerrain
         /// <summary>Gets the number of grid squares along the y-axis.</summary>
         public int CountY { get; private set; }
 
+        /// <summary>The maximum depth that the terrain can go down.</summary>
+        public int MaxDepth { get; private set; }
+
         /// <summary>The size of submaterial squares.</summary>
         public int SubmaterialSize { get; private set; }
 
@@ -77,18 +89,6 @@ namespace Campus.GridTerrain
 
         /// <summary>Gets the selectable component of the grid. (Note: set after the constructor)</summary>
         public Selectable Selectable { get; set; }
-
-        /// <summary>
-        /// Stores pointers into the mesh to locate a grid square.
-        /// </summary>
-        private class GridData
-        {
-            /// <summary>Index to the start of the grid in the vertices array.</summary>
-            public int VertexIndex;
-
-            /// <summary>Current submaterial.</summary>
-            public int SubmaterialIndex;
-        }
 
         // Stores information about the grid square at [X, Z]
         private GridData[,] _gridData;
@@ -131,14 +131,14 @@ namespace Campus.GridTerrain
             if (args == null)
                 throw new ArgumentNullException("args");
 
-            GameLogger.Info("Generating GridMesh. {0}x{1} squares @ {2:0.00f}; Starting height {3} of {4} @ {5:0.00f}; Material '{6}';",
-                args.CountX, 
+            GameLogger.Info("Grid Mesh is loaded. Grid Count=({0}x{1}x{2}); Grid Size=({3:0.00f}x{4:0.00f}x{3:0.00f}); Material='{5}'; Submaterial Size={6}",
+                args.CountX,
+                args.CountY,
                 args.CountZ,
-                args.GridSquareSize, 
-                args.StartingHeight, 
-                args.CountY, 
+                args.GridSquareSize,
                 args.GridStepSize,
-                args.GridMaterial == null ? "NULL" : args.GridMaterial.name);
+                args.GridMaterial == null ? "NULL" : args.GridMaterial.name,
+                args.SubmaterialSize);
 
             _mesh = mesh;
             _collider = collider;
@@ -147,16 +147,18 @@ namespace Campus.GridTerrain
 
             GridSquareSize = args.GridSquareSize;
             GridStepSize = args.GridStepSize;
+            SubmaterialSize = args.SubmaterialSize;
+
             CountX = args.CountX;
             CountZ = args.CountZ;
             CountY = args.CountY;
-            SubmaterialSize = args.SubmaterialSize;
+            MaxDepth = args.MaxDepth;
 
             if (args.GridMaterial.mainTexture.width % SubmaterialSize != 0 ||
                 args.GridMaterial.mainTexture.height % SubmaterialSize != 0)
             {
                 throw new InvalidOperationException(string.Format("GridMesh material '{0}' is not a {1}x{1} grid sheet. [{2}x{3}]",
-                    args.GridMaterial.name, 
+                    args.GridMaterial.name,
                     SubmaterialSize,
                     args.GridMaterial.mainTexture.width,
                     args.GridMaterial.mainTexture.height));
@@ -175,12 +177,14 @@ namespace Campus.GridTerrain
                 gridStepSize: GridStepSize,
                 minTerrainX: GameObject.transform.position.x,
                 minTerrainZ: GameObject.transform.position.z,
-                minTerrainY: args.StartingHeight * -GridStepSize);
+                minTerrainY: MaxDepth * -GridStepSize);
 
             Editor = new SafeTerrainEditor(this);
 
+            // NB: Always flatten after generating the mesh
             GenerateMesh();
-            Flatten(args.StartingHeight);
+            Flatten(MaxDepth);
+            LoadDefaultValues(args);
         }
 
         /// <summary>
@@ -527,12 +531,15 @@ namespace Campus.GridTerrain
         {
             return new TerrainSaveState
             {
-               VertexHeight = _vertexHeight,
-               GridAnchored = Editor.GridAnchored,
-               VertexAnchored = Editor.VertexAnchored,
+                CountX = CountX,
+                CountY = CountY,
+                CountZ = CountZ,
+                MaxDepth = MaxDepth,
+                VertexHeight = _vertexHeight,
+                GridData = _gridData,
+                GridAnchored = Editor.GridAnchored,
             };
         }
-
         /// <summary>
         /// Generate the mesh based on the arguments set on the instance.
         /// </summary>
@@ -587,6 +594,80 @@ namespace Campus.GridTerrain
             }
 
             UpdateMesh();
+        }
+
+        /// <summary>
+        /// Set default values for the terrain.
+        /// </summary>
+        /// <param name="args"></param>
+        private void LoadDefaultValues(GridMeshArgs args)
+        {
+            if (args.VertexHeights != null)
+            {
+                if (args.VertexHeights.GetLength(0) != _vertexHeight.GetLength(0) ||
+                    args.VertexHeights.GetLength(1) != _vertexHeight.GetLength(1))
+                {
+                    GameLogger.FatalError("Attempting to load vertex heights from invalid array! Required = {0}x{1}; Given = ({2}x{3})",
+                        _vertexHeight.GetLength(0),
+                        _vertexHeight.GetLength(1),
+                        args.VertexHeights.GetLength(0),
+                        args.VertexHeights.GetLength(1));
+                }
+                else
+                {
+                    SetVertexHeights(0, 0, args.VertexHeights);
+                }
+            }
+
+            if (args.GridData != null)
+            {
+                if (args.GridData.GetLength(0) != _gridData.GetLength(0) ||
+                    args.GridData.GetLength(1) != _gridData.GetLength(1))
+                {
+                    GameLogger.FatalError("Attempting to load grid data from invalid array! Required = {0}x{1}; Given = ({2}x{3})",
+                        _gridData.GetLength(0),
+                        _gridData.GetLength(1),
+                        args.GridData.GetLength(0),
+                        args.GridData.GetLength(1));
+                }
+                else
+                {
+                    for (int x = 0; x < args.GridData.GetLength(0); ++x)
+                    {
+                        for (int z = 0; z < args.GridData.GetLength(1); ++z)
+                        {
+                            GridData dataToCopy = args.GridData[x, z];
+                            SetSubmaterial(x, z, dataToCopy.SubmaterialIndex, dataToCopy.Rotation, dataToCopy.Inversion);
+                        }
+                    }
+                }
+            }
+
+            if (args.GridAnchored != null)
+            {
+                if (args.GridAnchored.GetLength(0) != _gridData.GetLength(0) ||
+                    args.GridAnchored.GetLength(1) != _gridData.GetLength(1))
+                {
+                    GameLogger.FatalError("Attempting to load grid anchor data from invalid array! Required = {0}x{1}; Given = ({2}x{3})",
+                        _gridData.GetLength(0),
+                        _gridData.GetLength(1),
+                        args.GridAnchored.GetLength(0),
+                        args.GridAnchored.GetLength(1));
+                }
+                else
+                {
+                    for (int x = 0; x < args.GridAnchored.GetLength(0); ++x)
+                    {
+                        for (int z = 0; z < args.GridAnchored.GetLength(1); ++z)
+                        {
+                            if (args.GridAnchored[x, z])
+                            {
+                                Editor.SetAnchored(x, z);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

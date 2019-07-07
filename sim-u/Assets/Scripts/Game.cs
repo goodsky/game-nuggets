@@ -15,6 +15,12 @@ public class Game : MonoBehaviour
     [Header("Campus Configuration")]
     public TextAsset CampusConfig;
 
+    /// <summary>
+    /// This string will survive scene transitions.
+    /// Set it before loading the game scene to request a particular save game to be loaded.
+    /// </summary>
+    public static string SavedGamePath { get; set; } = null;
+
     private static object _singletonLock = new object();
     private static Game _singleton = null;
 
@@ -23,7 +29,7 @@ public class Game : MonoBehaviour
     /// </summary>
     protected void Awake()
     {
-        InitLogging();
+        GameLogger.EnsureSingletonExists();
         GameLogger.Info("Game started.");
 
         lock (_singletonLock)
@@ -46,25 +52,11 @@ public class Game : MonoBehaviour
     protected void OnDestroy()
     {
         GameLogger.Info("Game exiting.");
-        GameLogger.Close();
 
         lock (_singletonLock)
         {
             _singleton = null;
         }
-    }
-
-    /// <summary>
-    /// Set up the game session loggers.
-    /// </summary>
-    private void InitLogging()
-    {
-        if (Application.isEditor)
-        {
-            GameLogger.CreateUnityLogger(LogLevel.Info);
-        }
-
-        GameLogger.CreateMyDocumentsStream("debug", LogLevel.Info);
     }
 
     /// <summary>

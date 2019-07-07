@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Campus.GridTerrain;
+using System;
 
 namespace GameData
 {
@@ -28,13 +29,13 @@ namespace GameData
 
         public int CountZ { get; set; }
 
-        public int StartingHeight { get; set; }
+        public int MaxDepth { get; set; }
 
         public int[,] VertexHeight { get; set; }
 
-        public bool[,] GridAnchored { get; set; }
+        public GridData[,] GridData { get; set; }
 
-        public bool[,] VertexAnchored { get; set; }
+        public bool[,] GridAnchored { get; set; }
     }
 
     [Serializable]

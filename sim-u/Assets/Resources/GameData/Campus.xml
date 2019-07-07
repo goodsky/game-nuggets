@@ -8,10 +8,10 @@
     <SubmaterialPathsIndex>2</SubmaterialPathsIndex>
     <SubmaterialRoadsIndex>8</SubmaterialRoadsIndex>
     <SubmaterialParkingLotsIndex>18</SubmaterialParkingLotsIndex>
-    <GridCountX>32</GridCountX>
-    <GridCountZ>32</GridCountZ>
-    <GridCountY>32</GridCountY>
-    <StartingHeight>6</StartingHeight>
+    <DefaultGridCountX>32</DefaultGridCountX>
+    <DefaultGridCountZ>32</DefaultGridCountZ>
+    <DefaultGridCountY>32</DefaultGridCountY>
+    <DefaultMaxDepth>6</DefaultMaxDepth>
   </Terrain>
 
   <!-- Registry of buildings that can be built. -->

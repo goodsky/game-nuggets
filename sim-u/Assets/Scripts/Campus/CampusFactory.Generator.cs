@@ -1,4 +1,5 @@
 ﻿using Campus.GridTerrain;
+using Common;
 using GameData;
 using UnityEngine;
 
@@ -10,11 +11,39 @@ namespace Campus
         /// Instantiates the campus terrain game object.
         /// </summary>
         /// <param name="parent">Parent of the terrain.</param>
-        /// <param name="args">GridMesh arguments to generate a terrain.</param>
+        /// <param name="args">CampusData used to generate a terrain.</param>
         /// <param name="mesh">Returns the grid mesh that manages the terrain.</param>
         /// <returns>The terrain game object.</returns>
-        public static GameObject GenerateTerrain(Transform parent, GridMeshArgs args, out GridMesh mesh)
+        public static GameObject GenerateTerrain(Transform parent, CampusData args, out GridMesh mesh)
         {
+            var gridMeshArgs = new GridMeshArgs()
+            {
+                GridSquareSize = Constant.GridSize,
+                GridStepSize = Constant.GridStepSize,
+                SubmaterialSize = Constant.SubmaterialGridSize,
+                GridMaterial = args.Terrain.TerrainMaterial,
+            };
+
+            if (args.SavedData != null)
+            {
+                TerrainSaveState saveData = args.SavedData.Campus.Terrain;
+                gridMeshArgs.CountX = saveData.CountX;
+                gridMeshArgs.CountY = saveData.CountY;
+                gridMeshArgs.CountZ = saveData.CountZ;
+                gridMeshArgs.MaxDepth = saveData.MaxDepth;
+
+                gridMeshArgs.VertexHeights = saveData.VertexHeight;
+                gridMeshArgs.GridData = saveData.GridData;
+                gridMeshArgs.GridAnchored = saveData.GridAnchored;
+            }
+            else
+            {
+                gridMeshArgs.CountX = args.Terrain.DefaultGridCountX;
+                gridMeshArgs.CountY = args.Terrain.DefaultGridCountY;
+                gridMeshArgs.CountZ = args.Terrain.DefaultGridCountZ;
+                gridMeshArgs.MaxDepth = args.Terrain.DefaultMaxDepth;
+            }
+
             var terrainObject = new GameObject("Campus Terrain");
             terrainObject.transform.SetParent(parent, false);
 
@@ -28,7 +57,7 @@ namespace Campus
 
             renderer.receiveShadows = true;
 
-            mesh = new GridMesh(filter.mesh, collider, renderer, args);
+            mesh = new GridMesh(filter.mesh, collider, renderer, gridMeshArgs);
 
             selectable.Terrain = mesh;
             mesh.Selectable = selectable;

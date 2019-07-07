@@ -434,20 +434,7 @@ namespace Campus
         /// <param name="gameData">Campus game data.</param>
         protected override void LoadData(CampusData gameData)
         {
-            var gridMeshArgs = new GridMeshArgs()
-            {
-                GridSquareSize = Constant.GridSize,
-                GridStepSize = Constant.GridStepSize,
-                SubmaterialSize = Constant.SubmaterialGridSize,
-                CountX = gameData.Terrain.GridCountX,
-                CountZ = gameData.Terrain.GridCountZ,
-                CountY = gameData.Terrain.GridCountY,
-                StartingHeight = gameData.Terrain.StartingHeight,
-                GridMaterial = gameData.Terrain.TerrainMaterial,
-            };
-
-            GridMesh terrain;
-            CampusFactory.GenerateTerrain(transform, gridMeshArgs, out terrain);
+            CampusFactory.GenerateTerrain(transform, gameData, out GridMesh terrain);
 
             _terrain = terrain;
             _buildings = new CampusBuildings(terrain);
