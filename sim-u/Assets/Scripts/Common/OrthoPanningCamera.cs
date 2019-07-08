@@ -30,6 +30,25 @@ namespace Common
 
         private Camera _camera;
 
+        private bool _cameraIsMoving = true;
+
+        /// <summary>
+        /// Stop the camera from moving and zooming.
+        /// E.g. when a window has control of the scene.
+        /// </summary>
+        public void FreezeCamera()
+        {
+            _cameraIsMoving = false;
+        }
+
+        /// <summary>
+        /// Unfreeze the camera. Let it be free you monster!
+        /// </summary>
+        public void UnfreezeCamera()
+        {
+            _cameraIsMoving = true;
+        }
+
         /// <summary>
         /// Unity Start method
         /// </summary>
@@ -53,6 +72,11 @@ namespace Common
         /// </summary>
         protected void Update()
         {
+            if (!_cameraIsMoving)
+            {
+                return;
+            }
+
             float vx = 0.0f;
             float vz = 0.0f;
 

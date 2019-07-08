@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
@@ -91,6 +92,9 @@ namespace UI
 
             BuildButton.OnSelect = () => { Accessor.UiManager.OpenWindow("ConstructionPlacing", buildingData); };
             CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent); };
+
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.FreezeCamera();
         }
 
         /// <summary>
@@ -98,7 +102,8 @@ namespace UI
         /// </summary>
         public override void Close()
         {
-            
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.UnfreezeCamera();
         }
 
         /// <summary>

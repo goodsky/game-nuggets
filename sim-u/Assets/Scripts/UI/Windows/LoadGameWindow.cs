@@ -1,6 +1,7 @@
 ﻿using Common;
 using GameData;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -29,30 +30,43 @@ namespace UI
 
         public override List<Button> Buttons => new List<Button> { LoadButton, DeleteButton, CancelButton };
 
+        private IEnumerable<string> validSaveNames;
+
         public override void Open(object data)
         {
             LoadNameInput.onValueChanged.RemoveAllListeners();
             LoadNameInput.onValueChanged.AddListener(
                 newValue => 
                 {
-                    LoadButton.enabled = IsValidLoadName(newValue);
-                    DeleteButton.enabled = IsValidLoadName(newValue);
+                    if (IsValidLoadName(newValue))
+                    {
+                        LoadButton.Enable();
+                        DeleteButton.Enable();
+                    }
+                    else
+                    {
+                        LoadButton.Disable();
+                        DeleteButton.Disable();
+                    }
                 });
 
-            LoadButton.enabled = false;
             LoadButton.OnSelect = LoadGame;
 
-            DeleteButton.enabled = false;
             DeleteButton.OnSelect = DeleteGame;
 
             CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
 
             ClearList();
             PopulateList();
+
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.FreezeCamera();
         }
 
         public override void Close()
         {
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.UnfreezeCamera();
         }
 
         private void LoadGame()
@@ -75,7 +89,8 @@ namespace UI
 
         private void PopulateList()
         {
-            foreach (string saveName in SavedGameLoader.GetSaveGames())
+            validSaveNames = SavedGameLoader.GetSaveGames();
+            foreach (string saveName in validSaveNames)
             {
                 RectTransform listItem = Instantiate(ScrollViewRowTemplate, ScrollViewContent);
 
@@ -103,8 +118,7 @@ namespace UI
 
         private bool IsValidLoadName(string loadName)
         {
-            var r = new Regex("^[a-zA-Z0-9 _-]*$");
-            return !string.IsNullOrEmpty(loadName) && r.IsMatch(loadName);
+            return validSaveNames.Contains(loadName);
         }
     }
 }

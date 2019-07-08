@@ -34,24 +34,35 @@ namespace UI
             SaveNameInput.onValueChanged.AddListener(
                 newValue => 
                 {
-                    SaveButton.enabled = IsValidSaveName(newValue);
-                    DeleteButton.enabled = IsValidSaveName(newValue);
+                    if (IsValidSaveName(newValue))
+                    {
+                        SaveButton.Enable();
+                        DeleteButton.Enable();
+                    }
+                    else
+                    {
+                        SaveButton.Disable();
+                        DeleteButton.Disable();
+                    }
                 });
 
-            SaveButton.enabled = false;
             SaveButton.OnSelect = SaveGame;
 
-            DeleteButton.enabled = false;
             DeleteButton.OnSelect = DeleteGame;
 
             CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
 
             ClearList();
             PopulateList();
+
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.FreezeCamera();
         }
 
         public override void Close()
         {
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.UnfreezeCamera();
         }
 
         private void SaveGame()
