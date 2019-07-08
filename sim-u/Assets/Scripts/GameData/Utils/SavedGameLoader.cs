@@ -1,7 +1,10 @@
 ﻿using Common;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Serialization;
+using UnityEngine;
 
 namespace GameData
 {
@@ -10,8 +13,22 @@ namespace GameData
     /// </summary>
     public static class SavedGameLoader
     {
-        public static void WriteToDisk(string path, GameSaveState state)
+        private static readonly string FileExtension = ".simu";
+        private static readonly string SaveGameDirectory = Path.Combine(Application.persistentDataPath, "Saved Games");
+
+        public static IEnumerable<string> GetSaveGames()
         {
+            Directory.CreateDirectory(SaveGameDirectory);
+
+            return Directory.GetFiles(SaveGameDirectory, "*" + FileExtension)
+                .Select(fileName => Path.GetFileNameWithoutExtension(fileName));
+        }
+
+        public static void WriteToDisk(string fileName, GameSaveState state)
+        {
+            Directory.CreateDirectory(SaveGameDirectory);
+
+            string path = Path.Combine(SaveGameDirectory, fileName + FileExtension);
             using (Stream fout = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
                 var bf = new BinaryFormatter();
@@ -19,13 +36,27 @@ namespace GameData
             }
         }
 
-        public static bool TryReadFromDisk(string path, out GameSaveState state)
+        public static void DeleteFromDisk(string fileName)
         {
-            state = null;
+            Directory.CreateDirectory(SaveGameDirectory);
 
+            string path = Path.Combine(SaveGameDirectory, fileName + FileExtension);
+            if (File.Exists(path))
+            {
+                GameLogger.Info("Deleting save at path {0}.", path);
+                File.Delete(path);
+            }
+        }
+
+        public static bool TryReadFromDisk(string fileName, out GameSaveState state)
+        {
+            Directory.CreateDirectory(SaveGameDirectory);
+
+            string path = Path.Combine(SaveGameDirectory, fileName + FileExtension);
             if (!File.Exists(path))
             {
                 GameLogger.Error("Tried to load game save from non-existant file. Path = {0}", path);
+                state = null;
                 return false;
             }
 

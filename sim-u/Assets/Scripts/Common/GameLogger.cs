@@ -206,10 +206,9 @@ namespace Common
 
             Application.Quit();
 
-            if (Application.isEditor)
-            {
-                UnityEditor.EditorApplication.isPaused = true;
-            }
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+#endif
         }
 
         /// <summary>

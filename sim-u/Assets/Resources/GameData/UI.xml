@@ -58,14 +58,14 @@
         <Button name="SaveGame">
           <Tooltip>Save Game</Tooltip>
           <IconImage>icon-save</IconImage>
-          <OnSelect x:type="TransitionGameStateAction" state="SavingGame"/>
-          <OnDeselect x:type="TransitionGameStateAction" state="Selecting"/>
+          <OnSelect x:type="OpenWindowAction" windowName="SaveGame"/>
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
         <Button name="LoadGame">
           <Tooltip>Load Game</Tooltip>
           <IconImage>icon-load</IconImage>
-          <OnSelect x:type="TransitionGameStateAction" state="LoadingGame"/>
-          <OnDeselect x:type="TransitionGameStateAction" state="Selecting"/>
+          <OnSelect x:type="OpenWindowAction" windowName="LoadGame"/>
+          <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
     </MainButtonGroup>
@@ -113,6 +113,8 @@
     <Window name="Roads" prefab="RoadsWindow" />
     <Window name="ParkingLots" prefab="ParkingLotWindow" />
     <Window name="Demolishing" prefab="DemolishingWindow" />
+    <Window name="SaveGame" prefab="SaveGameWindow" />
+    <Window name="LoadGame" prefab="LoadGameWindow" />
   </Windows>
   
 </UIData>

@@ -19,7 +19,7 @@ public class Game : MonoBehaviour
     /// This string will survive scene transitions.
     /// Set it before loading the game scene to request a particular save game to be loaded.
     /// </summary>
-    public static string SavedGamePath { get; set; } = null;
+    public static string SavedGameName { get; set; } = null;
 
     private static object _singletonLock = new object();
     private static Game _singleton = null;

@@ -166,15 +166,15 @@ namespace GameData
                 // Case 3) The property has a SavedGameLoader. Try to load from the saved game state.
                 else if (saveGameLoader != null)
                 {
-                    string saveGamePath = Game.SavedGamePath;
+                    string saveGameName = Game.SavedGameName;
 
-                    if (string.IsNullOrEmpty(saveGamePath))
+                    if (string.IsNullOrEmpty(saveGameName))
                     {
-                        GameLogger.Warning("Not loading any save game. SavedGamePath was null.");
+                        GameLogger.Warning("Not loading any save game. SavedGameName was null.");
                         continue;
                     }
 
-                    if (SavedGameLoader.TryReadFromDisk(saveGamePath, out GameSaveState save))
+                    if (SavedGameLoader.TryReadFromDisk(saveGameName, out GameSaveState save))
                     {
                         property.SetValue(gameData, save);
                     }
