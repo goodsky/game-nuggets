@@ -84,7 +84,7 @@ namespace Campus
             var building = CampusFactory.GenerateBuilding(
                         buildingData,
                         _campusManager.transform,
-                        _terrain.Convert.GridToWorld(location) + new Vector3(0f, 0.01f, 0f) /* Place just above the grass*/,
+                        _terrain.Convert.GridToWorld(location) + new Vector3(0f, 0.001f, 0f) /* Place just above the grass*/,
                         Quaternion.identity);
 
             int xSize = buildingData.Footprint.GetLength(0);

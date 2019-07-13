@@ -1,4 +1,4 @@
-﻿using Campus.GridTerrain;
+﻿ using Campus.GridTerrain;
 using Common;
 using GameData;
 using System;
@@ -117,7 +117,7 @@ namespace Campus
                     int checkX = pos.x + GridConverter.AdjacentGridDx[i];
                     int checkZ = pos.z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
-                        (_terrain.GridInBounds(checkX, checkZ) &&
+                        (!_terrain.GridInBounds(checkX, checkZ) || /* NB: The edge of the map connects to the edge. This is a path source. */
                         (_campusManager.GetGridUse(new Point2(checkX, checkZ)) & CampusGridUse.Path) == CampusGridUse.Path)
                          ? 1 : 0;
                 }

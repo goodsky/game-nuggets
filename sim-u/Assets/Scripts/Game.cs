@@ -15,6 +15,12 @@ public class Game : MonoBehaviour
     [Header("Campus Configuration")]
     public TextAsset CampusConfig;
 
+    [Header("Set to true to enable 'Admin Editing' mode")]
+    public bool AdminMode;
+
+    [Header("If no save game is specified use this")]
+    public string DefaultSaveGame;
+
     /// <summary>
     /// This string will survive scene transitions.
     /// Set it before loading the game scene to request a particular save game to be loaded.
@@ -40,6 +46,12 @@ public class Game : MonoBehaviour
             }
 
             _singleton = this;
+        }
+
+        if (string.IsNullOrEmpty(SavedGameName) && !string.IsNullOrEmpty(DefaultSaveGame))
+        {
+            GameLogger.Info("Using default save game '{0}'", DefaultSaveGame);
+            SavedGameName = DefaultSaveGame;
         }
 
         GameLogger.Info("Creating game objects.");

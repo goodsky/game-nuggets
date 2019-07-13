@@ -187,6 +187,16 @@ namespace Campus
                     _terrain.GridInBounds(point.x, point.z) &&
                     _terrain.IsGridSmooth(point.x, point.z, line.Alignment);
 
+                bool isOnEdge =
+                        point.x == 0 || point.x == _terrain.CountX - 1 ||
+                        point.z == 0 || point.z == _terrain.CountZ - 1;
+
+                // Can't construct paths on the edge of the terrain unless you are in admin mode.
+                if (isOnEdge && !_accessor.Game.AdminMode)
+                {
+                    isValidTerrain = false;
+                }
+
                 bool isGridAvailable;
                 switch (GetGridUse(point))
                 {
@@ -249,6 +259,16 @@ namespace Campus
                     bool isValidTerrain =
                         _terrain.GridInBounds(point.x, point.z) &&
                         _terrain.IsGridSmooth(point.x, point.z, gridline.Alignment);
+
+                    bool isOnEdge =
+                        point.x == 0 || point.x == _terrain.CountX - 1 ||
+                        point.z == 0 || point.z == _terrain.CountZ - 1;
+
+                    // Can't construct roads on the edge of the terrain unless you are in admin mode.
+                    if (isOnEdge && !_accessor.Game.AdminMode)
+                    {
+                        isValidTerrain = false;
+                    }
 
                     bool isGridAvailable;
                     switch (GetGridUse(point))
