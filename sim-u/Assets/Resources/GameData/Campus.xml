@@ -22,8 +22,7 @@
       <Classrooms>10</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
-      <Mesh>test-building-small</Mesh>
-      <Material>BuildingDefault</Material>
+      <Model>test-building-small</Model>
     </Building>
     
     <Building name="Weird Building">
@@ -32,8 +31,7 @@
       <Classrooms>1</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a weird footprint. It's just two buildings diagonally adjacent. Not that weird really.</Description>
-      <Mesh>test-building-weird</Mesh>
-      <Material>BuildingDefault</Material>
+      <Model>test-building-weird</Model>
     </Building>
 
     <Building name="Really Weird Building">
@@ -42,8 +40,7 @@
       <Classrooms>1</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a really weird footprint. It's a line of four buildings with a gap in the middle.</Description>
-      <Mesh>test-building-really-weird</Mesh>
-      <Material>BuildingDefault</Material>
+      <Model>test-building-really-weird</Model>
     </Building>
 
     <Building name="Arrow Building">
@@ -52,8 +49,7 @@
       <Classrooms>1</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing Blender exporting. It should point toward the camera.</Description>
-      <Mesh>test-building-arrow</Mesh>
-      <Material>BuildingDefault</Material>
+      <Model>test-building-arrow</Model>
     </Building>
   </Buildings>
   

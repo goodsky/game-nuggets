@@ -452,7 +452,7 @@ namespace Campus
                 // Load the buildings
                 foreach (var buildingData in gameData.Buildings)
                 {
-                    buildingData.Footprint = footprintCreator.CalculateFootprint(buildingData.Mesh, Constant.GridSize);
+                    buildingData.Footprint = footprintCreator.CalculateFootprint(buildingData.Model, Constant.GridSize);
                     _buildingRegistry[buildingData.Name] = buildingData;
 
                     GameLogger.Info("Loaded building {0}. Footprint size = {1}x{2}.", buildingData.Name, buildingData.Footprint.GetLength(0), buildingData.Footprint.GetLength(1));

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 using UnityEngine;
 
 namespace GameData
@@ -27,17 +26,11 @@ namespace GameData
         [XmlElement("Description")]
         public string Description { get; set; }
 
-        [XmlElement("Mesh")]
-        public string MeshName { get; set; }
+        [XmlElement("Model")]
+        public string ModelName { get; set; }
 
-        [ResourceLoader(ResourceType.Models, ResourceCategory.Buildings, nameof(MeshName))]
-        public Mesh Mesh { get; set; }
-
-        [XmlElement("Material")]
-        public string MaterialName { get; set; }
-
-        [ResourceLoader(ResourceType.Materials, ResourceCategory.Buildings, nameof(MaterialName))]
-        public Material Material { get; set; }
+        [ResourceLoader(ResourceType.Models, ResourceCategory.Buildings, nameof(ModelName))]
+        public GameObject Model { get; set; }
 
         [XmlIgnore]
         public bool[,] Footprint { get; set; }

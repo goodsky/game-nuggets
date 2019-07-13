@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -16,10 +17,10 @@ namespace Campus
         /// <summary>
         /// Calculate the grid footprint of the mesh.
         /// </summary>
-        /// <param name="mesh">The mesh to calculate the grid footprint on.</param>
+        /// <param name="model">The model with a mesh.</param>
         /// <param name="gridSize">The size of the grid squares. The footprint will be returned in this size.</param>
         /// <returns>The footprint of the mesh in a [X, Z] array.</returns>
-        public bool[,] CalculateFootprint(Mesh mesh, float gridSize)
+        public bool[,] CalculateFootprint(GameObject model, float gridSize)
         {
             if (_meshCollider == null)
             {
@@ -27,6 +28,14 @@ namespace Campus
                 transform.position = new Vector3(0, 0, 0);
             }
 
+            MeshFilter meshFilter = model.GetComponent<MeshFilter>();
+            if (meshFilter == null)
+            {
+                GameLogger.FatalError("Model did not have a mesh filter!? Name = '{0}'", model.name);
+                return new bool[0, 0];
+            }
+
+            Mesh mesh = meshFilter.sharedMesh;
             _meshCollider.sharedMesh = mesh;
 
             // FYI: FBX need to be exported with Z-forward Y-up to make sense in our world.

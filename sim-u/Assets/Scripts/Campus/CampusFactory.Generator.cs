@@ -75,20 +75,16 @@ namespace Campus
         /// <returns>The campus building.</returns>
         public static Building GenerateBuilding(BuildingData buildingData, Transform parent, Vector3 position, Quaternion rotation)
         {
-            var buildingObject = new GameObject(buildingData.Name);
+            var buildingObject = GameObject.Instantiate(buildingData.Model);
+            buildingObject.name = buildingData.Name;
             buildingObject.transform.SetParent(parent, false);
-
             buildingObject.transform.position = position;
             buildingObject.transform.rotation = rotation;
 
-            var filter = buildingObject.AddComponent<MeshFilter>();
             // var collider = buildingObject.AddComponent<MeshCollider>(); // Buildings used to be "selectable" but it gets in the way of the terrain.
-            var renderer = buildingObject.AddComponent<MeshRenderer>();
-            var building = buildingObject.AddComponent<Building>();
-
-            filter.mesh = buildingData.Mesh;
             // collider.sharedMesh = buildingData.Mesh;
-            renderer.material = buildingData.Material;
+
+            var building = buildingObject.AddComponent<Building>();
             building.Initialize(buildingData);
 
             return building;
