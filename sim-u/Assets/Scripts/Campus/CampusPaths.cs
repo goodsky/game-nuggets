@@ -118,7 +118,8 @@ namespace Campus
                     int checkZ = pos.z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
                         (!_terrain.GridInBounds(checkX, checkZ) || /* NB: The edge of the map connects to the edge. This is a path source. */
-                        (_campusManager.GetGridUse(new Point2(checkX, checkZ)) & CampusGridUse.Path) == CampusGridUse.Path)
+                        _campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Path) ||
+                        _campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Building))
                          ? 1 : 0;
                 }
 

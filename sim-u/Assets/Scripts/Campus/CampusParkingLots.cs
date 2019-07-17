@@ -13,7 +13,7 @@ namespace Campus
     {
         private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
-        private readonly ParkingLot[,] _lotAtGridPosition;
+        private readonly InternalParkingLotState[,] _lotAtGridPosition;
 
         private readonly int _startIndex;
         private readonly int _invalidIndex;
@@ -23,7 +23,7 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
-            _lotAtGridPosition = new ParkingLot[_terrain.CountX, _terrain.CountZ];
+            _lotAtGridPosition = new InternalParkingLotState[_terrain.CountX, _terrain.CountZ];
 
             _startIndex = campusData.Terrain.SubmaterialParkingLotsIndex;
             _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
@@ -67,6 +67,16 @@ namespace Campus
             }
         }
 
+        public IEnumerable<ParkingInfo> GetParkingLots()
+        {
+            return Utils.GetDistinct(_lotAtGridPosition)
+                .Select(lot => new ParkingInfo
+                {
+                    IsConnectedToRoad = false,
+                    ParkingSpots = lot.LotCount,
+                });
+        }
+
         /// <summary>
         /// Checks if a parking lot exists at a given grid point.
         /// </summary>
@@ -86,7 +96,7 @@ namespace Campus
         /// <returns>True if a lot edge exists at position, false otherwise.</returns>
         public bool IsOnEdgeOfParkingLot(Point2 pos, bool disallowCorners = false)
         {
-            ParkingLot lot = _lotAtGridPosition[pos.x, pos.z];
+            InternalParkingLotState lot = _lotAtGridPosition[pos.x, pos.z];
             if (lot != null)
             {
                 Rectangle rect = lot.Footprint;
@@ -114,7 +124,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> ConstructParkingLot(Rectangle rectangle)
         {
-            var parkingLot = new ParkingLot(rectangle);
+            var parkingLot = new InternalParkingLotState(rectangle);
 
             for (int x = rectangle.MinX; x <= rectangle.MaxX; ++x)
             {
@@ -157,7 +167,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> DestroyParkingLotAt(Point2 pos)
         {
-            ParkingLot parkingLot = _lotAtGridPosition[pos.x, pos.z];
+            InternalParkingLotState parkingLot = _lotAtGridPosition[pos.x, pos.z];
             if (parkingLot == null)
             {
                 yield break;
@@ -187,7 +197,7 @@ namespace Campus
         /// </summary>
         public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetParkingLotMaterial(Point2 pos)
         {
-            ParkingLot parkingLot = _lotAtGridPosition[pos.x, pos.z];
+            InternalParkingLotState parkingLot = _lotAtGridPosition[pos.x, pos.z];
 
             if (parkingLot == null)
             {
@@ -351,9 +361,9 @@ namespace Campus
         /// <summary>
         /// Keeper of Parking Lot information.
         /// </summary>
-        private class ParkingLot
+        private class InternalParkingLotState
         {
-            public ParkingLot(Rectangle footprint)
+            public InternalParkingLotState(Rectangle footprint)
             {
                 Footprint = footprint;
                 LotLines = GenerateLotLines(footprint);
@@ -361,6 +371,7 @@ namespace Campus
 
             public Rectangle Footprint { get; private set; }
             public bool[,] LotLines { get; private set; }
+            public int LotCount { get; private set; }
 
             private bool[,] GenerateLotLines(Rectangle footprint)
             {
@@ -391,6 +402,7 @@ namespace Campus
 
                     for (int j = 0; j < majorAxisSize; ++j)
                     {
+                        ++LotCount;
                         if (alignment == AxisAlignment.XAxis)
                         {
                             lotSpaces[j, i] = true;

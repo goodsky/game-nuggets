@@ -110,6 +110,24 @@ namespace Campus
         }
 
         /// <summary>
+        /// Gets the parking lots on the campus.
+        /// </summary>
+        public IEnumerable<ParkingInfo> GetParkingInfo()
+        {
+            // TODO: Return the Parking Info
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets the classrooms on the campus.
+        /// </summary>
+        public IEnumerable<ClassroomInfo> GetClassroomInfo()
+        {
+            // TODO: Return the Classroom Info
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Gets the metadata about the requested building.
         /// </summary>
         /// <param name="name">Name of the building.</param>

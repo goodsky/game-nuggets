@@ -17,6 +17,12 @@ namespace Campus.GridTerrain
         private float _minTerrainY;
 
         /// <summary>
+        /// Deltas to get the 4 adjacent grids around a grid plus the grid itself
+        /// </summary>
+        public static readonly int[] AdjacentPlusSelfGridDx = new int[] { 0, 0, 1, 0, -1 };
+        public static readonly int[] AdjacentPlusSelfGridDz = new int[] { 0, 1, 0, -1, 0 };
+
+        /// <summary>
         /// Deltas to get the 4 adjacent grids around a grid
         /// </summary>
         public static readonly int[] AdjacentGridDx = new int[] { 0, 1, 0, -1 };

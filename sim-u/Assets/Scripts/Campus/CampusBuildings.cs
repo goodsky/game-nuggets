@@ -99,10 +99,15 @@ namespace Campus
                     if (buildingData.Footprint[dx, dz])
                     {
                         _buildingAtGridPosition[gridX, gridZ] = building;
-                        yield return new Point2(gridX, gridZ);
                     }
                 }
             }
+
+            // Notify CampusManager of updated tiles
+            for (int scanX = location.x - 1; scanX <= location.x + xSize; ++scanX)
+                for (int scanZ = location.z - 1; scanZ <= location.z + zSize; ++scanZ)
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
