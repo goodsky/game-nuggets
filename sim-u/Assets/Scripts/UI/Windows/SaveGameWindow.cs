@@ -70,12 +70,7 @@ namespace UI
             string saveName = SaveNameInput.text;
             GameLogger.Info("Saving game '{0}'.", saveName);
 
-            GameSaveState state = new GameSaveState
-            {
-                Version = GameSaveState.CurrentVersion,
-                Campus = Accessor.CampusManager.SaveGameState(),
-            };
-
+            GameSaveState state = Accessor.Game.SaveGame();
             SavedGameLoader.WriteToDisk(saveName, state);
         }
 

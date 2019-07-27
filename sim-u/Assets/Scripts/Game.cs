@@ -1,5 +1,6 @@
 ﻿using Campus;
 using Common;
+using Faculty;
 using GameData;
 using UI;
 using UnityEngine;
@@ -15,20 +16,65 @@ public class Game : MonoBehaviour
     [Header("Campus Configuration")]
     public TextAsset CampusConfig;
 
+    [Header("Faculty Configuration")]
+    public TextAsset FacultyConfig;
+
     [Header("Set to true to enable 'Admin Editing' mode")]
     public bool AdminMode;
 
     [Header("If no save game is specified use this")]
     public string DefaultSaveGame;
 
+    private static object _singletonLock = new object();
+    private static Game _singleton = null;
+
     /// <summary>
-    /// This string will survive scene transitions.
+    /// This static string will survive scene transitions.
     /// Set it before loading the game scene to request a particular save game to be loaded.
     /// </summary>
     public static string SavedGameName { get; set; } = null;
+    private GameSaveState _saveState = null;
 
-    private static object _singletonLock = new object();
-    private static Game _singleton = null;
+    /// <summary>
+    /// Save the game state.
+    /// </summary>
+    /// <returns>The saved game state.</returns>
+    public GameSaveState SaveGame()
+    {
+        var accessor = new GameAccessor();
+        return new GameSaveState
+        {
+            Version = GameSaveState.CurrentVersion,
+            Campus = accessor.CampusManager.SaveGameState(),
+            Faculty = accessor.Faculty.SaveGameState(),
+        };
+    }
+
+    /// <summary>
+    /// Load the saved game if one exists.
+    /// Uses <see cref="SavedGameName"/> to select the game file.
+    /// </summary>
+    /// <param name="saveState">The saved game state if it could be loaded.</param>
+    /// <returns>True if the saved game exists and was loaded. False otherwise.</returns>
+    public bool TryLoadSavedGame(out GameSaveState saveState)
+    {
+        if (_saveState != null)
+        {
+            saveState = _saveState;
+            return true;
+        }
+
+        string saveGameName = Game.SavedGameName;
+        if (!string.IsNullOrEmpty(saveGameName) &&
+            SavedGameLoader.TryReadFromDisk(saveGameName, out GameSaveState loadedSaveState))
+        {
+            _saveState = saveState = loadedSaveState;
+            return true;
+        }
+
+        saveState = null;
+        return false;
+    }
 
     /// <summary>
     /// Bootstrap the game state and data.
@@ -86,7 +132,10 @@ public class Game : MonoBehaviour
 
         GameObject campus = UIFactory.GenerateEmpty("Campus", transform);
         GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, CampusConfig);
-        
+
+        GameObject faculty = UIFactory.GenerateEmpty("Faculty", transform);
+        GameDataLoader<FacultyData>.SetGameData<FacultyManager>(faculty, FacultyConfig);
+
         TooltipManager.Initialize(ui.gameObject.transform);
     }
 }

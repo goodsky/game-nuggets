@@ -31,6 +31,9 @@ namespace GameData
             return dataLoader;
         }
 
+        /// <summary>Game manager accessor. Fake DI pipeline.</summary>
+        protected GameAccessor Accessor = new GameAccessor();
+
         /// <summary>Link to the GameData configuration asset.</summary>
         protected TextAsset Config;
 
@@ -166,17 +169,13 @@ namespace GameData
                 // Case 3) The property has a SavedGameLoader. Try to load from the saved game state.
                 else if (saveGameLoader != null)
                 {
-                    string saveGameName = Game.SavedGameName;
-
-                    if (string.IsNullOrEmpty(saveGameName))
-                    {
-                        GameLogger.Warning("Not loading any save game. SavedGameName was null.");
-                        continue;
-                    }
-
-                    if (SavedGameLoader.TryReadFromDisk(saveGameName, out GameSaveState save))
+                    if (Accessor.Game.TryLoadSavedGame(out GameSaveState save))
                     {
                         property.SetValue(gameData, save);
+                    }
+                    else
+                    {
+                        GameLogger.Warning("Did not load any save game.");
                     }
                 }
                 // Case 4) The type is from the GameData namespace. Recursively attempt to load data.

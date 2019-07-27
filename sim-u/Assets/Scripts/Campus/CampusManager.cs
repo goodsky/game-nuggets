@@ -28,9 +28,8 @@ namespace Campus
     /// <summary>
     /// Root level object for the campus.
     /// </summary>
-    public class CampusManager : GameDataLoader<CampusData>
+    public class CampusManager : GameDataLoader<CampusData>, IGameStateSaver<CampusSaveState>
     {
-        private GameAccessor _accessor = new GameAccessor();
         private Dictionary<string, BuildingData> _buildingRegistry = new Dictionary<string, BuildingData>();
 
         private GridMesh _terrain;
@@ -210,7 +209,7 @@ namespace Campus
                         point.z == 0 || point.z == _terrain.CountZ - 1;
 
                 // Can't construct paths on the edge of the terrain unless you are in admin mode.
-                if (isOnEdge && !_accessor.Game.AdminMode)
+                if (isOnEdge && !Accessor.Game.AdminMode)
                 {
                     isValidTerrain = false;
                 }
@@ -283,7 +282,7 @@ namespace Campus
                         point.z == 0 || point.z == _terrain.CountZ - 1;
 
                     // Can't construct roads on the edge of the terrain unless you are in admin mode.
-                    if (isOnEdge && !_accessor.Game.AdminMode)
+                    if (isOnEdge && !Accessor.Game.AdminMode)
                     {
                         isValidTerrain = false;
                     }
@@ -457,7 +456,7 @@ namespace Campus
         /// <summary>
         /// Snapshot the campus state and return the save data.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A snapshot of the campus state.</returns>
         public CampusSaveState SaveGameState()
         {
             return new CampusSaveState
@@ -471,16 +470,32 @@ namespace Campus
         }
 
         /// <summary>
+        /// Load the game from a snapshot.
+        /// </summary>
+        /// <param name="state">The game state to load from.</param>
+        public void LoadGameState(CampusSaveState state)
+        {
+            if (state != null)
+            {
+                // NB: It's important to load game state that does not update grids first.
+                _paths.LoadGameState(state.PathGrids);
+                _roads.LoadGameState(state.RoadVertices);
+                _lots.LoadGameState(state.ParkingLots);
+                _buildings.LoadGameState(state.Buildings);
+            }
+        }
+
+        /// <summary>
         /// Load the campus game data.
         /// </summary>
         /// <param name="gameData">Campus game data.</param>
         protected override void LoadData(CampusData gameData)
         {
             _terrain = CampusFactory.GenerateTerrain(transform, gameData);
-            _buildings = new CampusBuildings(gameData, _accessor);
-            _paths = new CampusPaths(gameData, _accessor);
-            _roads = new CampusRoads(gameData, _accessor);
-            _lots = new CampusParkingLots(gameData, _accessor);
+            _buildings = new CampusBuildings(gameData, Accessor);
+            _paths = new CampusPaths(gameData, Accessor);
+            _roads = new CampusRoads(gameData, Accessor);
+            _lots = new CampusParkingLots(gameData, Accessor);
 
             _defaultMaterialIndex = gameData.Terrain.SubmaterialEmptyGrassIndex;
 
@@ -507,13 +522,7 @@ namespace Campus
             // The link step runs after all intial data has been loaded.
             // The perfect time to load the saved game data.
             CampusSaveState savedGame = gameData.SavedData?.Campus;
-            if (savedGame != null)
-            {
-                _buildings.LoadGameState(savedGame.Buildings);
-                _paths.LoadGameState(savedGame.PathGrids);
-                _roads.LoadGameState(savedGame.RoadVertices);
-                _lots.LoadGameState(savedGame.ParkingLots);
-            }
+            LoadGameState(savedGame);
         }
 
         /// <summary>

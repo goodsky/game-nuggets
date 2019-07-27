@@ -10,5 +10,7 @@ namespace GameData
         public int Version { get; set; }
 
         public CampusSaveState Campus { get; set; }
+
+        public FacultySaveState Faculty { get; set; }
     }
 }

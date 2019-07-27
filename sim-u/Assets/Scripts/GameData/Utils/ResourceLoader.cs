@@ -15,6 +15,7 @@ namespace GameData
     public enum ResourceCategory
     {
         Buildings,
+        Faculty,
         Terrain,
         Toolbar,
         UI
