@@ -72,9 +72,9 @@ namespace UI
         private void UpdateStatsText()
         {
             StatsText.text =
-                $"Salary: ${_faculty.SalaryPerYear:n0} /yr" +
-                $"Teaching: {_faculty.TeachingScore}" +
-                $"Research: {_faculty.ResearchScore}";
+                $"Salary: ${_faculty.SalaryPerYear:n0} /yr\n" +
+                $"Teaching: {_faculty.TeachingScore}\n" +
+                $"Research: {_faculty.ResearchScore}\n";
         }
 
         private void UpdateClassesCounter()

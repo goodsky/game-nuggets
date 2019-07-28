@@ -36,12 +36,12 @@ namespace Faculty
             }
         }
 
-        public int TeachingScore
+        public int UniversityTeachingScore
         {
             get
             {
                 return HiredFaculty
-                    .Sum(faculty => faculty.TeachingScore);
+                    .Sum(faculty => faculty.TeachingOutput);
             }
         }
 
@@ -64,12 +64,12 @@ namespace Faculty
             }
         }
 
-        public int ResearchScore
+        public int UniversityResearchScore
         {
             get
             {
                 return HiredFaculty
-                    .Sum(faculty => faculty.ResearchScore);
+                    .Sum(faculty => faculty.ResearchOutput);
             }
         }
 
@@ -146,18 +146,18 @@ namespace Faculty
 
                 if (state.GeneratedFaculty != null)
                 {
+                    _generatedFaculty.Clear();
                     foreach (GeneratedFaculty faculty in state.GeneratedFaculty)
                     {
-                        _generatedFaculty.Clear();
                         _generatedFaculty.Add(faculty.Id, faculty);
                     }
                 }
 
                 if (state.HiredFaculty != null)
                 {
+                    _hiredFaculty.Clear();
                     foreach (HiredFaculty faculty in state.HiredFaculty)
                     {
-                        _hiredFaculty.Clear();
                         _hiredFaculty.Add(faculty.Id, faculty);
                     }
                 }

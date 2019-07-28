@@ -20,6 +20,8 @@ namespace UI
 
         public Button CancelButton;
 
+        public Text PlaceholderText;
+
         public override List<Button> Buttons => new List<Button> { CancelButton };
 
         public override void Open(object data)
@@ -46,8 +48,11 @@ namespace UI
 
         private void PopulateList()
         {
+            bool anyFacultyExists = false;
             foreach (GeneratedFaculty faculty in Accessor.Faculty.AvailableFaculty)
             {
+                anyFacultyExists = true;
+
                 RectTransform listItem = Instantiate(ScrollViewRowTemplate, ScrollViewContent);
                 FacultyHiringRow facultyRow = listItem.GetComponent<FacultyHiringRow>();
 
@@ -56,6 +61,8 @@ namespace UI
                 
                 listItem.gameObject.SetActive(true);
             }
+
+            PlaceholderText.enabled = !anyFacultyExists;
         }
 
         private void ClearList()

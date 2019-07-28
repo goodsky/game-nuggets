@@ -28,6 +28,8 @@ namespace UI
 
         public Text ResearchScoreText;
 
+        public Text PlaceholderText;
+
         public override List<Button> Buttons => new List<Button> { CancelButton };
 
         public override void Open(object data)
@@ -54,14 +56,17 @@ namespace UI
             FacultyManager manager = Accessor.Faculty;
             ClassroomUsageText.text = $"{manager.UsedClassroomCount}/{manager.AvailableClassroomCount}";
             LabUsageText.text = $"{manager.UsedLabsCount}/{manager.AvailableLabsCount}";
-            TeachingScoreText.text = manager.TeachingScore.ToString();
-            ResearchScoreText.text = manager.ResearchScore.ToString();
+            TeachingScoreText.text = manager.UniversityTeachingScore.ToString();
+            ResearchScoreText.text = manager.UniversityResearchScore.ToString();
         }
 
         private void PopulateList()
         {
+            bool anyFacultyExists = false;
             foreach (HiredFaculty faculty in Accessor.Faculty.HiredFaculty)
             {
+                anyFacultyExists = true;
+
                 RectTransform listItem = Instantiate(ScrollViewRowTemplate, ScrollViewContent);
                 FacultyRow facultyRow = listItem.GetComponent<FacultyRow>();
 
@@ -70,6 +75,8 @@ namespace UI
                 
                 listItem.gameObject.SetActive(true);
             }
+
+            PlaceholderText.enabled = !anyFacultyExists;
         }
 
         private void ClearList()
