@@ -8,9 +8,9 @@ using UnityEngine.UI;
 namespace UI
 {
     /// <summary>
-    /// Companion behavior for the FacultyWindow
+    /// Companion behavior for the FacultyHiringWindow
     /// </summary>
-    public class FacultyWindow : Window
+    public class FacultyHiringWindow : Window
     {
         public Text TitleText;
 
@@ -20,24 +20,13 @@ namespace UI
 
         public Button CancelButton;
 
-        public Text ClassroomUsageText;
-
-        public Text LabUsageText;
-
-        public Text TeachingScoreText;
-
-        public Text ResearchScoreText;
-
         public override List<Button> Buttons => new List<Button> { CancelButton };
 
         public override void Open(object data)
         {
             CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
 
-            ClearList();
-            PopulateList();
-
-            UpdateStats();
+            UpdateList();
 
             var camera = Camera.main.GetComponent<OrthoPanningCamera>();
             camera.FreezeCamera();
@@ -49,21 +38,18 @@ namespace UI
             camera.UnfreezeCamera();
         }
 
-        public void UpdateStats()
+        public void UpdateList()
         {
-            FacultyManager manager = Accessor.Faculty;
-            ClassroomUsageText.text = $"{manager.UsedClassroomCount}/{manager.AvailableClassroomCount}";
-            LabUsageText.text = $"{manager.UsedLabsCount}/{manager.AvailableLabsCount}";
-            TeachingScoreText.text = manager.TeachingScore.ToString();
-            ResearchScoreText.text = manager.ResearchScore.ToString();
+            ClearList();
+            PopulateList();
         }
 
         private void PopulateList()
         {
-            foreach (HiredFaculty faculty in Accessor.Faculty.HiredFaculty)
+            foreach (GeneratedFaculty faculty in Accessor.Faculty.AvailableFaculty)
             {
                 RectTransform listItem = Instantiate(ScrollViewRowTemplate, ScrollViewContent);
-                FacultyRow facultyRow = listItem.GetComponent<FacultyRow>();
+                FacultyHiringRow facultyRow = listItem.GetComponent<FacultyHiringRow>();
 
                 Sprite facultyHeadshot = Accessor.Faculty.GetHeadshotForFaculty(faculty.Id);
                 facultyRow.Initialize(this, faculty, facultyHeadshot, Accessor);

@@ -1,5 +1,47 @@
 ﻿<FacultyData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
 
   <DefaultHeadshot>DefaultIcon</DefaultHeadshot>
+  <AvailableFacultyCount>5</AvailableFacultyCount>
 
+  <!-- Data used to randomly generate faculty -->
+  <FirstNamesMen>
+    <Name>Skyler</Name>
+    <Name>Brandon</Name>
+    <Name>Chris</Name>
+    <Name>Christopher</Name>
+    <Name>David</Name>
+    <Name>James</Name>
+    <Name>Nick</Name>
+    <Name>Patrick</Name>
+  </FirstNamesMen>
+  
+  <FirstNamesWomen>
+    <Name>Kristin</Name>
+    <Name>Emily</Name>
+    <Name>Anna</Name>
+    <Name>Megan</Name>
+    <Name>Allison</Name>
+    <Name>Katherine</Name>
+    <Name>Abby</Name>
+    <Name>Victoria</Name>
+  </FirstNamesWomen>
+
+  <LastNames>
+    <Name>Smith</Name>
+    <Name>Green</Name>
+    <Name>Johnson</Name>
+    <Name>Williams</Name>
+    <Name>Jones</Name>
+    <Name>Brown</Name>
+    <Name>Davis</Name>
+    <Name>Miller</Name>
+    <Name>Wilson</Name>
+    <Name>Anderson</Name>
+    <Name>Jackson</Name>
+    <Name>Rodriguez</Name>
+    <Name>Hall</Name>
+    <Name>Hawkins</Name>
+    <Name>Moore</Name>
+  </LastNames>
+  
 </FacultyData>

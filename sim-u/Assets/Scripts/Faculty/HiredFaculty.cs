@@ -8,30 +8,31 @@ namespace Faculty
     [Serializable]
     public class HiredFaculty
     {
-        public HiredFaculty(int id, string name, int salary, int teachingScore, int researchScore)
+        public HiredFaculty(int id, string name, int salary, int teachingScore, int researchScore, int maximumSlots)
         {
             Id = id;
             Name = name;
             SalaryPerYear = salary;
             TeachingScore = teachingScore;
             ResearchScore = researchScore;
+            MaximumSlots = maximumSlots;
         }
 
         public int Id { get; }
 
         public string Name { get; }
 
-        public int SalaryPerYear { get; private set; }
+        public int SalaryPerYear { get; set; }
 
-        public int TeachingScore { get; private set; }
+        public int TeachingScore { get; set; }
 
-        public int ResearchScore { get; private set; }
+        public int ResearchScore { get; set; }
 
-        public int TeachingSlots { get; private set; }
+        public int MaximumSlots { get; set; }
 
-        public int ResearchSlots { get; private set; }
+        public int TeachingSlots { get; set; }
 
-        public int MaximumSlots { get; private set; }
+        public int ResearchSlots { get; set; }
 
         public int TeachingOutput
         {
@@ -49,43 +50,11 @@ namespace Faculty
             }
         }
 
-        private int UsedSlots
+        public int UsedSlots
         {
             get
             {
                 return TeachingSlots + ResearchSlots;
-            }
-        }
-
-        public void AddTeaching()
-        {
-            if (UsedSlots < MaximumSlots)
-            {
-                ++TeachingSlots;
-            }
-        }
-
-        public void RemoveTeaching()
-        {
-            if (TeachingSlots > 0)
-            {
-                --TeachingSlots;
-            }
-        }
-
-        public void AddResearch()
-        {
-            if (UsedSlots < MaximumSlots)
-            {
-                ++ResearchSlots;
-            }
-        }
-
-        public void RemoveResearch()
-        {
-            if (ResearchSlots > 0)
-            {
-                --ResearchSlots;
             }
         }
     }

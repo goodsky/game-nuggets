@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Campus
+﻿namespace Campus
 {
     public class ClassroomInfo
     {

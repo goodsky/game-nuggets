@@ -1,4 +1,5 @@
-﻿using Faculty;
+﻿using Common;
+using Faculty;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,7 +32,7 @@ namespace UI
 
         public UnityEngine.UI.Button ResearchPlusButton;
 
-        public void Initialize(FacultyWindow parent, HiredFaculty faculty, Sprite headshot)
+        public void Initialize(FacultyWindow parent, HiredFaculty faculty, Sprite headshot, GameAccessor accessor)
         {
             _parent = parent;
             _faculty = faculty;
@@ -41,27 +42,29 @@ namespace UI
             UpdateClassesCounter();
             UpdateResearchCounter();
 
+            FacultyManager manager = accessor.Faculty;
+
             ClassesMinusButton.onClick.AddListener(() =>
             {
-                _faculty.RemoveTeaching();
+                manager.RemoveTeaching(faculty);
                 UpdateClassesCounter();
             });
 
             ClassesPlusButton.onClick.AddListener(() =>
             {
-                _faculty.AddTeaching();
+                manager.AddTeaching(faculty);
                 UpdateClassesCounter();
             });
 
             ResearchMinusButton.onClick.AddListener(() =>
             {
-                _faculty.RemoveResearch();
+                manager.RemoveResearch(faculty);
                 UpdateResearchCounter();
             });
 
             ResearchPlusButton.onClick.AddListener(() =>
             {
-                _faculty.AddResearch();
+                manager.AddResearch(faculty);
                 UpdateResearchCounter();
             });
         }
@@ -77,11 +80,13 @@ namespace UI
         private void UpdateClassesCounter()
         {
             ClassesCounter.text = _faculty.TeachingSlots.ToString();
+            _parent.UpdateStats();
         }
 
         private void UpdateResearchCounter()
         {
             ResearchCounter.text = _faculty.ResearchSlots.ToString();
+            _parent.UpdateStats();
         }
     }
 }

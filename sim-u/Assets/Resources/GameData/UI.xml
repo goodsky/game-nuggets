@@ -19,6 +19,12 @@
     <!-- Main Toolbar Buttons -->
     <MainButtonGroup name="MainMenu">
       <Buttons>
+        <Button name="Faculty">
+          <Tooltip>University Faculty</Tooltip>
+          <IconImage>icon-test2</IconImage>
+          <OnSelect x:type="OpenSubMenuAction" buttonGroupName="FacultyMenu"/>
+          <OnDeselect x:type="CloseSubMenuAction" />
+        </Button>
         <Button name="Construction">
           <Tooltip>Campus Construction</Tooltip>
           <IconImage>icon-construction</IconImage>
@@ -70,7 +76,26 @@
       </Buttons>
     </MainButtonGroup>
 
-    <!-- Home Sub Menu Buttons -->
+    <!-- Faculty Sub Menu Buttons -->
+    <SubButtonGroup name="FacultyMenu">
+      <Buttons>
+        <Button name="FacultyOverview">
+          <Tooltip>Faculty Overview</Tooltip>
+          <IconImage>icon-test2</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="FacultyOverview" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="FacultyHiring">
+          <Tooltip>Hire new Faculty</Tooltip>
+          <IconImage>icon-test2</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="FacultyHiring" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+      </Buttons>
+    </SubButtonGroup>
+    
+    <!-- Construction Sub Menu Buttons -->
     <SubButtonGroup name="ConstructionMenu">
       <Buttons>
         <Button name="BuildTest">
@@ -115,6 +140,8 @@
     <Window name="Demolishing" prefab="DemolishingWindow" />
     <Window name="SaveGame" prefab="SaveGameWindow" />
     <Window name="LoadGame" prefab="LoadGameWindow" />
+    <Window name="FacultyOverview" prefab="FacultyWindow" />
+    <Window name="FacultyHiring" prefab="FacultyHiringWindow" />
   </Windows>
   
 </UIData>

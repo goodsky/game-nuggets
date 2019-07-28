@@ -114,7 +114,24 @@ namespace Campus
         public IEnumerable<ParkingInfo> GetParkingInfo()
         {
             // TODO: Return the Parking Info
-            throw new NotImplementedException();
+            return new[]
+            {
+                new ParkingInfo
+                {
+                    ParkingSpots = 10,
+                    IsConnectedToRoad = true,
+                },
+                new ParkingInfo
+                {
+                    ParkingSpots = 5,
+                    IsConnectedToRoad = true,
+                },
+                new ParkingInfo
+                {
+                    ParkingSpots = 100,
+                    IsConnectedToRoad = false,
+                }
+            };
         }
 
         /// <summary>
@@ -123,7 +140,50 @@ namespace Campus
         public IEnumerable<ClassroomInfo> GetClassroomInfo()
         {
             // TODO: Return the Classroom Info
-            throw new NotImplementedException();
+            return new[]
+            {
+                new ClassroomInfo
+                {
+                    ClassroomCount = 5,
+                    IsConnectedToPaths = true,
+                },
+                new ClassroomInfo
+                {
+                    ClassroomCount = 1,
+                    IsConnectedToPaths = true,
+                },
+                new ClassroomInfo
+                {
+                    ClassroomCount = 10,
+                    IsConnectedToPaths = false,
+                }
+            };
+        }
+
+        /// <summary>
+        /// Gets the classrooms on the campus.
+        /// </summary>
+        public IEnumerable<LabInfo> GetLabInfo()
+        {
+            // TODO: Return the Classroom Info
+            return new[]
+            {
+                new LabInfo
+                {
+                    LabCount = 2,
+                    IsConnectedToPaths = true,
+                },
+                new LabInfo
+                {
+                    LabCount = 3,
+                    IsConnectedToPaths = true,
+                },
+                new LabInfo
+                {
+                    LabCount = 10,
+                    IsConnectedToPaths = false,
+                }
+            };
         }
 
         /// <summary>

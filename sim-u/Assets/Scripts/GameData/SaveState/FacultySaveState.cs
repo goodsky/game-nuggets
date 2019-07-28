@@ -6,6 +6,10 @@ namespace GameData
     [Serializable]
     public class FacultySaveState
     {
-        public HiredFaculty[] Faculty { get; set; }
+        public int NextFacultyId { get; set; }
+
+        public GeneratedFaculty[] GeneratedFaculty { get; set; }
+
+        public HiredFaculty[] HiredFaculty { get; set; }
     }
 }
