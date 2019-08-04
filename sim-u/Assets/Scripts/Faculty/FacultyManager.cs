@@ -17,7 +17,7 @@ namespace Faculty
 
         public IEnumerable<HiredFaculty> HiredFaculty => _hiredFaculty.Values;
 
-        public int AvailableClassroomCount
+        public int TotalClassroomCount
         {
             get
             {
@@ -45,7 +45,7 @@ namespace Faculty
             }
         }
 
-        public int AvailableLabsCount
+        public int TotalLabsCount
         {
             get
             {
@@ -82,9 +82,17 @@ namespace Faculty
             _hiredFaculty.Add(hired.Id, hired);
         }
 
+        public void DropFaculty(HiredFaculty faculty)
+        {
+            GameLogger.Info("Dropping faculty! - {0}", faculty);
+
+            _hiredFaculty.Remove(faculty.Id);
+        }
+
         public void AddTeaching(HiredFaculty faculty)
         {
-            if (faculty.UsedSlots < faculty.MaximumSlots)
+            if (TotalClassroomCount - UsedClassroomCount > 0 && 
+                faculty.UsedSlots < faculty.MaximumSlots)
             {
                 ++faculty.TeachingSlots;
             }
@@ -100,7 +108,8 @@ namespace Faculty
 
         public void AddResearch(HiredFaculty faculty)
         {
-            if (faculty.UsedSlots < faculty.MaximumSlots)
+            if (TotalLabsCount - UsedLabsCount > 0 &&
+                faculty.UsedSlots < faculty.MaximumSlots)
             {
                 ++faculty.ResearchSlots;
             }

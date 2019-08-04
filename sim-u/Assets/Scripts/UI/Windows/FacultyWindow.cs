@@ -48,16 +48,22 @@ namespace UI
         public override void Close()
         {
             var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.UnfreezeCamera();
+            camera?.UnfreezeCamera();
         }
 
         public void UpdateStats()
         {
             FacultyManager manager = Accessor.Faculty;
-            ClassroomUsageText.text = $"{manager.UsedClassroomCount}/{manager.AvailableClassroomCount}";
-            LabUsageText.text = $"{manager.UsedLabsCount}/{manager.AvailableLabsCount}";
+            ClassroomUsageText.text = $"{manager.UsedClassroomCount}/{manager.TotalClassroomCount}";
+            LabUsageText.text = $"{manager.UsedLabsCount}/{manager.TotalLabsCount}";
             TeachingScoreText.text = manager.UniversityTeachingScore.ToString();
             ResearchScoreText.text = manager.UniversityResearchScore.ToString();
+        }
+
+        public void UpdateList()
+        {
+            ClearList();
+            PopulateList();
         }
 
         private void PopulateList()

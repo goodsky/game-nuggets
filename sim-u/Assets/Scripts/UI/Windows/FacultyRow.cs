@@ -22,6 +22,8 @@ namespace UI
 
         public Text ClassesCounter;
 
+        public UnityEngine.UI.Button DropButton;
+
         public UnityEngine.UI.Button ClassesMinusButton;
 
         public UnityEngine.UI.Button ClassesPlusButton;
@@ -43,6 +45,12 @@ namespace UI
             UpdateResearchCounter();
 
             FacultyManager manager = accessor.Faculty;
+
+            DropButton.onClick.AddListener(() =>
+            {
+                manager.DropFaculty(faculty);
+                _parent.UpdateList();
+            });
 
             ClassesMinusButton.onClick.AddListener(() =>
             {

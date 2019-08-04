@@ -21,7 +21,7 @@
       <Buttons>
         <Button name="Faculty">
           <Tooltip>University Faculty</Tooltip>
-          <IconImage>icon-test2</IconImage>
+          <IconImage>icon-faculty</IconImage>
           <OnSelect x:type="OpenSubMenuAction" buttonGroupName="FacultyMenu"/>
           <OnDeselect x:type="CloseSubMenuAction" />
         </Button>
@@ -81,14 +81,14 @@
       <Buttons>
         <Button name="FacultyOverview">
           <Tooltip>Faculty Overview</Tooltip>
-          <IconImage>icon-test2</IconImage>
+          <IconImage>icon-faculty-manage</IconImage>
           <OnSelect x:type="OpenWindowAction" windowName="FacultyOverview" />
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
         <Button name="FacultyHiring">
           <Tooltip>Hire new Faculty</Tooltip>
-          <IconImage>icon-test2</IconImage>
+          <IconImage>icon-faculty-hire</IconImage>
           <OnSelect x:type="OpenWindowAction" windowName="FacultyHiring" />
           <OnDeselect x:type="CloseWindowAction" />
         </Button>

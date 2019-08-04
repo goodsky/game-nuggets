@@ -37,7 +37,7 @@ namespace UI
         public override void Close()
         {
             var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.UnfreezeCamera();
+            camera?.UnfreezeCamera();
         }
 
         public void UpdateList()
