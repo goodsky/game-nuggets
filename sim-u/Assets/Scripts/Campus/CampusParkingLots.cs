@@ -13,7 +13,7 @@ namespace Campus
     {
         private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
-        private readonly InternalParkingLotState[,] _lotAtGridPosition;
+        private readonly ParkingLot[,] _lotAtGridPosition;
 
         private readonly int _startIndex;
         private readonly int _invalidIndex;
@@ -23,7 +23,7 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
-            _lotAtGridPosition = new InternalParkingLotState[_terrain.CountX, _terrain.CountZ];
+            _lotAtGridPosition = new ParkingLot[_terrain.CountX, _terrain.CountZ];
 
             _startIndex = campusData.Terrain.SubmaterialParkingLotsIndex;
             _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
@@ -91,7 +91,7 @@ namespace Campus
         /// Returns a parking lot info if it exists at a given grid point.
         /// </summary>
         /// <param name="pos">Grid position to query./</param>
-        /// <returns>The parking lot if it exists at the position, false otherwise.</returns>
+        /// <returns>The parking lot if it exists at the position, null otherwise.</returns>
         public ParkingInfo GetParkingLotAtGrid(Point2 pos)
         {
             return _lotAtGridPosition[pos.x, pos.z]?.ToParkingInfo();
@@ -106,7 +106,7 @@ namespace Campus
         /// <returns>True if a lot edge exists at position, false otherwise.</returns>
         public bool IsOnEdgeOfParkingLot(Point2 pos, bool disallowCorners = false)
         {
-            InternalParkingLotState lot = _lotAtGridPosition[pos.x, pos.z];
+            ParkingLot lot = _lotAtGridPosition[pos.x, pos.z];
             if (lot != null)
             {
                 Rectangle rect = lot.Footprint;
@@ -134,7 +134,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> ConstructParkingLot(Rectangle rectangle)
         {
-            var parkingLot = new InternalParkingLotState(rectangle);
+            var parkingLot = new ParkingLot(rectangle);
 
             for (int x = rectangle.MinX; x <= rectangle.MaxX; ++x)
             {
@@ -177,7 +177,7 @@ namespace Campus
         /// <returns>The points on the terrain that have been modified.</returns>
         public IEnumerable<Point2> DestroyParkingLotAt(Point2 pos)
         {
-            InternalParkingLotState parkingLot = _lotAtGridPosition[pos.x, pos.z];
+            ParkingLot parkingLot = _lotAtGridPosition[pos.x, pos.z];
             if (parkingLot == null)
             {
                 yield break;
@@ -207,7 +207,7 @@ namespace Campus
         /// </summary>
         public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetParkingLotMaterial(Point2 pos)
         {
-            InternalParkingLotState parkingLot = _lotAtGridPosition[pos.x, pos.z];
+            ParkingLot parkingLot = _lotAtGridPosition[pos.x, pos.z];
 
             if (parkingLot == null)
             {
@@ -366,76 +366,6 @@ namespace Campus
             StraightEdgeOnePath = 6,
             StraightEdgeRoad = 7,
             Invalid
-        }
-
-        /// <summary>
-        /// Keeper of Parking Lot information.
-        /// </summary>
-        private class InternalParkingLotState
-        {
-            public InternalParkingLotState(Rectangle footprint)
-            {
-                Footprint = footprint;
-                LotLines = GenerateLotLines(footprint);
-            }
-
-            public Rectangle Footprint { get; private set; }
-            public bool[,] LotLines { get; private set; }
-            public int LotCount { get; private set; }
-
-            public ParkingInfo ToParkingInfo()
-            {
-                return new ParkingInfo()
-                {
-                    Id = Footprint.Start.GetHashCode() + ((long)(Footprint.End.GetHashCode()) << 32),
-                    ParkingSpots = LotCount,
-                    IsConnectedToRoad = false,
-                };
-            }
-
-            private bool[,] GenerateLotLines(Rectangle footprint)
-            {
-                bool[,] lotSpaces = new bool[footprint.SizeX, footprint.SizeZ];
-
-                AxisAlignment alignment = footprint.SizeX > footprint.SizeZ ? AxisAlignment.XAxis : AxisAlignment.ZAxis;
-
-                int minorAxisSize, majorAxisSize;
-                if (alignment == AxisAlignment.XAxis)
-                {
-                    minorAxisSize = footprint.SizeZ;
-                    majorAxisSize = footprint.SizeX;
-                }
-                else
-                {
-                    minorAxisSize = footprint.SizeX;
-                    majorAxisSize = footprint.SizeZ;
-                }
-
-                // adjust the blank space between even and odd size lots
-                int adjustBlankSpaces = (minorAxisSize % 2);
-                for (int i = 0; i < minorAxisSize; ++i)
-                {
-                    if ((i + adjustBlankSpaces) % 3 == 0)
-                    {
-                        continue; // leave a blank space between parking lots
-                    }
-
-                    for (int j = 0; j < majorAxisSize; ++j)
-                    {
-                        ++LotCount;
-                        if (alignment == AxisAlignment.XAxis)
-                        {
-                            lotSpaces[j, i] = true;
-                        }
-                        else
-                        {
-                            lotSpaces[i, j] = true;
-                        }
-                    }
-                }
-
-                return lotSpaces;
-            }
         }
     }
 }

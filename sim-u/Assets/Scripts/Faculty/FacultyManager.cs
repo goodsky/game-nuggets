@@ -51,7 +51,7 @@ namespace Faculty
             {
                 return Accessor.CampusManager.GetLabInfo()
                     .Where(classroom => classroom.IsConnectedToPaths)
-                    .Sum(classroom => classroom.LabCount);
+                    .Sum(classroom => classroom.LaboratoryCount);
             }
         }
 

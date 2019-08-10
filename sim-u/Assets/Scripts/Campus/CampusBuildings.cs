@@ -34,13 +34,13 @@ namespace Campus
             return Utils.GetDistinct(_buildingAtGridPosition)
                 .Select(building =>
                 {
-                    Point3 location = _terrain.Convert.WorldToGrid(building.transform.position);
+                    Point3 gridPosition = building.GridPosition;
                     return new BuildingSaveState
                     {
                         BuildingDataName = building.Data.Name,
-                        PositionX = location.x,
-                        PositionY = location.y,
-                        PositionZ = location.z,
+                        PositionX = gridPosition.x,
+                        PositionY = gridPosition.y,
+                        PositionZ = gridPosition.z,
                         Rotation = building.transform.rotation.z, // TODO: Rotations should happen eventually.
                     };
                 })
@@ -64,13 +64,33 @@ namespace Campus
         }
 
         /// <summary>
+        /// Get all buildings.
+        /// </summary>
+        /// <returns>All buildings.</returns>
+        public IEnumerable<BuildingInfo> GetBuildings()
+        {
+            return Utils.GetDistinct(_buildingAtGridPosition)
+                .Select(building => building.ToBuildingInfo());
+        }
+
+        /// <summary>
         /// Checks if a building exists at a given grid point.
         /// </summary>
         /// <param name="pos">Grid position to query.</param>
         /// <returns>True if a building exists at position, false otherwise.</returns>
-        public bool BuildingAtPosition(Point2 pos)
+        public bool BuildingAtGrid(Point2 pos)
         {
             return _buildingAtGridPosition[pos.x, pos.z] != null;
+        }
+
+        /// <summary>
+        /// Returns a building info if it exists at a given grid point.
+        /// </summary>
+        /// <param name="pos">Grid position to query./</param>
+        /// <returns>The building if it exists at the position, null otherwise.</returns>
+        public BuildingInfo GetBuildingAtGrid(Point2 pos)
+        {
+            return _buildingAtGridPosition[pos.x, pos.z]?.ToBuildingInfo();
         }
 
         /// <summary>
@@ -84,6 +104,7 @@ namespace Campus
             var building = CampusFactory.GenerateBuilding(
                         buildingData,
                         _campusManager.transform,
+                        location,
                         _terrain.Convert.GridToWorld(location) + new Vector3(0f, 0.001f, 0f) /* Place just above the grass*/,
                         Quaternion.identity);
 

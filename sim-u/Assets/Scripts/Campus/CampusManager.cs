@@ -50,7 +50,7 @@ namespace Campus
         {
             CampusGridUse use = CampusGridUse.Empty;
 
-            if (_buildings.BuildingAtPosition(pos))
+            if (_buildings.BuildingAtGrid(pos))
             {
                 use = use | CampusGridUse.Building;
             }
@@ -148,22 +148,22 @@ namespace Campus
         /// <summary>
         /// Gets the classrooms on the campus.
         /// </summary>
-        public IEnumerable<ClassroomInfo> GetClassroomInfo()
+        public IEnumerable<BuildingInfo> GetClassroomInfo()
         {
             // TODO: Return the Classroom Info
             return new[]
             {
-                new ClassroomInfo
+                new BuildingInfo
                 {
                     ClassroomCount = 5,
                     IsConnectedToPaths = true,
                 },
-                new ClassroomInfo
+                new BuildingInfo
                 {
                     ClassroomCount = 1,
                     IsConnectedToPaths = true,
                 },
-                new ClassroomInfo
+                new BuildingInfo
                 {
                     ClassroomCount = 10,
                     IsConnectedToPaths = false,
@@ -174,27 +174,37 @@ namespace Campus
         /// <summary>
         /// Gets the classrooms on the campus.
         /// </summary>
-        public IEnumerable<LabInfo> GetLabInfo()
+        public IEnumerable<BuildingInfo> GetLabInfo()
         {
-            // TODO: Return the Classroom Info
+            // TODO: Return the Laboratory Info
             return new[]
             {
-                new LabInfo
+                new BuildingInfo
                 {
-                    LabCount = 2,
+                    LaboratoryCount = 2,
                     IsConnectedToPaths = true,
                 },
-                new LabInfo
+                new BuildingInfo
                 {
-                    LabCount = 3,
+                    LaboratoryCount = 3,
                     IsConnectedToPaths = true,
                 },
-                new LabInfo
+                new BuildingInfo
                 {
-                    LabCount = 10,
+                    LaboratoryCount = 10,
                     IsConnectedToPaths = false,
                 }
             };
+        }
+
+        /// <summary>
+        /// Gets all buildings on campus.
+        /// NOTE: This isn't checking if they are connected or not.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<BuildingInfo> GetBuildings()
+        {
+            return _buildings.GetBuildings();
         }
 
         /// <summary>
@@ -697,17 +707,33 @@ namespace Campus
             if (enable)
             {
                 GameObject template = ResourceLoader.Load<GameObject>(ResourceType.Prefabs, ResourceCategory.Terrain, "MarkerSphere");
-                foreach (ParkingInfo parkingLot in _lots.GetParkingLots())
+                foreach (ParkingInfo parkingLotInfo in _lots.GetParkingLots())
                 {
-                    var connections = _connections.GetConnections(parkingLot);
-                    foreach (RoadConnection connection in connections)
+                    var rConnections = _connections.GetConnections(parkingLotInfo);
+                    foreach (RoadConnection rConnection in rConnections)
                     {
-                        foreach (Point2 pointAlongPath in connection.VertexConnection)
+                        foreach (Point2 pointAlongPath in rConnection.VertexConnection)
                         {
                             GameObject markerSphere = Instantiate(template, _terrain.transform);
                             var yHeight = _terrain.GetVertexHeight(pointAlongPath.x, pointAlongPath.z);
                             var pointOnTerrain = new Point3(pointAlongPath.x, yHeight, pointAlongPath.z);
-                            markerSphere.transform.localPosition = _terrain.Convert.GridToWorld(pointOnTerrain);
+                            markerSphere.transform.localPosition = _terrain.Convert.GridToWorld(pointOnTerrain) + new Vector3(0, 0.25f, 0);
+                            _markerSpheres.Add(markerSphere);
+                        }
+                    }
+                }
+
+                foreach (BuildingInfo buildingInfo in _buildings.GetBuildings())
+                {
+                    var pCconnections = _connections.GetConnections(buildingInfo);
+                    foreach (PathConnection pConnection in pCconnections)
+                    {
+                        foreach (Point2 pointAlongPath in pConnection.VertexConnection)
+                        {
+                            GameObject markerSphere = Instantiate(template, _terrain.transform);
+                            var yHeight = _terrain.GetSquareHeight(pointAlongPath.x, pointAlongPath.z);
+                            var pointOnTerrain = new Point3(pointAlongPath.x, yHeight, pointAlongPath.z);
+                            markerSphere.transform.localPosition = _terrain.Convert.GridCenterToWorld(pointOnTerrain) + new Vector3(0, 0.25f, 0);
                             _markerSpheres.Add(markerSphere);
                         }
                     }

@@ -17,6 +17,9 @@ namespace GameData
         [XmlElement("Classrooms")]
         public int Classrooms { get; set; }
 
+        [XmlElement("Laboratories")]
+        public int Laboratories { get; set; }
+
         [XmlElement("Icon")]
         public string IconName { get; set; }
 
