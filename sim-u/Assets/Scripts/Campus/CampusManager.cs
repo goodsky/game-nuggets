@@ -37,6 +37,7 @@ namespace Campus
         private CampusPaths _paths;
         private CampusRoads _roads;
         private CampusParkingLots _lots;
+        private CampusConnections _connections;
 
         private int _defaultMaterialIndex;
 
@@ -64,7 +65,7 @@ namespace Campus
                 use = use | CampusGridUse.Road;
             }
 
-            if (_lots.IsParkingLotAtPosition(pos))
+            if (_lots.IsParkingLotAtGrid(pos))
             {
                 use = use | CampusGridUse.ParkingLot;
             }
@@ -81,7 +82,7 @@ namespace Campus
                     break;
 
                 default:
-                    GameLogger.FatalError("Unexpected path use detected! Point {0}; Use: {1}", pos, use);
+                    GameLogger.FatalError("Unexpected grid use detected! Point {0}; Use: {1}", pos, use);
                     break;
             }
 
@@ -106,6 +107,16 @@ namespace Campus
             }
 
             return use;
+        }
+
+        /// <summary>
+        /// Returns the parking lot at a given grid position, if it exists.
+        /// </summary>
+        /// <param name="pos">The grid position.</param>
+        /// <returns>The parking lot info if it exists, null otherwise.</returns>
+        public ParkingInfo GetParkingInfoAtGrid(Point2 pos)
+        {
+            return _lots.GetParkingLotAtGrid(pos);
         }
 
         /// <summary>
@@ -556,6 +567,7 @@ namespace Campus
             _paths = new CampusPaths(gameData, Accessor);
             _roads = new CampusRoads(gameData, Accessor);
             _lots = new CampusParkingLots(gameData, Accessor);
+            _connections = new CampusConnections(gameData, Accessor);
 
             _defaultMaterialIndex = gameData.Terrain.SubmaterialEmptyGrassIndex;
 
@@ -597,6 +609,9 @@ namespace Campus
                 UpdateGridMaterial(updatedPoint);
                 UpdateGridAnchoring(updatedPoint);
             }
+
+            _connections.Recompute();
+            UpdateDebugConnectionsOnTerrain(enable: true);
         }
 
         /// <summary>
@@ -665,6 +680,38 @@ namespace Campus
             else
             {
                 _terrain.Editor.RemoveAnchor(pos.x, pos.z);
+            }
+        }
+
+        /// <summary>
+        /// Super hacky debug output to verify that connection path-finding is working.
+        /// </summary>
+        private List<GameObject> _markerSpheres = new List<GameObject>();
+        private void UpdateDebugConnectionsOnTerrain(bool enable = false)
+        {
+            foreach (GameObject oldMarkerSphere in _markerSpheres)
+            {
+                Destroy(oldMarkerSphere);
+            }
+
+            if (enable)
+            {
+                GameObject template = ResourceLoader.Load<GameObject>(ResourceType.Prefabs, ResourceCategory.Terrain, "MarkerSphere");
+                foreach (ParkingInfo parkingLot in _lots.GetParkingLots())
+                {
+                    var connections = _connections.GetConnections(parkingLot);
+                    foreach (RoadConnection connection in connections)
+                    {
+                        foreach (Point2 pointAlongPath in connection.VertexConnection)
+                        {
+                            GameObject markerSphere = Instantiate(template, _terrain.transform);
+                            var yHeight = _terrain.GetVertexHeight(pointAlongPath.x, pointAlongPath.z);
+                            var pointOnTerrain = new Point3(pointAlongPath.x, yHeight, pointAlongPath.z);
+                            markerSphere.transform.localPosition = _terrain.Convert.GridToWorld(pointOnTerrain);
+                            _markerSpheres.Add(markerSphere);
+                        }
+                    }
+                }
             }
         }
     }

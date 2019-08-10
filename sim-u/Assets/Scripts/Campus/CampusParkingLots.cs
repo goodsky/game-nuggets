@@ -67,14 +67,14 @@ namespace Campus
             }
         }
 
+        /// <summary>
+        /// Get all parking lots.
+        /// </summary>
+        /// <returns>All parking lots.</returns>
         public IEnumerable<ParkingInfo> GetParkingLots()
         {
             return Utils.GetDistinct(_lotAtGridPosition)
-                .Select(lot => new ParkingInfo
-                {
-                    IsConnectedToRoad = false,
-                    ParkingSpots = lot.LotCount,
-                });
+                .Select(lot => lot.ToParkingInfo());
         }
 
         /// <summary>
@@ -82,9 +82,19 @@ namespace Campus
         /// </summary>
         /// <param name="pos">Grid position to query.</param>
         /// <returns>True if a lot exists at position, false otherwise.</returns>
-        public bool IsParkingLotAtPosition(Point2 pos)
+        public bool IsParkingLotAtGrid(Point2 pos)
         {
             return _lotAtGridPosition[pos.x, pos.z] != null;
+        }
+
+        /// <summary>
+        /// Returns a parking lot info if it exists at a given grid point.
+        /// </summary>
+        /// <param name="pos">Grid position to query./</param>
+        /// <returns>The parking lot if it exists at the position, false otherwise.</returns>
+        public ParkingInfo GetParkingLotAtGrid(Point2 pos)
+        {
+            return _lotAtGridPosition[pos.x, pos.z]?.ToParkingInfo();
         }
 
         /// <summary>
@@ -372,6 +382,16 @@ namespace Campus
             public Rectangle Footprint { get; private set; }
             public bool[,] LotLines { get; private set; }
             public int LotCount { get; private set; }
+
+            public ParkingInfo ToParkingInfo()
+            {
+                return new ParkingInfo()
+                {
+                    Id = Footprint.Start.GetHashCode() + ((long)(Footprint.End.GetHashCode()) << 32),
+                    ParkingSpots = LotCount,
+                    IsConnectedToRoad = false,
+                };
+            }
 
             private bool[,] GenerateLotLines(Rectangle footprint)
             {

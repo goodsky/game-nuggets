@@ -1,9 +1,7 @@
 ﻿namespace Campus
 {
-    public class ParkingInfo
+    public class ParkingInfo : RoadDestination
     {
-        public bool IsConnectedToRoad { get; set; }
-
         public int ParkingSpots { get; set; }
     }
 }
