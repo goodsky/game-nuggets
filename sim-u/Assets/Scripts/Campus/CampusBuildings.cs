@@ -58,7 +58,7 @@ namespace Campus
                 {
                     BuildingData buildingData = _gameData.Get<BuildingData>(GameDataType.Building, savedBuilding.BuildingDataName);
                     Point3 position = new Point3(savedBuilding.PositionX, savedBuilding.PositionY, savedBuilding.PositionZ);
-                    _campusManager.ConstructBuilding(buildingData, position);
+                    _campusManager.ConstructBuilding(buildingData, position, updateConnections: false);
                 }
             }
         }

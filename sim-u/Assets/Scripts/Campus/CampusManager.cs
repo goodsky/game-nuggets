@@ -263,9 +263,9 @@ namespace Campus
         /// </summary>
         /// <param name="building">The building to construct.</param>
         /// <param name="location">The location of the building.</param>
-        public void ConstructBuilding(BuildingData building, Point3 location)
+        public void ConstructBuilding(BuildingData building, Point3 location, bool updateConnections = true)
         {
-            UpdateGrids(_buildings.ConstructBuilding(building, location));
+            UpdateGrids(_buildings.ConstructBuilding(building, location), updateConnections);
         }
 
         /// <summary>
@@ -326,9 +326,9 @@ namespace Campus
         /// Build a path along a line.
         /// </summary>
         /// <param name="line">The line to build path along.</param>
-        public void ConstructPath(AxisAlignedLine line)
+        public void ConstructPath(AxisAlignedLine line, bool updateConnections = true)
         {
-            UpdateGrids(_paths.ConstructPath(line));
+            UpdateGrids(_paths.ConstructPath(line), updateConnections);
         }
 
         /// <summary>
@@ -426,9 +426,9 @@ namespace Campus
         /// Build a road along a vertex line.
         /// </summary>
         /// <param name="line">The line to build path along.</param>
-        public void ConstructRoad(AxisAlignedLine line)
+        public void ConstructRoad(AxisAlignedLine line, bool updateConnections = true)
         {
-            UpdateGrids(_roads.ConstructRoad(line));
+            UpdateGrids(_roads.ConstructRoad(line), updateConnections);
         }
 
         /// <summary>
@@ -475,9 +475,9 @@ namespace Campus
         /// Build a parking lot at the requested location.
         /// </summary>
         /// <param name="rectangle">The parking lot footprint.</param>
-        public void ConstructParkingLot(Rectangle rectangle)
+        public void ConstructParkingLot(Rectangle rectangle, bool updateConnections = true)
         {
-            UpdateGrids(_lots.ConstructParkingLot(rectangle));
+            UpdateGrids(_lots.ConstructParkingLot(rectangle), updateConnections);
         }
 
         /// <summary>
@@ -485,7 +485,7 @@ namespace Campus
         /// </summary>
         /// <param name="pos">The position to delete at.</param>
         /// <param name="filter">Optional: only delete the requested type of item.</param>
-        public void DestroyAt(Point2 pos, CampusGridUse? filter = null)
+        public void DestroyAt(Point2 pos, CampusGridUse? filter = null, bool updateConnections = true)
         {
             CampusGridUse itemAt = GetGridUse(pos);
 
@@ -520,7 +520,7 @@ namespace Campus
                     break;
             }
 
-            UpdateGrids(updatedPoints);
+            UpdateGrids(updatedPoints, updateConnections);
         }
 
         /// <summary>
@@ -559,10 +559,15 @@ namespace Campus
             if (state != null)
             {
                 // NB: It's important to load game state that does not update grids first.
+                // Does not update grids -----------------
                 _paths.LoadGameState(state.PathGrids);
                 _roads.LoadGameState(state.RoadVertices);
+
+                // Does update grides --------------------
                 _lots.LoadGameState(state.ParkingLots);
                 _buildings.LoadGameState(state.Buildings);
+
+                UpdateGrids(Enumerable.Empty<Point2>(), updateConnections: true);
             }
         }
 
@@ -612,7 +617,10 @@ namespace Campus
         /// Usually called directly after any edit operation.
         /// </summary>
         /// <param name="updatedPoints">The points that have been updated.</param>
-        private void UpdateGrids(IEnumerable<Point2> updatedPoints)
+        /// <param name="updateConnections">
+        /// Whether or not to recalculate the terrain connections. Avoid over-computing. Only set to true on the last call.
+        /// </param>
+        private void UpdateGrids(IEnumerable<Point2> updatedPoints, bool updateConnections)
         {
             foreach (Point2 updatedPoint in updatedPoints)
             {
@@ -620,8 +628,11 @@ namespace Campus
                 UpdateGridAnchoring(updatedPoint);
             }
 
-            _connections.Recompute();
-            UpdateDebugConnectionsOnTerrain(enable: true);
+            if (updateConnections)
+            {
+                _connections.Recompute();
+                UpdateDebugConnectionsOnTerrain(enable: true);
+            }
         }
 
         /// <summary>

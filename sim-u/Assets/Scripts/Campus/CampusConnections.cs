@@ -263,33 +263,4 @@ namespace Campus
             return connections.Values;
         }
     }
-
-    public class RoadConnection
-    {
-        public RoadConnection(RoadDestination dst, IList<Point2> connection)
-        {
-            Destination = dst;
-            VertexConnection = connection;
-        }
-
-        public RoadDestination Destination { get; }
-
-        public IList<Point2> VertexConnection { get; }
-    }
-
-    public class PathConnection
-    {
-        public PathConnection(RoadDestination src, PathDestination dst, IList<Point2> connection)
-        {
-            Source = src;
-            Destination = dst;
-            VertexConnection = connection;
-        }
-
-        public RoadDestination Source { get; }
-
-        public PathDestination Destination { get; }
-
-        public IList<Point2> VertexConnection { get; }
-    }
 }

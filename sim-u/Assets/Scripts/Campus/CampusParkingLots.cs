@@ -62,7 +62,7 @@ namespace Campus
                         new Point2(savedParkingLot.StartX, savedParkingLot.StartZ),
                         new Point2(savedParkingLot.EndX, savedParkingLot.EndZ));
 
-                    _campusManager.ConstructParkingLot(footprint);
+                    _campusManager.ConstructParkingLot(footprint, updateConnections: false);
                 }
             }
         }
@@ -149,10 +149,10 @@ namespace Campus
             Point2 p2 = new Point2(rectangle.MinX, rectangle.MaxZ);
             Point2 p3 = new Point2(rectangle.MaxX, rectangle.MaxZ);
             Point2 p4 = new Point2(rectangle.MaxX, rectangle.MinZ);
-            _campusManager.ConstructPath(new AxisAlignedLine(p1, p2));
-            _campusManager.ConstructPath(new AxisAlignedLine(p2, p3));
-            _campusManager.ConstructPath(new AxisAlignedLine(p3, p4));
-            _campusManager.ConstructPath(new AxisAlignedLine(p4, p1));
+            _campusManager.ConstructPath(new AxisAlignedLine(p1, p2), updateConnections: false);
+            _campusManager.ConstructPath(new AxisAlignedLine(p2, p3), updateConnections: false);
+            _campusManager.ConstructPath(new AxisAlignedLine(p3, p4), updateConnections: false);
+            _campusManager.ConstructPath(new AxisAlignedLine(p4, p1), updateConnections: false);
 
             // Register the road inside the lot
             for (int x = rectangle.MinX + 1; x <= rectangle.MaxX; ++x)
@@ -160,7 +160,7 @@ namespace Campus
                 // NB: Roads are built on vertices. Only fill the inner vertices.
                 Point2 vp1 = new Point2(x, rectangle.MinZ + 1);
                 Point2 vp2 = new Point2(x, rectangle.MaxZ);
-                _campusManager.ConstructRoad(new AxisAlignedLine(vp1, vp2));
+                _campusManager.ConstructRoad(new AxisAlignedLine(vp1, vp2), updateConnections: false);
             }
 
             // Return all the potentially modified grids around the parking lot for updating.
@@ -190,8 +190,8 @@ namespace Campus
                     _lotAtGridPosition[x, z] = null;
 
                     // Clean up the path and the road while we are at it
-                    _campusManager.DestroyAt(new Point2(x, z), CampusGridUse.Path);
-                    _campusManager.DestroyAt(new Point2(x, z), CampusGridUse.Road);
+                    _campusManager.DestroyAt(new Point2(x, z), CampusGridUse.Path, updateConnections: false);
+                    _campusManager.DestroyAt(new Point2(x, z), CampusGridUse.Road, updateConnections: false);
                 }
             }
 
