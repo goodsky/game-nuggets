@@ -4,7 +4,7 @@
     {
         public long Id { get; set; }
 
-        public bool IsConnectedToPaths { get; set; }
+        public bool? IsConnectedToPaths { get; set; }
 
         public override bool Equals(object obj)
         {

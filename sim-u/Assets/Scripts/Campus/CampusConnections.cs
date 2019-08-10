@@ -142,7 +142,7 @@ namespace Campus
         {
             var pSrcs = new List<(PathDestination buildingInfo, Point2 footprint)>();
 
-            IEnumerable<BuildingInfo> buildings = _campusManager.GetBuildings();
+            IEnumerable<BuildingInfo> buildings = _campusManager.GetBuildingInfo(checkConnections: false);
             foreach (BuildingInfo building in buildings)
             {
                 for (int x = 0; x < building.Footprint.GetLength(0); ++x)

@@ -70,7 +70,8 @@ namespace Campus
         public IEnumerable<BuildingInfo> GetBuildings()
         {
             return Utils.GetDistinct(_buildingAtGridPosition)
-                .Select(building => building.ToBuildingInfo());
+                .Select(building => building.ToBuildingInfo())
+                .ToList();
         }
 
         /// <summary>

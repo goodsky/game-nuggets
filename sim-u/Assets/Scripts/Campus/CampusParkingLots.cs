@@ -74,7 +74,8 @@ namespace Campus
         public IEnumerable<ParkingInfo> GetParkingLots()
         {
             return Utils.GetDistinct(_lotAtGridPosition)
-                .Select(lot => lot.ToParkingInfo());
+                .Select(lot => lot.ToParkingInfo())
+                .ToList();
         }
 
         /// <summary>

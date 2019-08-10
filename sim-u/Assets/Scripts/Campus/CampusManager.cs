@@ -122,89 +122,51 @@ namespace Campus
         /// <summary>
         /// Gets the parking lots on the campus.
         /// </summary>
-        public IEnumerable<ParkingInfo> GetParkingInfo()
+        /// <param name="checkConnections">True to check that parking lots are connected to road sources.</param>
+        public IEnumerable<ParkingInfo> GetParkingInfo(bool checkConnections)
         {
-            // TODO: Return the Parking Info
-            return new[]
+            IEnumerable<ParkingInfo> allParking = _lots.GetParkingLots();
+
+            if (checkConnections)
             {
-                new ParkingInfo
+                foreach (ParkingInfo parking in allParking)
                 {
-                    ParkingSpots = 10,
-                    IsConnectedToRoad = true,
-                },
-                new ParkingInfo
-                {
-                    ParkingSpots = 5,
-                    IsConnectedToRoad = true,
-                },
-                new ParkingInfo
-                {
-                    ParkingSpots = 100,
-                    IsConnectedToRoad = false,
+                    IList<RoadConnection> connections = _connections.GetConnections(parking);
+                    parking.IsConnectedToRoad = connections.Count > 0;
                 }
-            };
+            }
+
+            return allParking;
         }
 
         /// <summary>
-        /// Gets the classrooms on the campus.
+        /// Gets the buildings on the campus.
         /// </summary>
-        public IEnumerable<BuildingInfo> GetClassroomInfo()
+        /// <param name="checkConnections">True to check that buildings are connected to valid path sources.</param>
+        public IEnumerable<BuildingInfo> GetBuildingInfo(bool checkConnections)
         {
-            // TODO: Return the Classroom Info
-            return new[]
-            {
-                new BuildingInfo
-                {
-                    ClassroomCount = 5,
-                    IsConnectedToPaths = true,
-                },
-                new BuildingInfo
-                {
-                    ClassroomCount = 1,
-                    IsConnectedToPaths = true,
-                },
-                new BuildingInfo
-                {
-                    ClassroomCount = 10,
-                    IsConnectedToPaths = false,
-                }
-            };
-        }
+            IEnumerable<BuildingInfo> allBuildings = _buildings.GetBuildings();
 
-        /// <summary>
-        /// Gets the classrooms on the campus.
-        /// </summary>
-        public IEnumerable<BuildingInfo> GetLabInfo()
-        {
-            // TODO: Return the Laboratory Info
-            return new[]
+            if (checkConnections)
             {
-                new BuildingInfo
+                foreach (BuildingInfo building in allBuildings)
                 {
-                    LaboratoryCount = 2,
-                    IsConnectedToPaths = true,
-                },
-                new BuildingInfo
-                {
-                    LaboratoryCount = 3,
-                    IsConnectedToPaths = true,
-                },
-                new BuildingInfo
-                {
-                    LaboratoryCount = 10,
-                    IsConnectedToPaths = false,
-                }
-            };
-        }
+                    bool isConnectedToValidLot = false;
+                    IList<PathConnection> connections = _connections.GetConnections(building);
+                    foreach (PathConnection connection in connections)
+                    {
+                        IList<RoadConnection> rConnections = _connections.GetConnections(connection.Source);
+                        if (rConnections.Count > 0)
+                        {
+                            isConnectedToValidLot = true;
+                        }
+                    }
 
-        /// <summary>
-        /// Gets all buildings on campus.
-        /// NOTE: This isn't checking if they are connected or not.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<BuildingInfo> GetBuildings()
-        {
-            return _buildings.GetBuildings();
+                    building.IsConnectedToPaths = isConnectedToValidLot;
+                }
+            }
+
+            return allBuildings;
         }
 
         /// <summary>
@@ -631,7 +593,10 @@ namespace Campus
             if (updateConnections)
             {
                 _connections.Recompute();
-                UpdateDebugConnectionsOnTerrain(enable: true);
+                if (Accessor.Game.VisualizeConnections)
+                {
+                    UpdateDebugConnectionsOnTerrain(enable: true);
+                }
             }
         }
 

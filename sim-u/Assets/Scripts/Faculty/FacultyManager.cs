@@ -21,9 +21,9 @@ namespace Faculty
         {
             get
             {
-                return Accessor.CampusManager.GetClassroomInfo()
-                    .Where(classroom => classroom.IsConnectedToPaths)
-                    .Sum(classroom => classroom.ClassroomCount);
+                return Accessor.CampusManager.GetBuildingInfo(checkConnections: true)
+                    .Where(building => building.IsConnectedToPaths.Value)
+                    .Sum(building => building.ClassroomCount);
             }
         }
 
@@ -49,9 +49,9 @@ namespace Faculty
         {
             get
             {
-                return Accessor.CampusManager.GetLabInfo()
-                    .Where(classroom => classroom.IsConnectedToPaths)
-                    .Sum(classroom => classroom.LaboratoryCount);
+                return Accessor.CampusManager.GetBuildingInfo(checkConnections: true)
+                    .Where(building => building.IsConnectedToPaths.Value)
+                    .Sum(building => building.LaboratoryCount);
             }
         }
 

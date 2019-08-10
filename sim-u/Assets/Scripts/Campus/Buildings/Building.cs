@@ -24,7 +24,7 @@ namespace Campus
                 Footprint = Data.Footprint,
                 ClassroomCount = Data.Classrooms,
                 LaboratoryCount = Data.Laboratories,
-                IsConnectedToPaths = false,
+                IsConnectedToPaths = null,
             };
         }
     }

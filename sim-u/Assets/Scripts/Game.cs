@@ -10,17 +10,15 @@ using UnityEngine;
 /// </summary>
 public class Game : MonoBehaviour
 {
-    [Header("UI Configuration")]
+    [Header("Game Configuration")]
     public TextAsset UIConfig;
-
-    [Header("Campus Configuration")]
     public TextAsset CampusConfig;
-
-    [Header("Faculty Configuration")]
     public TextAsset FacultyConfig;
 
-    [Header("Set to true to enable 'Admin Editing' mode")]
+    [Space(10)]
+    [Header("DebuggingFlags")]
     public bool AdminMode;
+    public bool VisualizeConnections;
 
     [Header("If no save game is specified use this")]
     public string DefaultSaveGame;

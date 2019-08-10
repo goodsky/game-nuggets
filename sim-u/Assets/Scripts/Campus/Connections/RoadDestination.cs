@@ -4,7 +4,7 @@
     {
         public long Id { get; set; }
 
-        public bool IsConnectedToRoad { get; set; }
+        public bool? IsConnectedToRoad { get; set; }
 
         public override bool Equals(object obj)
         {

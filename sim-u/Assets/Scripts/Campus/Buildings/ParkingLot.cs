@@ -23,7 +23,7 @@ namespace Campus
             {
                 Id = Footprint.Start.GetHashCode() + ((long)(Footprint.End.GetHashCode()) << 32),
                 ParkingSpots = LotCount,
-                IsConnectedToRoad = false,
+                IsConnectedToRoad = null,
             };
         }
 
