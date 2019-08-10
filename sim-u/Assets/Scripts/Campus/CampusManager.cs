@@ -211,6 +211,16 @@ namespace Campus
                         _terrain.GetSquareHeight(gridX, gridZ) == location.y &&
                         GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
 
+                    bool isOnEdge =
+                        gridX == 0 || gridX == _terrain.CountX - 1 ||
+                        gridZ == 0 || gridZ == _terrain.CountZ - 1;
+
+                    // Can't build things on the edge of the terrain unless you are in admin mode.
+                    if (isOnEdge && !Accessor.Game.AdminMode)
+                    {
+                        isInBoundsFlatAndFree = false;
+                    }
+
                     validGrids[x, z] = isInBoundsFlatAndFree;
                     isValid = isValid && isInBoundsFlatAndFree;
                 }
@@ -248,8 +258,8 @@ namespace Campus
                     _terrain.IsGridSmooth(point.x, point.z, line.Alignment);
 
                 bool isOnEdge =
-                        point.x == 0 || point.x == _terrain.CountX - 1 ||
-                        point.z == 0 || point.z == _terrain.CountZ - 1;
+                    point.x == 0 || point.x == _terrain.CountX - 1 ||
+                    point.z == 0 || point.z == _terrain.CountZ - 1;
 
                 // Can't construct paths on the edge of the terrain unless you are in admin mode.
                 if (isOnEdge && !Accessor.Game.AdminMode)
@@ -425,6 +435,16 @@ namespace Campus
                         _terrain.IsGridFlat(gridX, gridZ) &&
                         GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
 
+                    bool isOnEdge =
+                        gridX == 0 || gridX == _terrain.CountX - 1 ||
+                        gridZ == 0 || gridZ == _terrain.CountZ - 1;
+
+                    // Can't construct lots on the edge of the terrain unless you are in admin mode.
+                    if (isOnEdge && !Accessor.Game.AdminMode)
+                    {
+                        isInBoundsFlatAndFree = false;
+                    }
+
                     validGrids[x, z] = isInBoundsFlatAndFree;
                     isValid = isValid && isInBoundsFlatAndFree;
                 }
@@ -440,6 +460,38 @@ namespace Campus
         public void ConstructParkingLot(Rectangle rectangle, bool updateConnections = true)
         {
             UpdateGrids(_lots.ConstructParkingLot(rectangle), updateConnections);
+        }
+
+        /// <summary>
+        /// Checks that the requested point is a valid target for DestroyAt.
+        /// </summary>
+        /// <param name="pos"></param>
+        public bool IsValidForDestruction(Point2 pos)
+        {
+            bool isOnEdge =
+                pos.x == 0 || pos.x == _terrain.CountX - 1 ||
+                pos.z == 0 || pos.z == _terrain.CountZ - 1;
+
+            // Can't delete things on the edge of the terrain unless you are in admin mode.
+            if (isOnEdge && !Accessor.Game.AdminMode)
+            {
+                return false;
+            }
+
+            CampusGridUse use = GetGridUse(pos);
+
+            bool isWithinTwoOfEdge =
+                pos.x <= 1 || pos.x >= _terrain.CountX - 2 ||
+                pos.z <= 1 || pos.z >= _terrain.CountZ - 2;
+
+            // Can't delete roads within 2 squares of the edge unless you are in admin mode.
+            if (use == CampusGridUse.Road &&
+                isWithinTwoOfEdge && !Accessor.Game.AdminMode)
+            {
+                return false;
+            }
+
+            return use != CampusGridUse.Empty;
         }
 
         /// <summary>

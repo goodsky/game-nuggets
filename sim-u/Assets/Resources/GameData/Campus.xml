@@ -17,36 +17,36 @@
   <!-- Registry of buildings that can be built. -->
   <Buildings>
     <Building name="Test Building">
-      <ConstructionCost>424242</ConstructionCost>
-      <MaintenanceCost>69</MaintenanceCost>
-      <Classrooms>10</Classrooms>
+      <ConstructionCost>1000</ConstructionCost>
+      <MaintenanceCost>10</MaintenanceCost>
+      <Classrooms>1</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
       <Model>test-building-small</Model>
     </Building>
     
     <Building name="Weird Building">
-      <ConstructionCost>1</ConstructionCost>
-      <MaintenanceCost>1</MaintenanceCost>
-      <Classrooms>1</Classrooms>
+      <ConstructionCost>2000</ConstructionCost>
+      <MaintenanceCost>20</MaintenanceCost>
+      <Classrooms>2</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a weird footprint. It's just two buildings diagonally adjacent. Not that weird really.</Description>
       <Model>test-building-weird</Model>
     </Building>
 
     <Building name="Really Weird Building">
-      <ConstructionCost>1</ConstructionCost>
-      <MaintenanceCost>1</MaintenanceCost>
-      <Classrooms>1</Classrooms>
+      <ConstructionCost>5000</ConstructionCost>
+      <MaintenanceCost>50</MaintenanceCost>
+      <Classrooms>5</Classrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a really weird footprint. It's a line of four buildings with a gap in the middle.</Description>
       <Model>test-building-really-weird</Model>
     </Building>
 
     <Building name="Arrow Building">
-      <ConstructionCost>1</ConstructionCost>
-      <MaintenanceCost>1</MaintenanceCost>
-      <Classrooms>1</Classrooms>
+      <ConstructionCost>20000</ConstructionCost>
+      <MaintenanceCost>300</MaintenanceCost>
+      <Laboratories>2</Laboratories>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing Blender exporting. It should point toward the camera.</Description>
       <Model>test-building-arrow</Model>

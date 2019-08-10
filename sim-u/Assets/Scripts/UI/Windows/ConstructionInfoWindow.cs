@@ -123,6 +123,9 @@ namespace UI
             if (data.Classrooms != 0)
                 sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Classrooms:</b> {0}{1}", data.Classrooms, Environment.NewLine);
 
+            if (data.Laboratories != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Laboratories:</b> {0}{1}", data.Laboratories, Environment.NewLine);
+
             sb.AppendLine();
 
             sb.AppendLine(data.Description);

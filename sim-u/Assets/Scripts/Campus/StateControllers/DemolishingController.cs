@@ -55,7 +55,8 @@ namespace Campus
         {
             if (Input.GetMouseButton(0))
             {
-                if (_cursor.Position != _lastDemolishedGrid && HasDemolishableTile())
+                if (_cursor.Position != _lastDemolishedGrid &&
+                    Accessor.CampusManager.IsValidForDestruction(_cursor.Position))
                 {
                     Accessor.CampusManager.DestroyAt(_cursor.Position);
                     _cursor.SetMaterial(_invalidMaterial);
@@ -80,7 +81,7 @@ namespace Campus
             // DEBUGGING:
             if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("HasDemolishableTile: {0};", HasDemolishableTile());
+                GameLogger.Info("IsValidForDestruction: {0};", Accessor.CampusManager.IsValidForDestruction(_cursor.Position));
             }
         }
 
@@ -98,7 +99,7 @@ namespace Campus
 
                 _cursor.Place(args.GridSelection);
                 _cursor.SetMaterial(
-                    HasDemolishableTile() ?
+                    Accessor.CampusManager.IsValidForDestruction(_cursor.Position) ?
                         _validMaterial :
                         _invalidMaterial);
             }
@@ -107,15 +108,6 @@ namespace Campus
                 if (_cursor.IsActive)
                     _cursor.Deactivate();
             }
-        }
-
-        /// <summary>
-        /// Checks if a demolishable tile is under the mouse.
-        /// </summary>
-        /// <returns>True if a demolishable tile exists under the mouse, otherwise false.</returns>
-        private bool HasDemolishableTile()
-        {
-            return Accessor.CampusManager.GetGridUse(_cursor.Position) != CampusGridUse.Empty;
         }
     }
 }
