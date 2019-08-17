@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using Simulation;
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,17 +11,26 @@ namespace UI
     /// </summary>
     public class Statusbar : MonoBehaviour
     {
-        public string Test { get; set; }
+        private readonly GameAccessor _accessor = new GameAccessor();
+        private SimulationManager _simulation;
 
-        /// <summary>
-        /// The funds string
-        /// </summary>
-        public Text FundsText;
+        private int _currentFunds;
+        private SimulationDate _currentDate;
 
-        /// <summary>
-        /// The Date string
-        /// </summary>
+        public Text MoneyText;
+
         public Text DateText;
+
+        public Button PauseButton;
+        public Image PauseActiveImage;
+
+        public Button PlayNormalButton;
+        public Image PlayNormalActiveImage;
+
+        public Button PlayFastButton;
+        public Image PlayFastActiveImage;
+
+        public Button[] Buttons => new[] { PauseButton, PlayNormalButton, PlayFastButton };
 
         /// <summary>
         /// A view on the current funds.
@@ -30,36 +40,62 @@ namespace UI
             set
             {
                 _currentFunds = value;
-                FundsText.text = string.Format(CultureInfo.CurrentCulture, "{0:C0}", _currentFunds);
+                MoneyText.text = string.Format(CultureInfo.CurrentCulture, "{0:C0}", _currentFunds);
             }
         }
 
         /// <summary>
         /// A view on the current date.
         /// </summary>
-        public string CurrentDate
+        public SimulationDate CurrentDate
         {
             get { return _currentDate; }
             set
             {
                 _currentDate = value;
-                DateText.text = _currentDate;
+
+                string weekString = _currentDate.Week == SimulationDate.WeeksPerQuarter ?
+                    "Finals" : $"Week {_currentDate.Week}";
+
+                DateText.text = $"Year {_currentDate.Year} / {_currentDate.Quarter.ToString()} / {weekString}";
             }
         }
 
-        private int _currentFunds;
-        private string _currentDate;
-
         /// <summary>
-        /// Unity Start method
+        /// The Unity start method
         /// </summary>
         protected void Start()
         {
-            if (FundsText == null)
-                throw new ArgumentNullException("FundsText");
+            _simulation = _accessor.Simulation;
 
-            if (DateText == null)
-                throw new ArgumentNullException("DateText");
+            PauseButton.OnMouseDown = e =>
+            {
+                _simulation.SetSimulationSpeed(SimulationSpeed.Paused);
+            };
+
+            PlayNormalButton.OnMouseDown = e =>
+            {
+                _simulation.SetSimulationSpeed(SimulationSpeed.Normal);
+            };
+
+            PlayFastButton.OnMouseDown = e =>
+            {
+                _simulation.SetSimulationSpeed(SimulationSpeed.Fast);
+            };
+        }
+
+        /// <summary>
+        /// This method is invoked whenever it is time to update the display with new simulation data.
+        /// I could use Unit's Update directly... but it would involve pointless updates. So I did this. Is that okay?
+        /// </summary>
+        public void SimulationUpdateCallback()
+        {
+            CurrentDate = _simulation.Date;
+
+            // Set the indicator of which speed the simulation is running at
+            PauseActiveImage.enabled = _simulation.Speed == SimulationSpeed.Paused;
+            PlayNormalActiveImage.enabled = _simulation.Speed == SimulationSpeed.Normal;
+            PlayFastActiveImage.enabled = _simulation.Speed == SimulationSpeed.Fast;
         }
     }
 }

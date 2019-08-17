@@ -12,6 +12,7 @@
     <SubMenuSelected>Gray</SubMenuSelected>
     <SubMenuAccent>LightGray</SubMenuAccent>
     <WindowBackground>LightGray</WindowBackground>
+    <SpeedSelection>DarkGreen</SpeedSelection>
   </Configuration>
 
   <!-- The Toolbar buttons that are on the bottom of the screen. -->

@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace Faculty
 {
+    /// <summary>
+    /// Unity GameObject that manages Faculty State.
+    /// </summary>
     public class FacultyManager : GameDataLoader<FacultyData>, IGameStateSaver<FacultySaveState>
     {
         private readonly Dictionary<int, HiredFaculty> _hiredFaculty = new Dictionary<int, HiredFaculty>();
@@ -142,6 +145,7 @@ namespace Faculty
         {
             return new FacultySaveState
             {
+                NextFacultyId = _generator.NextFacultyId,
                 GeneratedFaculty = _generatedFaculty.Values.ToArray(),
                 HiredFaculty = _hiredFaculty.Values.ToArray(),
             };
@@ -176,8 +180,6 @@ namespace Faculty
         protected override void LoadData(FacultyData gameData)
         {
             _generator = new FacultyGenerator(gameData);
-
-            GenerateNewFaculty(gameData.AvailableFacultyCount);
         }
 
         protected override void LinkData(FacultyData gameData)
@@ -185,7 +187,15 @@ namespace Faculty
             // The link step runs after all intial data has been loaded.
             // The perfect time to load the saved game data.
             FacultySaveState savedGame = gameData.SavedData?.Faculty;
-            LoadGameState(savedGame);
+
+            if (savedGame != null)
+            {
+                LoadGameState(savedGame);
+            }
+            else
+            {
+                GenerateNewFaculty(gameData.AvailableFacultyCount);
+            }
         }
     }
 }

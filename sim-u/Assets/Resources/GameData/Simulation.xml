@@ -1,0 +1,5 @@
+﻿<SimulationData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+  <TickRateInSeconds>1.0</TickRateInSeconds>
+  <NormalTicksPerWeek>11</NormalTicksPerWeek>
+  <FastSpeedTicksPerWeek>3</FastSpeedTicksPerWeek>
+</SimulationData>

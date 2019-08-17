@@ -12,7 +12,7 @@ namespace Faculty
         private readonly List<string> _firstNamesWomen;
         private readonly List<string> _lastNames;
 
-        private int _nextFacultyId = 0;
+        public int NextFacultyId { get; private set; } = 0;
 
         public FacultyGenerator(FacultyData data)
         {
@@ -24,12 +24,12 @@ namespace Faculty
 
         public void SetNextFacultyId(int id)
         {
-            if (id < _nextFacultyId)
+            if (id < NextFacultyId)
             {
-                GameLogger.Error("Unexpected next faculty id set! Current = {0}; New = {1};", _nextFacultyId, id);
+                GameLogger.Error("Unexpected next faculty id set! Current = {0}; New = {1};", NextFacultyId, id);
             }
 
-            _nextFacultyId = id;
+            NextFacultyId = id;
         }
 
         public GeneratedFaculty GenerateNext()
@@ -50,7 +50,7 @@ namespace Faculty
             salary = (salary / 5000) * 5000;
 
             var newFaculty = new GeneratedFaculty(
-                _nextFacultyId++,
+                NextFacultyId++,
                 name,
                 salary,
                 teachingScore,

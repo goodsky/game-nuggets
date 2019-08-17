@@ -84,5 +84,11 @@ namespace GameData
 
         [ColorPalette(nameof(WindowBackground))]
         public Color WindowBackgroundColor { get; set; }
+
+        [XmlElement("SpeedSelection")]
+        public string SpeedSelection { get; set; }
+
+        [ColorPalette(nameof(SpeedSelection))]
+        public Color SpeedSelectionColor { get; set; }
     }
 }

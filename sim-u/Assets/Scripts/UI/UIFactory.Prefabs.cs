@@ -96,7 +96,7 @@ namespace UI
         /// <param name="margins">The left and right margins of the status bar compared to the screen.</param>
         /// <param name="background">The background color.</param>
         /// <returns>The status bar.</returns>
-        public static GameObject LoadStatusBar(GameObject parent, float margins, Color background)
+        public static GameObject LoadStatusBar(GameObject parent, float margins, UIConfig config)
         {
             string StatusBar = "StatusBar";
 
@@ -107,12 +107,20 @@ namespace UI
             rect.offsetMax = new Vector2(-margins, rect.offsetMax.y);
 
             var image = statusBar.GetComponent<Image>();
-            image.color = background;
+            image.color = config.MainMenuBackgroundColor;
 
-            // TODO: wire up the status bar with game state.
-            var statusBarInfo = statusBar.GetComponent<Statusbar>();
-            statusBarInfo.CurrentFunds = 123456;
-            statusBarInfo.CurrentDate = string.Format("{0}\n{1}", DateTime.Now.ToString("MM/dd/yyyy"), "Spring");
+            var statusBarBehavior = statusBar.GetComponent<Statusbar>();
+
+            statusBarBehavior.PauseActiveImage.color =
+                statusBarBehavior.PlayNormalActiveImage.color =
+                statusBarBehavior.PlayFastActiveImage.color = config.SpeedSelectionColor;
+
+            foreach (var button in statusBarBehavior.Buttons)
+            {
+                button.DefaultColor = config.SubMenuBackgroundColor;
+                button.SelectedColor = config.SubMenuSelectedColor;
+                button.MouseOverColor = config.SubMenuSelectedColor;
+            }
 
             return statusBar;
         }

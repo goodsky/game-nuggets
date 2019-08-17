@@ -72,7 +72,7 @@ namespace UI
             _windowManager.LoadData(data);
 
             // Create the status bar on the top
-            _statusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config.MainMenuBackgroundColor);
+            _statusBar = UIFactory.LoadStatusBar(gameObject, data.Config.HorizontalMargins, data.Config);
 
             // Create the Main Menu Bar on the bottom
             _mainMenu = UIFactory.LoadToolbar(gameObject, "Main Toolbar", 0.0f, data.Config.MainMenuBackgroundColor);
@@ -102,7 +102,11 @@ namespace UI
         /// <param name="data">UI GameData</param>
         protected override void LinkData(UIData data)
         {
+            var statusbar = _statusBar.GetComponent<Statusbar>();
             var toolbar = _mainMenu.GetComponent<Toolbar>();
+
+            // Link the simulation manager callback into UI
+            _accessor.Simulation.RegisterSimulationUpdateCallback(nameof(Statusbar), statusbar.SimulationUpdateCallback);
 
             // Link button children and actions
             foreach (var buttonGroupData in data.ButtonGroups)

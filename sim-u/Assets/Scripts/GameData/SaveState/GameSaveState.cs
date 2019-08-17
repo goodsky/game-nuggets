@@ -12,5 +12,7 @@ namespace GameData
         public CampusSaveState Campus { get; set; }
 
         public FacultySaveState Faculty { get; set; }
+
+        public SimulationSaveState Simulation { get; set; }
     }
 }

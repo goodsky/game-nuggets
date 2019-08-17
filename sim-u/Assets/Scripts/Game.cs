@@ -2,6 +2,7 @@
 using Common;
 using Faculty;
 using GameData;
+using Simulation;
 using UI;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ public class Game : MonoBehaviour
     public TextAsset UIConfig;
     public TextAsset CampusConfig;
     public TextAsset FacultyConfig;
+    public TextAsset SimulationConfig;
 
     [Space(10)]
     [Header("DebuggingFlags")]
@@ -45,6 +47,7 @@ public class Game : MonoBehaviour
             Version = GameSaveState.CurrentVersion,
             Campus = accessor.CampusManager.SaveGameState(),
             Faculty = accessor.Faculty.SaveGameState(),
+            Simulation = accessor.Simulation.SaveGameState(),
         };
     }
 
@@ -133,6 +136,9 @@ public class Game : MonoBehaviour
 
         GameObject faculty = UIFactory.GenerateEmpty("Faculty", transform);
         GameDataLoader<FacultyData>.SetGameData<FacultyManager>(faculty, FacultyConfig);
+
+        GameObject simulation = UIFactory.GenerateEmpty("Simulation", transform);
+        GameDataLoader<SimulationData>.SetGameData<SimulationManager>(simulation, SimulationConfig);
 
         TooltipManager.Initialize(ui.gameObject.transform);
     }

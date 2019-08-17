@@ -13,7 +13,7 @@ namespace GameData
     {
         private static readonly Dictionary<string, Color> Palette = new Dictionary<string, Color>()
         {
-            /* Toolbar and UI Grays */
+            /* Named colors in the pallette */
             { "DarkestGray",    new Color32(31, 31, 31, 255) },
             { "DarkerGray",     new Color32(43, 43, 43, 255) },
             { "DarkGray",       new Color32(57, 57, 57, 255) },
@@ -21,6 +21,7 @@ namespace GameData
             { "LightGray",      new Color32(204, 204, 204, 255) },
             { "LighterGray",    new Color32(230, 230, 230, 255) },
             { "LightestGray",   new Color32(242, 242, 242, 255) },
+            { "DarkGreen", new Color32(22, 195, 0, 255) },
         };
 
         /// <summary>

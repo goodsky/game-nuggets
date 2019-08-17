@@ -2,6 +2,7 @@
 using Campus.GridTerrain;
 using Faculty;
 using GameData;
+using Simulation;
 using System;
 using UI;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace Common
         private LazyGameObject<CampusManager> _lazyCampusManager = new LazyGameObject<CampusManager>();
         private LazyGameObject<GridMesh> _lazyTerrain = new LazyGameObject<GridMesh>();
         private LazyGameObject<FacultyManager> _lazyFaculty = new LazyGameObject<FacultyManager>();
+        private LazyGameObject<SimulationManager> _lazySimulation = new LazyGameObject<SimulationManager>();
 
         public Game Game => _lazyGame.Value;
         public GameDataStore GameData => _lazyGameData.Value;
@@ -30,6 +32,7 @@ namespace Common
         public CampusManager CampusManager => _lazyCampusManager.Value;
         public GridMesh Terrain => _lazyTerrain.Value;
         public FacultyManager Faculty => _lazyFaculty.Value;
+        public SimulationManager Simulation => _lazySimulation.Value;
 
         private class LazyGameObject<T> where T : UnityEngine.Object
         {
