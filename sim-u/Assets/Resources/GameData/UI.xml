@@ -132,6 +132,7 @@
     
   <!-- Windows that display information in the UI -->
   <Windows>
+    <Window name="AcademicYearPopUp" prefab="AcademicYearPopUp" />
     <Window name="ConstructionInfo" prefab="ConstructionInfoWindow" />
     <Window name="ConstructionPlacing" prefab="ConstructionPlacingWindow" />
     <Window name="EditingTerrain" prefab="TerrainEditingWindow" />

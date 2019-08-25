@@ -17,6 +17,17 @@ namespace Simulation
     }
 
     /// <summary>
+    /// Simulation trigger levels.
+    /// </summary>
+    public enum UpdateType
+    {
+        Tick = 0,
+        Weekly = 1,
+        Quarterly = 2,
+        AcademicYearly = 3,
+    }
+
+    /// <summary>
     /// Unity GameObject that manages Simulation State.
     /// </summary>
     public class SimulationManager : GameDataLoader<SimulationData>, IGameStateSaver<SimulationSaveState>
@@ -28,12 +39,27 @@ namespace Simulation
         private volatile int _ticksCounter = 0;
         private volatile int _ticksInProgress = 0;
 
-        private Dictionary<string, Action> _updateActions = new Dictionary<string, Action>();
+        private SimulationSpeed _speed;
+        private bool _isFrozen;
+
+        private Dictionary<string, (UpdateType type, Action action)> _updateActions = new Dictionary<string, (UpdateType type, Action action)>();
+
+        private StudentBody _studentBody;
+        private SimulationScore _score;
+        private StudentHistogramGenerator _generator;
 
         /// <summary>
         /// Gets the current speed of the simulation.
+        /// Freezing the simulation overrides this value to 'Paused'.
         /// </summary>
-        public SimulationSpeed Speed { get; private set; }
+        public SimulationSpeed Speed {
+            get
+            {
+                return _isFrozen ?
+                    SimulationSpeed.Paused :
+                    _speed;
+            }
+        }
 
         /// <summary>
         /// Gets the current year/quarter/week time in the simulation.
@@ -45,7 +71,6 @@ namespace Simulation
         /// </summary>
         protected override void Start()
         {
-            // NOTE: Start is invoked after LoadData is called.
             InvokeRepeating(nameof(SimulationTick), 0f, _tickRateInSeconds);
 
             base.Start();
@@ -57,10 +82,51 @@ namespace Simulation
         /// </summary>
         /// <param name="name">Name of the action. For accounting.</param>
         /// <param name="action">The action to run.</param>
-        public void RegisterSimulationUpdateCallback(string name, Action action)
+        /// <param name="updateType">How often the callback should be invoked in the simulation.</param>
+        public void RegisterSimulationUpdateCallback(string name, Action action, UpdateType updateType)
         {
-            GameLogger.Info("Registering action '{0}' to run each simulation tick...", name);
-            _updateActions.Add(name, action);
+            GameLogger.Info("Registering action '{0}' to run {1}...", name, updateType.ToString());
+            _updateActions.Add(name, (updateType, action));
+        }
+
+        /// <summary>
+        /// Calculate the possible tuition range for the university at its current score.
+        /// </summary>
+        /// <returns>The tuition range.</returns>
+        public (int minTuition, int maxTuition) GenerateTuitionRange()
+        {
+            return (_generator.CalculateTargetTuition(_score, bonus: -10),
+                    _generator.CalculateTargetTuition(_score, bonus: 10));
+        }
+
+        /// <summary>
+        /// Generates a hypothetical student population with the given variables.
+        /// </summary>
+        /// <param name="tuition">The requested tuition value for the college.</param>
+        /// <returns>The generated student population represented as a histogram.</returns>
+        public StudentHistogram GenerateStudentPopulation(int tuition)
+        {
+            return _generator.GenerateStudentPopulation(tuition, _score);
+        }
+
+        /// <summary>
+        /// Map an academic score to an SAT score. Used for displaying academic score (sometimes).
+        /// </summary>
+        /// <param name="academicScore">A student's academic score.</param>
+        /// <returns>A student's SAT score.</returns>
+        public int ConvertAcademicScoreToSATScore(int academicScore)
+        {
+            return _generator.ConvertAcademicScoreToSATScore(academicScore);
+        }
+
+        /// <summary>
+        /// Map a SAT score to an academic score. Used for filtering SAT scores.
+        /// </summary>
+        /// <param name="satScore">A student's SAT score.</param>
+        /// <returns>A student's academic score.</returns>
+        public int ConvertSATScoreToAcademicScore(int satScore)
+        {
+            return _generator.ConvertSATScoreToAcademicScore(satScore);
         }
 
         /// <summary>
@@ -70,17 +136,30 @@ namespace Simulation
         public void SetSimulationSpeed(SimulationSpeed speed)
         {
             GameLogger.Info("SimulationSpeed set to '{0}'", speed.ToString());
-            Speed = speed;
+            _speed = speed;
 
-            TriggerSimulationUpdates();
+            TriggerUpdates(UpdateType.Tick);
+        }
+
+        /// <summary>
+        /// Allows a super-pop-up to freeze the entire simulation.
+        /// Must be unfrozen before any normal simulation will continue.
+        /// </summary>
+        /// <param name="freeze">True to freeze the simulation. False to unfreeze.</param>
+        public void SetSimulationFreeze(bool freeze)
+        {
+            GameLogger.Info("Simulation freeze state: {0}", freeze);
+            _isFrozen = freeze;
         }
 
         public SimulationSaveState SaveGameState()
         {
             return new SimulationSaveState()
             {
-                SavedSpeed = Speed,
+                SavedSpeed = _speed,
+                SavedIsFrozen = _isFrozen,
                 SavedDate = Date,
+                StudentBody = _studentBody.SaveGameState(),
             };
         }
 
@@ -90,17 +169,25 @@ namespace Simulation
             {
                 SetSimulationSpeed(state.SavedSpeed);
                 Date = state.SavedDate;
+
+                _score = state.Score;
+                _studentBody.LoadGameState(state.StudentBody);
             }
             else
             {
                 GameLogger.Warning("No simulation state was loaded. Setting to default.");
                 SetSimulationSpeed(SimulationSpeed.Normal);
-                Date = new SimulationDate(year: 1, quarter: SimulationQuarter.Fall, week: 1);
+                Date = new SimulationDate(year: 1, quarter: SimulationQuarter.Summer, week: 13);
             }
         }
 
         protected override void LoadData(SimulationData gameData)
         {
+            _score = new SimulationScore(gameData);
+            _generator = new StudentHistogramGenerator(gameData);
+            _studentBody = new StudentBody(_generator);
+            
+
             _tickRateInSeconds = gameData.TickRateInSeconds;
             _normalTicksPerWeek = gameData.NormalTicksPerWeek;
             _fastTicksPerWeek = gameData.FastSpeedTicksPerWeek;
@@ -147,6 +234,8 @@ namespace Simulation
 
             try
             {
+                SimulationDate oldDate = Date;
+
                 ++_ticksCounter;
                 if ((Speed == SimulationSpeed.Normal &&
                     _ticksCounter >= _normalTicksPerWeek) ||
@@ -157,7 +246,22 @@ namespace Simulation
                     Date = Date.NextWeek();
                 }
 
-                TriggerSimulationUpdates();
+                if (oldDate.Year != Date.Year)
+                {
+                    TriggerUpdates(UpdateType.AcademicYearly);
+                }
+                else if (oldDate.Quarter != Date.Quarter)
+                {
+                    TriggerUpdates(UpdateType.Quarterly);
+                }
+                else if (oldDate.Week != Date.Week)
+                {
+                    TriggerUpdates(UpdateType.Weekly);
+                }
+                else
+                {
+                    TriggerUpdates(UpdateType.Tick);
+                }
             }
             finally
             {
@@ -165,11 +269,24 @@ namespace Simulation
             }
         }
 
-        private void TriggerSimulationUpdates()
+        private void TriggerUpdates(UpdateType updateType)
         {
-            foreach (Action tickAction in _updateActions.Values)
+            foreach (var actionKvp in _updateActions)
             {
-                tickAction();
+                string actionName = actionKvp.Key;
+                (UpdateType actionType, Action action) = actionKvp.Value;
+
+                if (actionType <= updateType)
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception ex)
+                    {
+                        GameLogger.Error("Error during simulation update '{0}'. Ex = {1}", actionName, ex);
+                    }
+                }
             }
         }
     }

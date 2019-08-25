@@ -14,8 +14,7 @@ public class Game : MonoBehaviour
     [Header("Game Configuration")]
     public TextAsset UIConfig;
     public TextAsset CampusConfig;
-    public TextAsset FacultyConfig;
-    public TextAsset SimulationConfig;
+    public TextAsset FacultyConfig;    public TextAsset SimulationConfig;
 
     [Space(10)]
     [Header("DebuggingFlags")]

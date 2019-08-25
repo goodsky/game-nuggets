@@ -4,10 +4,10 @@ namespace Simulation
 {
     public enum SimulationQuarter
     {
-        Spring  = 0,
-        Summer  = 1,
-        Fall    = 2,
-        Winter  = 3
+        Fall   = 0,
+        Winter = 1,
+        Spring = 2,
+        Summer = 3
     }
 
     /// <summary>

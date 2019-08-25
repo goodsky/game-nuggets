@@ -1,5 +1,28 @@
 ﻿<SimulationData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+  
   <TickRateInSeconds>1.0</TickRateInSeconds>
-  <NormalTicksPerWeek>11</NormalTicksPerWeek>
-  <FastSpeedTicksPerWeek>3</FastSpeedTicksPerWeek>
+  <NormalTicksPerWeek>7</NormalTicksPerWeek>
+  <FastSpeedTicksPerWeek>2</FastSpeedTicksPerWeek>
+
+  <UniversityAcademicScore min="0" max="1000000" default="0" />
+  <UniversityResearchScore min="0" max="1000000" default="0" />
+  <AcademicPrestige min="0" max="100" default="20" />
+  <ResearchPrestige min="0" max="100" default="20" />
+  <Popularity min="0" max="100" default="5" />
+  
+  <TuitionRange min="2000" max="50000" default="3000" />
+  <TuitionRangeExponentialFactor>2.1</TuitionRangeExponentialFactor>
+  
+  <TuitionBonus min="-10" max="10" default="0" />
+  <TuitionBonusSigmoidFactor>2500</TuitionBonusSigmoidFactor>
+  <TuitionBonusLinearFactor>500</TuitionBonusLinearFactor>
+
+  <EnrollingPopulationSize min="100" max="100000" default="100" />
+  <EnrollingPopulationSizeExponentialFactor>2</EnrollingPopulationSizeExponentialFactor>
+  <EnrollingPopulationAcademicScoreStdDev>5</EnrollingPopulationAcademicScoreStdDev>
+  
+  <StudentAcademicScore min="60" max="110" default="70" />
+  <MaxStudentAcademicScoreDuringEnrollment>100</MaxStudentAcademicScoreDuringEnrollment>
+  <StudentSATScore min="800" max="1600" default="1000" />
+  
 </SimulationData>

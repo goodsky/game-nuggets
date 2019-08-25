@@ -105,8 +105,16 @@ namespace UI
             var statusbar = _statusBar.GetComponent<Statusbar>();
             var toolbar = _mainMenu.GetComponent<Toolbar>();
 
-            // Link the simulation manager callback into UI
-            _accessor.Simulation.RegisterSimulationUpdateCallback(nameof(Statusbar), statusbar.SimulationUpdateCallback);
+            // Link the StatusBar update into the Simulation Manager 
+            _accessor.Simulation.RegisterSimulationUpdateCallback(
+                nameof(Statusbar),
+                statusbar.SimulationUpdateCallback,
+                Simulation.UpdateType.Tick);
+
+            // Link the Academic Year pop-up into the Simulation Manager
+            _accessor.Simulation.RegisterSimulationUpdateCallback(nameof(AcademicYearPopUp),
+                () => _windowManager.OpenWindow(nameof(AcademicYearPopUp), null),
+                Simulation.UpdateType.AcademicYearly);
 
             // Link button children and actions
             foreach (var buttonGroupData in data.ButtonGroups)
