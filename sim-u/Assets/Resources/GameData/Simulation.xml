@@ -17,8 +17,8 @@
   <TuitionBonusSigmoidFactor>2500</TuitionBonusSigmoidFactor>
   <TuitionBonusLinearFactor>500</TuitionBonusLinearFactor>
 
-  <EnrollingPopulationSize min="100" max="100000" default="100" />
-  <EnrollingPopulationSizeExponentialFactor>2</EnrollingPopulationSizeExponentialFactor>
+  <EnrollingPopulationSize min="100" max="10000" default="100" />
+  <EnrollingPopulationSizeExponentialFactor>4</EnrollingPopulationSizeExponentialFactor>
   <EnrollingPopulationAcademicScoreStdDev>5</EnrollingPopulationAcademicScoreStdDev>
   
   <StudentAcademicScore min="60" max="110" default="70" />

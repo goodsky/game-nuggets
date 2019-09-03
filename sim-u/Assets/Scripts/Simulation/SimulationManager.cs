@@ -45,7 +45,8 @@ namespace Simulation
         private Dictionary<string, (UpdateType type, Action action)> _updateActions = new Dictionary<string, (UpdateType type, Action action)>();
 
         private StudentBody _studentBody;
-        private SimulationScore _score;
+        private UniversityScore _score;
+        private UniversityVariables _variables;
         private StudentHistogramGenerator _generator;
 
         /// <summary>
@@ -87,6 +88,15 @@ namespace Simulation
         {
             GameLogger.Info("Registering action '{0}' to run {1}...", name, updateType.ToString());
             _updateActions.Add(name, (updateType, action));
+        }
+
+        /// <summary>
+        /// Enrolls a new class of students to the university.
+        /// </summary>
+        /// <param name="students">The students to enroll.</param>
+        public void EnrollStudents(StudentHistogram students)
+        {
+            _studentBody.EnrollClass(students);
         }
 
         /// <summary>
@@ -171,6 +181,7 @@ namespace Simulation
                 Date = state.SavedDate;
 
                 _score = state.Score;
+                _variables = state.Variables;
                 _studentBody.LoadGameState(state.StudentBody);
             }
             else
@@ -183,7 +194,8 @@ namespace Simulation
 
         protected override void LoadData(SimulationData gameData)
         {
-            _score = new SimulationScore(gameData);
+            _score = new UniversityScore(gameData);
+            _variables = new UniversityVariables();
             _generator = new StudentHistogramGenerator(gameData);
             _studentBody = new StudentBody(_generator);
             

@@ -71,7 +71,7 @@ namespace Simulation
         /// <param name="tuition">The proposed tuition value for the academic year. ($/yr)</param>
         /// <param name="currentScore">The current university simulation scores.</param>
         /// <returns>A generated population of students represented as a histogram.</returns>
-        public StudentHistogram GenerateStudentPopulation(int tuition, SimulationScore currentScore)
+        public StudentHistogram GenerateStudentPopulation(int tuition, UniversityScore currentScore)
         {
             // 1) Calculate 'Target Tuition' based off of Academic Prestige and Research Prestige
             int targetTuition = CalculateTargetTuition(currentScore);
@@ -114,7 +114,7 @@ namespace Simulation
         /// <param name="score">The current university scores.</param>
         /// <param name="bonus">External modifier to the score. Used to checking a range.</param>
         /// <returns>The optimal tuition / yr in dollars.</returns>
-        public int CalculateTargetTuition(SimulationScore score, int bonus = 0)
+        public int CalculateTargetTuition(UniversityScore score, int bonus = 0)
         {
             int tuitionScore = score.AcademicPrestige + score.ResearchPrestige + bonus;
 
@@ -167,7 +167,7 @@ namespace Simulation
         /// <param name="score">The current university scores.</param>
         /// <param name="tuitionBonus">The calculated tuition Bonus</param>
         /// <returns>The population size of the enrolling class.</returns>
-        private int CalculateEnrollingClassPopulationSize(SimulationScore score, int tuitionBonus)
+        private int CalculateEnrollingClassPopulationSize(UniversityScore score, int tuitionBonus)
         {
             int popularityScore = score.Popularity + tuitionBonus;
             popularityScore = Utils.Clamp(
@@ -189,7 +189,7 @@ namespace Simulation
         /// </summary>
         /// <param name="score">The current university scores.</param>
         /// <returns>The mean student academic score of an enrolling class.</returns>
-        private int CalculateMeanPopulationAcademicScore(SimulationScore score)
+        private int CalculateMeanPopulationAcademicScore(UniversityScore score)
         {
             return SimulationUtils.LinearMapping(
                 value: score.AcademicPrestige,

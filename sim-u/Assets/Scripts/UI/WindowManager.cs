@@ -37,7 +37,7 @@ namespace UI
         {
             foreach (var window in data.Windows)
             {
-                var windowObject = UIFactory.LoadWindow(window.PrefabName, window.Name, transform, data.Config);
+                var windowObject = UIFactory.LoadWindow(window.PrefabName, window.Name, window.FullScreen, transform, data.Config);
                 _windows[window.Name] = windowObject.GetComponent<Window>();
             }
         }

@@ -52,6 +52,7 @@ namespace UI
         /// </summary>
         public void Recalculating()
         {
+            Slider.enabled = false;
             MinValueText.text = "...";
             MaxValueText.text = "...";
         }

@@ -10,5 +10,8 @@ namespace GameData
 
         [XmlAttribute("prefab")]
         public string PrefabName { get; set; }
+
+        [XmlAttribute("fullScreen")]
+        public bool FullScreen { get; set; }
     }
 }

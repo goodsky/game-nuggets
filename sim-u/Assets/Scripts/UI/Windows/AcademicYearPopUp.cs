@@ -2,6 +2,7 @@
 using Simulation;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
@@ -24,7 +25,9 @@ namespace UI
 
         public override void Open(object data)
         {
-            Accessor.Simulation.SetSimulationFreeze(freeze: true);
+            Freeze();
+
+            TitleText.text = "Academic Year " + Accessor.Simulation.Date.Year;
 
             TuitionSlider.OnValueChanged = _ => SetPendingRecalculation(recalculateSAT: true, recalculateEnrollment: true);
             SatSlider.OnValueChanged = _ => SetPendingRecalculation(recalculateEnrollment: true);
@@ -37,7 +40,7 @@ namespace UI
 
         public override void Close()
         {
-            Accessor.Simulation.SetSimulationFreeze(freeze: false);
+            Unfreeze();
         }
 
         /// <summary>
@@ -75,6 +78,7 @@ namespace UI
         {
             (int minTuition, int maxTuition) = Accessor.Simulation.GenerateTuitionRange();
             TuitionSlider.SetRange(minTuition, maxTuition);
+            TuitionSlider.SetValue(TuitionSlider.Value, updateSlider: false);
 
             int tuitionValue = TuitionSlider.Value;
             _enrollingPopulation = Accessor.Simulation.GenerateStudentPopulation(tuitionValue);
@@ -83,11 +87,13 @@ namespace UI
             int minSAT = Accessor.Simulation.ConvertAcademicScoreToSATScore(minAcademicScore);
             int maxSAT = Accessor.Simulation.ConvertAcademicScoreToSATScore(maxAcademicScore);
             SatSlider.SetRange(minSAT, maxSAT);
+            SatSlider.SetValue(SatSlider.Value, updateSlider: false);
 
             int satCutoff = SatSlider.Value;
             int academicScoreCutoff = Accessor.Simulation.ConvertSATScoreToAcademicScore(satCutoff);
             _enrollingPopulation = _enrollingPopulation.Split(academicScoreCutoff);
             EnrollmentSlider.SetRange(0, _enrollingPopulation.TotalStudentCount);
+            EnrollmentSlider.SetValue(EnrollmentSlider.Value, updateSlider: false);
 
             int studentsToTake = EnrollmentSlider.Value;
             _enrollingPopulation = _enrollingPopulation.Take(studentsToTake);
@@ -100,6 +106,27 @@ namespace UI
                 SatSlider.Value,
                 EnrollmentSlider.Value,
                 _enrollingPopulation.ToString());
+
+            Accessor.Simulation.EnrollStudents(_enrollingPopulation);
+
+            // NB: Hack. Re-opening a window will close it...
+            Accessor.UiManager.OpenWindow(this.name, null);
+        }
+
+        private void Freeze()
+        {
+            Accessor.Simulation.SetSimulationFreeze(freeze: true);
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.FreezeCamera();
+            SelectionManager.FreezeSelection(ApproveButton);
+        }
+
+        private void Unfreeze()
+        {
+            Accessor.Simulation.SetSimulationFreeze(freeze: false);
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            camera.UnfreezeCamera();
+            SelectionManager.UnfreezeSelection();
         }
     }
 }

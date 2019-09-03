@@ -12,7 +12,9 @@ namespace GameData
 
         public SimulationDate SavedDate { get; set; }
 
-        public SimulationScore Score { get; set; }
+        public UniversityScore Score { get; set; }
+
+        public UniversityVariables Variables { get; set; }
 
         public StudentBodySaveState StudentBody { get; set; }
     }

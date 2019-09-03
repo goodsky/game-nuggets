@@ -4,11 +4,11 @@ using System;
 namespace Simulation
 {
     [Serializable]
-    public class SimulationScore
+    public class UniversityScore
     {
-        public SimulationScore() { }
+        public UniversityScore() { }
 
-        public SimulationScore(SimulationData data)
+        public UniversityScore(SimulationData data)
         {
             AcademicScore = data.UniversityAcademicScore.DefaultValue;
             ResearchScore = data.UniversityResearchScore.DefaultValue;

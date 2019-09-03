@@ -205,19 +205,23 @@ namespace UI
         /// </summary>
         /// <param name="prefabName">Name of the window prefab to load.</param>
         /// <param name="name">Name of the window game object.</param>
+        /// <param name="fullScreen">Boolean representing whether or not the window is full screen.</param>
         /// <param name="parent">The window parent transform.</param>
         /// <param name="config">UI Configuration to choose the colors and margins.</param>
         /// <returns>The window.</returns>
-        public static GameObject LoadWindow(string prefabName, string name, Transform parent, UIConfig config)
+        public static GameObject LoadWindow(string prefabName, string name, bool fullScreen, Transform parent, UIConfig config)
         {
             var window = InstantiatePrefab(prefabName, name, parent);
 
-            var rect = window.GetComponent<RectTransform>();
-            rect.offsetMin = new Vector2(config.HorizontalMargins, rect.offsetMin.y);
-            rect.offsetMax = new Vector2(-config.HorizontalMargins, rect.offsetMax.y);
+            if (!fullScreen)
+            {
+                var rect = window.GetComponent<RectTransform>();
+                rect.offsetMin = new Vector2(config.HorizontalMargins, rect.offsetMin.y);
+                rect.offsetMax = new Vector2(-config.HorizontalMargins, rect.offsetMax.y);
 
-            var image = window.GetComponent<Image>();
-            image.color = config.WindowBackgroundColor;
+                var image = window.GetComponent<Image>();
+                image.color = config.WindowBackgroundColor;
+            }
 
             var windowBehaviour = window.GetComponent<Window>();
 

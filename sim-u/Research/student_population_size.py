@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 def population_size(x):
     # Shape = Exponential
     # Min Value = 100 students
-    # Max Value = 100,100 students
+    # Max Value = 10,000 students
     # X-Range = [0, 100]
-    return exponential_mapping(x, 0, 100, 100, 100000, 2)
+    return exponential_mapping(x, 0, 100, 100, 10000, 4)
 
 def tuition_bonus(x):
     # Shape = unbounded linear negative / bounded sigmoid positive
