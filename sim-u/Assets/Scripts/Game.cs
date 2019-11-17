@@ -30,9 +30,9 @@ public class Game : MonoBehaviour
 
     /// <summary>
     /// This static string will survive scene transitions.
-    /// Set it before loading the game scene to request a particular save game to be loaded.
+    /// Set it before loading the game scene to request a particular save game file to be loaded.
     /// </summary>
-    public static string SavedGameName { get; set; } = null;
+    public static string SavedGamePath { get; set; } = null;
     private GameSaveState _saveState = null;
 
     /// <summary>
@@ -53,7 +53,7 @@ public class Game : MonoBehaviour
 
     /// <summary>
     /// Load the saved game if one exists.
-    /// Uses <see cref="SavedGameName"/> to select the game file.
+    /// Uses <see cref="SavedGamePath"/> to select the game file.
     /// </summary>
     /// <param name="saveState">The saved game state if it could be loaded.</param>
     /// <returns>True if the saved game exists and was loaded. False otherwise.</returns>
@@ -65,9 +65,9 @@ public class Game : MonoBehaviour
             return true;
         }
 
-        string saveGameName = Game.SavedGameName;
-        if (!string.IsNullOrEmpty(saveGameName) &&
-            SavedGameLoader.TryReadFromDisk(saveGameName, out GameSaveState loadedSaveState))
+        string savedGamePath = Game.SavedGamePath;
+        if (!string.IsNullOrEmpty(savedGamePath) &&
+            SavedGameLoader.TryReadFromDisk(savedGamePath, out GameSaveState loadedSaveState))
         {
             _saveState = saveState = loadedSaveState;
             return true;
@@ -95,10 +95,10 @@ public class Game : MonoBehaviour
             _singleton = this;
         }
 
-        if (string.IsNullOrEmpty(SavedGameName) && !string.IsNullOrEmpty(DefaultSaveGame))
+        if (string.IsNullOrEmpty(SavedGamePath) && !string.IsNullOrEmpty(DefaultSaveGame))
         {
             GameLogger.Info("Using default save game '{0}'", DefaultSaveGame);
-            SavedGameName = DefaultSaveGame;
+            SavedGamePath = DefaultSaveGame;
         }
 
         GameLogger.Info("Creating game objects.");

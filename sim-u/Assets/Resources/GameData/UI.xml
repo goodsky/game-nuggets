@@ -74,6 +74,11 @@
           <OnSelect x:type="OpenWindowAction" windowName="LoadGame"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+        <Button name="BackToMenu">
+          <Tooltip>Back to Main Menu</Tooltip>
+          <IconImage>icon-back</IconImage>
+          <OnSelect x:type="TransitionGameStateAction" state="MainMenu"/>
+        </Button>
       </Buttons>
     </MainButtonGroup>
 

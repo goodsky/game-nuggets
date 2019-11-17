@@ -33,6 +33,7 @@ namespace UI
             _graduatingPopulation = data as GraduationResults;
             if (_graduatingPopulation == null)
             {
+                // BUGBUG: This can be null when this pop up interupts another window.
                 GameLogger.Error("Unexpected graduation result! Type = {0}", data?.GetType());
             }
 

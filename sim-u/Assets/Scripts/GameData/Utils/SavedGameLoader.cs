@@ -16,12 +16,17 @@ namespace GameData
         private static readonly string FileExtension = ".simu";
         private static readonly string SaveGameDirectory = Path.Combine(Application.persistentDataPath, "Saved Games");
 
-        public static IEnumerable<string> GetSaveGames()
+        public static IEnumerable<SavedGame> GetSaveGames()
         {
             Directory.CreateDirectory(SaveGameDirectory);
 
             return Directory.GetFiles(SaveGameDirectory, "*" + FileExtension)
-                .Select(fileName => Path.GetFileNameWithoutExtension(fileName));
+                .Select(filePath => new SavedGame
+                {
+                    Name = Path.GetFileNameWithoutExtension(filePath),
+                    SavePath = filePath,
+                })
+                .ToList();
         }
 
         public static void WriteToDisk(string fileName, GameSaveState state)
@@ -36,23 +41,21 @@ namespace GameData
             }
         }
 
-        public static void DeleteFromDisk(string fileName)
+        public static void DeleteFromDisk(string path)
         {
-            Directory.CreateDirectory(SaveGameDirectory);
-
-            string path = Path.Combine(SaveGameDirectory, fileName + FileExtension);
             if (File.Exists(path))
             {
                 GameLogger.Info("Deleting save at path {0}.", path);
                 File.Delete(path);
             }
+            else
+            {
+                GameLogger.Warning("Could not delete save {0}.", path);
+            }
         }
 
-        public static bool TryReadFromDisk(string fileName, out GameSaveState state)
+        public static bool TryReadFromDisk(string path, out GameSaveState state)
         {
-            Directory.CreateDirectory(SaveGameDirectory);
-
-            string path = Path.Combine(SaveGameDirectory, fileName + FileExtension);
             if (!File.Exists(path))
             {
                 GameLogger.Error("Tried to load game save from non-existant file. Path = {0}", path);
@@ -76,6 +79,13 @@ namespace GameData
 
             return true;
         }
+    }
+
+    public class SavedGame
+    {
+        public string Name { get; set; }
+
+        public string SavePath { get; set; }
     }
 
     public class SavedGameLoaderAttribute : XmlIgnoreAttribute

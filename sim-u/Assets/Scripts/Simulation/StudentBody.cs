@@ -71,8 +71,13 @@ namespace Simulation
                 StudentHistogram grads = students.TakeTop(graduationCount);
                 StudentHistogram notGrads = students.TakeBottom(students.TotalStudentCount - graduationCount);
 
+                GameLogger.Info("Graduated {0} students from class {1}. Remaining students {2}",
+                    grads.TotalStudentCount,
+                    ((StudentBodyYear)i).ToString(),
+                    notGrads.TotalStudentCount);
+
                 graduated.Merge(grads);
-                if (i == (int)StudentBodyYear.MaxYearsToGraduate)
+                if (i == (int)StudentBodyYear.MaxYearsToGraduate - 1)
                 {
                     // failed the last chance.
                     dropped = notGrads;

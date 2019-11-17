@@ -7,6 +7,7 @@
     /// </summary>
     public static class Constant
     {
+        public const string MenuSceneName = "menu";
         public const string GameSceneName = "sim-u";
 
         /// <summary>

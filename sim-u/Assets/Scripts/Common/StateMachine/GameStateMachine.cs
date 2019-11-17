@@ -47,6 +47,9 @@ namespace Common
 
         /// <summary>Loading the game state.</summary>
         LoadingGame,
+
+        /// <summary>Back to main menu state.</summary>
+        MainMenu,
     }
 
     /// <summary>
@@ -106,6 +109,7 @@ namespace Common
                 case GameState.Demolishing:
                 case GameState.SavingGame:
                 case GameState.LoadingGame:
+                case GameState.MainMenu:
                     Transition(newState, context);
                     break;
 
