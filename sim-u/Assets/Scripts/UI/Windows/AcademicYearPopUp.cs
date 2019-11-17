@@ -11,14 +11,15 @@ namespace UI
     {
         private bool _pendingRecalculation = false;
         private long _nextRecalulationTimeInTicks;
+        private GraduationResults _graduatingPopulation;
         private StudentHistogram _enrollingPopulation;
 
         public Text TitleText;
 
         public SliderFilter TuitionSlider;
         public SliderFilter SatSlider;
-        public SliderFilter EnrollmentSlider;
 
+        public Text SummaryText;
         public Button ApproveButton;
 
         public override List<Button> Buttons => new List<Button> { ApproveButton };
@@ -29,9 +30,14 @@ namespace UI
 
             TitleText.text = "Academic Year " + Accessor.Simulation.Date.Year;
 
+            _graduatingPopulation = data as GraduationResults;
+            if (_graduatingPopulation == null)
+            {
+                GameLogger.Error("Unexpected graduation result! Type = {0}", data?.GetType());
+            }
+
             TuitionSlider.OnValueChanged = _ => SetPendingRecalculation(recalculateSAT: true, recalculateEnrollment: true);
             SatSlider.OnValueChanged = _ => SetPendingRecalculation(recalculateEnrollment: true);
-            EnrollmentSlider.OnValueChanged = _ => SetPendingRecalculation();
 
             ApproveButton.OnSelect = ConfirmEnrollment;
 
@@ -70,7 +76,7 @@ namespace UI
 
             if (recalculateEnrollment)
             {
-                EnrollmentSlider.Recalculating();
+                UpdateSummary(recalculating: true);
             }
         }
 
@@ -92,11 +98,34 @@ namespace UI
             int satCutoff = SatSlider.Value;
             int academicScoreCutoff = Accessor.Simulation.ConvertSATScoreToAcademicScore(satCutoff);
             _enrollingPopulation = _enrollingPopulation.Split(academicScoreCutoff);
-            EnrollmentSlider.SetRange(0, _enrollingPopulation.TotalStudentCount);
-            EnrollmentSlider.SetValue(EnrollmentSlider.Value, updateSlider: false);
 
-            int studentsToTake = EnrollmentSlider.Value;
-            _enrollingPopulation = _enrollingPopulation.Take(studentsToTake);
+            UpdateSummary();
+        }
+
+        private void UpdateSummary(bool recalculating = false)
+        {
+            const string SummaryTextFormat =
+@"Graduating Student Count: {0:n0}
+Enrolling Student Count: {1:n0}
+New Total Student Count: {2:n0}
+Total Classroom Capacity: {3:n0}";
+
+            if (recalculating)
+            {
+                SummaryText.text = string.Format(SummaryTextFormat,
+                    _graduatingPopulation.GraduatedStudents.TotalStudentCount,
+                    "...",
+                    "...",
+                    Accessor.CampusManager.TotalConnectedClassroomCount);
+            }
+            else
+            {
+                SummaryText.text = string.Format(SummaryTextFormat,
+                    _graduatingPopulation.GraduatedStudents.TotalStudentCount,
+                    _enrollingPopulation.TotalStudentCount,
+                    Accessor.Simulation.CurrentStudentBody().TotalStudentCount + _enrollingPopulation.TotalStudentCount,
+                    Accessor.CampusManager.TotalConnectedClassroomCount);
+            }
         }
 
         private void ConfirmEnrollment()
@@ -104,7 +133,7 @@ namespace UI
             GameLogger.Info("Confirmed enrollment. Tuition = ${0:n0}; SAT Filter = {1}; Enrollment Size = {2}; Class = {3}",
                 TuitionSlider.Value,
                 SatSlider.Value,
-                EnrollmentSlider.Value,
+                _enrollingPopulation.TotalStudentCount,
                 _enrollingPopulation.ToString());
 
             Accessor.Simulation.EnrollStudents(_enrollingPopulation);

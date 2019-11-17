@@ -38,6 +38,12 @@ namespace GameData
         public ScoreDefinition<int> Popularity { get; set; }
 
         /// <summary>
+        /// TODO: Calculate this from game state
+        /// </summary>
+        [XmlElement("GraduationRate")]
+        public double GraduationRate { get; set; }
+
+        /// <summary>
         /// Range of possible tuition values you can set.
         /// </summary>
         [XmlElement("TuitionRange")]

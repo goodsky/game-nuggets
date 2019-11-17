@@ -97,14 +97,39 @@ namespace Simulation
         /// <summary>
         /// Take only the top N values from the population.
         /// </summary>
-        /// <param name="minCutoff">The number of students to take from the population.</param>
+        /// <param name="count">The number of students to take from the population.</param>
         /// <returns>A histogram of the top N students from the population.</returns>
-        public StudentHistogram Take(int count)
+        public StudentHistogram TakeTop(int count)
         {
             int leftToTake = count;
 
             int[] takeValues = new int[HistogramLength];
             for (int i = HistogramLength - 1; i >= 0; --i)
+            {
+                int takeCount = _scoreHistogram[i];
+                if (leftToTake - takeCount < 0)
+                {
+                    takeCount = leftToTake - takeCount;
+                }
+
+                takeValues[i] = takeCount;
+                leftToTake -= takeCount;
+            }
+
+            return new StudentHistogram(takeValues, MinValue);
+        }
+
+        /// <summary>
+        /// Take only the bottom N values from the population.
+        /// </summary>
+        /// <param name="count">The number of students to take from the population.</param>
+        /// <returns>A histogram of the bottom N students from the population.</returns>
+        public StudentHistogram TakeBottom(int count)
+        {
+            int leftToTake = count;
+
+            int[] takeValues = new int[HistogramLength];
+            for (int i = 0; i < HistogramLength; ++i)
             {
                 int takeCount = _scoreHistogram[i];
                 if (leftToTake - takeCount < 0)

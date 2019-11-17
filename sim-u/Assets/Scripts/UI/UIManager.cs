@@ -111,11 +111,6 @@ namespace UI
                 statusbar.SimulationUpdateCallback,
                 Simulation.UpdateType.Tick);
 
-            // Link the Academic Year pop-up into the Simulation Manager
-            _accessor.Simulation.RegisterSimulationUpdateCallback(nameof(AcademicYearPopUp),
-                () => _windowManager.OpenWindow(nameof(AcademicYearPopUp), null),
-                Simulation.UpdateType.AcademicYearly);
-
             // Link button children and actions
             foreach (var buttonGroupData in data.ButtonGroups)
             {

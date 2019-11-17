@@ -100,6 +100,15 @@ namespace Simulation
         }
 
         /// <summary>
+        /// Gets the current student body enrolled in your university.
+        /// </summary>
+        /// <returns>he student body.</returns>
+        public StudentBody CurrentStudentBody()
+        {
+            return _studentBody;
+        }
+
+        /// <summary>
         /// Calculate the possible tuition range for the university at its current score.
         /// </summary>
         /// <returns>The tuition range.</returns>
@@ -197,7 +206,7 @@ namespace Simulation
             _score = new UniversityScore(gameData);
             _variables = new UniversityVariables();
             _generator = new StudentHistogramGenerator(gameData);
-            _studentBody = new StudentBody(_generator);
+            _studentBody = new StudentBody(gameData, _generator);
             
 
             _tickRateInSeconds = gameData.TickRateInSeconds;
@@ -227,10 +236,22 @@ namespace Simulation
 
         protected override void LinkData(SimulationData gameData)
         {
+            // Link the Academic Year calculation and pop-up into the Simulation Manager
+            RegisterSimulationUpdateCallback(nameof(AcademicYearWrapUp),
+                AcademicYearWrapUp,
+                UpdateType.AcademicYearly);
+
+
             // The link step runs after all intial data has been loaded.
             // The perfect time to load the saved game data.
             SimulationSaveState savedGame = gameData.SavedData?.Simulation;
             LoadGameState(savedGame);
+        }
+
+        private void AcademicYearWrapUp()
+        {
+            GraduationResults graduationResult = _studentBody.GraduateStudents();
+            Accessor.UiManager.OpenWindow(nameof(UI.AcademicYearPopUp), graduationResult);
         }
 
         /// <summary>

@@ -42,6 +42,22 @@ namespace Campus
         private int _defaultMaterialIndex;
 
         /// <summary>
+        /// Gets the total number of accessible classrooms on the campus.
+        /// </summary>
+        public int TotalConnectedClassroomCount =>
+            GetBuildingInfo(checkConnections: true)
+                .Where(building => building.IsConnectedToPaths.Value)
+                .Sum(building => building.ClassroomCount);
+
+        /// <summary>
+        /// Gets the total number of accessible laboratories on the campus.
+        /// </summary>
+        public int TotalConnectedLaboratoryCount =>
+            GetBuildingInfo(checkConnections: true)
+                .Where(building => building.IsConnectedToPaths.Value)
+                .Sum(building => building.LaboratoryCount);
+
+        /// <summary>
         /// Returns what is at the campus grid position.
         /// </summary>
         /// <param name="pos">Grid position to query.</param>

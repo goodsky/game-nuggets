@@ -1,35 +1,94 @@
-﻿using GameData;
+﻿using Common;
+using GameData;
+using System;
+using System.Linq;
 
 namespace Simulation
 {
+    public enum StudentBodyYear
+    {
+        Freshmen = 0,
+        Sophmores = 1,
+        Juniors = 2,
+        Seniors = 3,
+        Seniors1 = 4,
+        Seniors2 = 5,
+
+        // Be careful changing this enum.
+        // It could break save games.
+        MaxYearsToGraduate
+    }
+
     /// <summary>
     /// Data structure that represents the entire student body.
     /// The StudentBody is built up of 'Classes' (which is a 'batch' of students that enrolled at the same year).
     /// </summary>
     public class StudentBody : IGameStateSaver<StudentBodySaveState>
     {
-        public const int MaximumYearsToGraduate = 6;
-
         public const int AcademicScoreMin = 60;
         public const int AcademicScoreRange = 51;
 
-        /// <summary>
-        /// Index to which student class is the latest freshmen class.
-        /// (FreshmenIndex + 1) % MaximumYearsToGraduate = Sophomore class, etc.
-        /// </summary>
-        private int _freshmenIndex = MaximumYearsToGraduate - 1;
+        private readonly SimulationData _config;
+        private readonly StudentHistogramGenerator _generator;
 
         /// <summary>
         /// The academic score of students bucketed by the class.
         /// </summary>
-        private StudentHistogram[] _academicScores = new StudentHistogram[MaximumYearsToGraduate];
+        private StudentHistogram[] _academicScores = new StudentHistogram[(int)StudentBodyYear.MaxYearsToGraduate];
 
-        public StudentBody(StudentHistogramGenerator generator)
+        public StudentBody(SimulationData config, StudentHistogramGenerator generator)
         {
-            for (int i = 0; i < MaximumYearsToGraduate; ++i)
+            _config = config;
+            _generator = generator;
+
+            for (int i = 0; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
             {
                 _academicScores[i] = generator.GenerateEmpty();
             }
+        }
+
+        public int TotalStudentCount => _academicScores.Sum(students => students.TotalStudentCount);
+
+        /// <summary>
+        /// Execute the graduation ceremony!
+        /// This method must only be called once per academic year
+        /// otherwise you will graduate students faster than expected!
+        /// </summary>
+        /// <returns>The results of the graduation.</returns>
+        public GraduationResults GraduateStudents()
+        {
+            // TODO: calculate this from game state
+            double graduationRate = _config.GraduationRate;
+
+            StudentHistogram graduated = _generator.GenerateEmpty();
+            StudentHistogram dropped = _generator.GenerateEmpty();
+
+            for (int i = (int)StudentBodyYear.Seniors; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
+            {
+                StudentHistogram students = _academicScores[i];
+                int graduationCount = (int)Math.Ceiling(graduationRate * students.TotalStudentCount);
+
+                StudentHistogram grads = students.TakeTop(graduationCount);
+                StudentHistogram notGrads = students.TakeBottom(students.TotalStudentCount - graduationCount);
+
+                graduated.Merge(grads);
+                if (i == (int)StudentBodyYear.MaxYearsToGraduate)
+                {
+                    // failed the last chance.
+                    dropped = notGrads;
+                    _academicScores[i] = _generator.GenerateEmpty();
+                }
+                else
+                {
+                    _academicScores[i] = notGrads;
+                }
+            }
+
+            return new GraduationResults
+            {
+                GraduatedStudents = graduated,
+                FailedStudents = dropped,
+            };
         }
 
         /// <summary>
@@ -38,24 +97,28 @@ namespace Simulation
         /// <param name="academicScores">The histogram of student academic scores.</param>
         public void EnrollClass(StudentHistogram academicScores)
         {
-            int newFreshmenIndex = _freshmenIndex - 1;
-            if (newFreshmenIndex < 0)
+            int maxStudentBodyIndex = (int)StudentBodyYear.MaxYearsToGraduate - 1;
+            if (_academicScores[maxStudentBodyIndex].TotalStudentCount != 0)
             {
-                newFreshmenIndex = MaximumYearsToGraduate - 1;
+                GameLogger.Error("Attempting to enroll class before graduation has been completed! {0} Students dropped.",
+                    _academicScores[maxStudentBodyIndex].TotalStudentCount);
             }
 
-            _academicScores[newFreshmenIndex] = academicScores;
-            _freshmenIndex = newFreshmenIndex;
+            for (int i = maxStudentBodyIndex; i > 0; --i)
+            {
+                _academicScores[i] = _academicScores[i - 1];
+            }
+
+            _academicScores[(int)StudentBodyYear.Freshmen] = academicScores;
         }
 
         /// <summary>
-        /// Gets the 
+        /// Gets the academic score of a certain class.
         /// </summary>
-        /// <param name="yearsFromFreshman"></param>
         /// <returns></returns>
-        public StudentHistogram GetClassAcademicScores(int yearsFromFreshman)
+        public StudentHistogram GetClassAcademicScores(StudentBodyYear year)
         {
-            return _academicScores[(_freshmenIndex + yearsFromFreshman) % MaximumYearsToGraduate];
+            return _academicScores[(int)year];
         }
 
         public void LoadGameState(StudentBodySaveState state)
