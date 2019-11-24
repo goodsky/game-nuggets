@@ -42,5 +42,21 @@ namespace GameData
                 return serializer.Deserialize(configStream) as T;
             }
         }
+
+        /// <summary>
+        /// Deserialize GameData from a Unity configuration file.
+        /// Throws SerializationException on a malconfigured XML.
+        /// </summary>
+        /// <typeparam name="T">The GameData contract type.</typeparam>
+        /// <param name="configPath">Path to configuration file on disk.</param>
+        /// <returns>The serialized game data.</returns>
+        public static T LoadFile<T>(string configPath) where T : class
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            using (var configStream = new FileStream(configPath, FileMode.Open))
+            {
+                return serializer.Deserialize(configStream) as T;
+            }
+        }
     }
 }

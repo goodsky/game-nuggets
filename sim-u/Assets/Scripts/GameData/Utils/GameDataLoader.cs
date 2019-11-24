@@ -20,13 +20,13 @@ namespace GameData
         /// </summary>
         /// <typeparam name="U">Type of the GameDataLoader.</typeparam>
         /// <param name="gameObject">The game object to add the data loader to.</param>
-        /// <param name="config">The configuration object to parse into a GameData object.</param>
+        /// <param name="configPath">The path to the configuration file to parse into a GameData object.</param>
         /// <returns>The GameDataLoader.</returns>
-        public static U SetGameData<U>(GameObject gameObject, TextAsset config) where U : GameDataLoader<T>
+        public static U SetGameData<U>(GameObject gameObject, string configPath) where U : GameDataLoader<T>
         {
             gameObject.SetActive(false);
             U dataLoader = gameObject.AddComponent<U>();
-            dataLoader.SetConfig(config);
+            dataLoader.SetConfig(configPath);
             gameObject.SetActive(true);
             return dataLoader;
         }
@@ -34,8 +34,8 @@ namespace GameData
         /// <summary>Game manager accessor. Fake DI pipeline.</summary>
         protected GameAccessor Accessor = new GameAccessor();
 
-        /// <summary>Link to the GameData configuration asset.</summary>
-        protected TextAsset Config;
+        /// <summary>Path to the GameData configuration asset.</summary>
+        protected string ConfigPath;
 
         /// <summary>Parsed and loaded GameData.</summary>
         protected T GameData;
@@ -47,7 +47,7 @@ namespace GameData
         {
             try
             {
-                GameData = GameDataSerializer.Load<T>(Config);
+                GameData = GameDataSerializer.LoadFile<T>(ConfigPath);
             }
             catch (Exception e)
             {
@@ -81,15 +81,15 @@ namespace GameData
         /// The GameObject must be disabled while doing this step otherwise
         /// the Awake and Start methods will not be called correctly.
         /// </summary>
-        /// <param name="config"></param>
-        protected void SetConfig(TextAsset config)
+        /// <param name="config">Path to the configuration.</param>
+        protected void SetConfig(string configPath)
         {
             if (gameObject.activeSelf)
             {
                 GameLogger.FatalError("Setting game data configuration on an active GameObject!");
             }
 
-            Config = config;
+            ConfigPath = configPath;
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ namespace GameData
     /// </summary>
     public static class SavedScenarioLoader
     {
+        private static readonly string StreamingAssetsDirectory = "StreamingAssets";
         private static readonly string SavedScenarioDirectory = "Scenarios";
         private static readonly string SavedScenarioSaveFile = "save.simu";
         private static readonly string SavedScenarioThumbnailFile = "thumbnail";
@@ -19,20 +20,22 @@ namespace GameData
         {
             var scenarios = new List<SavedScenario>();
 
-            IEnumerable<string> dirs = Directory.GetDirectories(Path.Combine(Application.dataPath, SavedScenarioDirectory));
+            IEnumerable<string> dirs = Directory.GetDirectories(Path.Combine(Application.streamingAssetsPath, SavedScenarioDirectory));
             GameLogger.Info("Found scenarios: {0}", string.Join(",", dirs));
 
             foreach (var scenarioDir in dirs)
             {
                 var scenarioName = Path.GetFileName(scenarioDir);
-                var scenarioFile = Path.Combine(Application.dataPath, SavedScenarioDirectory, scenarioName, SavedScenarioSaveFile);
+                var scenarioFilePath = Path.Combine(scenarioDir, SavedScenarioSaveFile);
+                var scenarioThumbnailPath = Path.Combine(StreamingAssetsDirectory, SavedScenarioDirectory, scenarioName, SavedScenarioThumbnailFile);
+                var scenarioDescriptionPath = Path.Combine(StreamingAssetsDirectory, SavedScenarioDirectory, scenarioName, SavedScenarioDescriptionFile);
 
-                var scenarioThumbnail = Resources.Load<Sprite>(Path.Combine(SavedScenarioDirectory, scenarioName, SavedScenarioThumbnailFile));
-                var scenarioDescription = Resources.Load<TextAsset>(Path.Combine(SavedScenarioDirectory, scenarioName, SavedScenarioDescriptionFile));
+                var scenarioThumbnail = Resources.Load<Sprite>(scenarioThumbnailPath);
+                var scenarioDescription = Resources.Load<TextAsset>(scenarioDescriptionPath);
 
-                if (!File.Exists(scenarioFile))
+                if (!File.Exists(scenarioFilePath))
                 {
-                    GameLogger.Error("Could not find save file {0}!", scenarioFile);
+                    GameLogger.Error("Could not find save file {0}!", scenarioFilePath);
                     continue;
                 }
 
@@ -50,7 +53,7 @@ namespace GameData
                     new SavedScenario
                     {
                         Name = scenarioName,
-                        SavePath = scenarioFile,
+                        SavePath = scenarioFilePath,
                         Thumbnail = scenarioThumbnail,
                         Description = scenarioDescription?.text ?? "No description.",
                     });

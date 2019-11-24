@@ -3,6 +3,7 @@ using Common;
 using Faculty;
 using GameData;
 using Simulation;
+using System.IO;
 using UI;
 using UnityEngine;
 
@@ -11,11 +12,14 @@ using UnityEngine;
 /// </summary>
 public class Game : MonoBehaviour
 {
+    private static readonly string ConfigFolderName = "GameData";
+    private static readonly string ConfigFileExtension = ".xml";
+
     [Header("Game Configuration")]
-    public TextAsset UIConfig;
-    public TextAsset CampusConfig;
-    public TextAsset FacultyConfig;
-    public TextAsset SimulationConfig;
+    public string UIConfig;
+    public string CampusConfig;
+    public string FacultyConfig;
+    public string SimulationConfig;
 
     [Space(10)]
     [Header("DebuggingFlags")]
@@ -29,10 +33,10 @@ public class Game : MonoBehaviour
     private static Game _singleton = null;
 
     /// <summary>
-    /// This static string will survive scene transitions.
-    /// Set it before loading the game scene to request a particular save game file to be loaded.
+    /// This static metadata will survive scene transitions.
+    /// Set it before loading the game scene to request a particular save file to be loaded.
     /// </summary>
-    public static string SavedGamePath { get; set; } = null;
+    public static SaveInfo SavedGameInfo { get; set; } = null;
     private GameSaveState _saveState = null;
 
     /// <summary>
@@ -65,12 +69,18 @@ public class Game : MonoBehaviour
             return true;
         }
 
-        string savedGamePath = Game.SavedGamePath;
-        if (!string.IsNullOrEmpty(savedGamePath) &&
-            SavedGameLoader.TryReadFromDisk(savedGamePath, out GameSaveState loadedSaveState))
+        SaveInfo info = Game.SavedGameInfo;
+        if (info != null)
         {
-            _saveState = saveState = loadedSaveState;
-            return true;
+            bool success = info.IsOnDisk ?
+                SavedGameLoader.TryReadFromDisk(info.Path, out saveState) :
+                SavedGameLoader.TryReadFromResources(info.Path, out saveState);
+
+            if (success)
+            {
+                _saveState = saveState;
+                return true;
+            }
         }
 
         saveState = null;
@@ -95,10 +105,10 @@ public class Game : MonoBehaviour
             _singleton = this;
         }
 
-        if (string.IsNullOrEmpty(SavedGamePath) && !string.IsNullOrEmpty(DefaultSaveGame))
+        if (SavedGameInfo == null && !string.IsNullOrEmpty(DefaultSaveGame))
         {
             GameLogger.Info("Using default save game '{0}'", DefaultSaveGame);
-            SavedGamePath = DefaultSaveGame;
+            SavedGameInfo = new SaveInfo(DefaultSaveGame);
         }
 
         GameLogger.Info("Creating game objects.");
@@ -129,17 +139,19 @@ public class Game : MonoBehaviour
         gameObject.AddComponent<GameStateMachine>();
 
         GameObject ui = UIFactory.LoadUICanvas(gameObject);
-        GameDataLoader<UIData>.SetGameData<UIManager>(ui, UIConfig);
+        GameDataLoader<UIData>.SetGameData<UIManager>(ui, GetConfigPath(UIConfig));
 
         GameObject campus = UIFactory.GenerateEmpty("Campus", transform);
-        GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, CampusConfig);
+        GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, GetConfigPath(CampusConfig));
 
         GameObject faculty = UIFactory.GenerateEmpty("Faculty", transform);
-        GameDataLoader<FacultyData>.SetGameData<FacultyManager>(faculty, FacultyConfig);
+        GameDataLoader<FacultyData>.SetGameData<FacultyManager>(faculty, GetConfigPath(FacultyConfig));
 
         GameObject simulation = UIFactory.GenerateEmpty("Simulation", transform);
-        GameDataLoader<SimulationData>.SetGameData<SimulationManager>(simulation, SimulationConfig);
+        GameDataLoader<SimulationData>.SetGameData<SimulationManager>(simulation, GetConfigPath(SimulationConfig));
 
         TooltipManager.Initialize(ui.gameObject.transform);
     }
+
+    private string GetConfigPath(string configName) => Path.Combine(Application.streamingAssetsPath, ConfigFolderName, configName + ConfigFileExtension);
 }

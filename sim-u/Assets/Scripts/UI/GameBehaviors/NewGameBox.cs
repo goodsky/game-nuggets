@@ -40,7 +40,7 @@ namespace UI
         private void StartGame()
         {
             string savePath = _selectedScenario.SavePath;
-            Game.SavedGamePath = savePath;
+            Game.SavedGameInfo = new SaveInfo(savePath);
 
             // Reload the game scene to force the game load.
             GameLogger.Info("Setting global game save variable to '{0}'. Will be picked up upon scene reload.", savePath);
