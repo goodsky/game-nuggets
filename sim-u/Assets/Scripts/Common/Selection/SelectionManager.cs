@@ -26,6 +26,9 @@ namespace Common
         {
             lock (globalSelectionLock)
             {
+                // We get into a weird state if we don't unselect whatever you're doing
+                UpdateSelection(null);
+
                 _frozen = true;
                 _exceptions = exceptions;
             }
