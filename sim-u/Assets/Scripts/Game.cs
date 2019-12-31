@@ -36,8 +36,19 @@ public class Game : MonoBehaviour
     /// This static metadata will survive scene transitions.
     /// Set it before loading the game scene to request a particular save file to be loaded.
     /// </summary>
-    public static SaveInfo SavedGameInfo { get; set; } = null;
+    private static GameSaveStateMetadata _saveStateMetadata { get; set; } = null;
     private GameSaveState _saveState = null;
+
+    /// <summary>
+    /// Sets the metadata for the save game that will be used to populate the game
+    /// when the main scene is loaded. Only takes effect if set before the 
+    /// <see cref="InitGameObjects"/> call.
+    /// </summary>
+    /// <param name="path">The save game path on disk (within the StreamingAssets/ directory)</param>
+    public static void SetGameSaveStateForReload(string path)
+    {
+        _saveStateMetadata = new GameSaveStateMetadata(path);
+    }
 
     /// <summary>
     /// Save the game state.
@@ -57,7 +68,7 @@ public class Game : MonoBehaviour
 
     /// <summary>
     /// Load the saved game if one exists.
-    /// Uses <see cref="SavedGamePath"/> to select the game file.
+    /// Uses <see cref="GameSaveStateMetadata"/> to select the game file.
     /// </summary>
     /// <param name="saveState">The saved game state if it could be loaded.</param>
     /// <returns>True if the saved game exists and was loaded. False otherwise.</returns>
@@ -69,14 +80,10 @@ public class Game : MonoBehaviour
             return true;
         }
 
-        SaveInfo info = Game.SavedGameInfo;
+        GameSaveStateMetadata info = Game._saveStateMetadata;
         if (info != null)
         {
-            bool success = info.IsOnDisk ?
-                SavedGameLoader.TryReadFromDisk(info.Path, out saveState) :
-                SavedGameLoader.TryReadFromResources(info.Path, out saveState);
-
-            if (success)
+            if (SavedGameLoader.TryReadFromDisk(info.Path, out saveState))
             {
                 _saveState = saveState;
                 return true;
@@ -105,10 +112,10 @@ public class Game : MonoBehaviour
             _singleton = this;
         }
 
-        if (SavedGameInfo == null && !string.IsNullOrEmpty(DefaultSaveGame))
+        if (_saveStateMetadata == null && !string.IsNullOrEmpty(DefaultSaveGame))
         {
             GameLogger.Info("Using default save game '{0}'", DefaultSaveGame);
-            SavedGameInfo = new SaveInfo(DefaultSaveGame);
+            SetGameSaveStateForReload(DefaultSaveGame);
         }
 
         GameLogger.Info("Creating game objects.");

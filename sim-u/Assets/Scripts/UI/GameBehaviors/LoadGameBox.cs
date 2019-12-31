@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace UI
 {
     /// <summary>
-    /// The box where you can load games from
+    /// The box where you can load a player's games from.
     /// </summary>
     public class LoadGameBox : Common.Selectable
     {
@@ -59,7 +59,7 @@ namespace UI
         private void LoadGame()
         {
             string savePath = GetSaveGamePath(LoadNameInput.text);
-            Game.SavedGameInfo = new SaveInfo(savePath);
+            Game.SetGameSaveStateForReload(savePath);
 
             // Reload the game scene to force the game load.
             GameLogger.Info("Setting global game save variable to '{0}'. Will be picked up upon scene reload.", savePath);
