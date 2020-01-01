@@ -12,6 +12,9 @@ using UnityEngine;
 /// </summary>
 public class Game : MonoBehaviour
 {
+    private static readonly int GameWidth = 1600;
+    private static readonly int GameHeight = 900;
+
     private static readonly string ConfigFolderName = "GameData";
     private static readonly string ConfigFileExtension = ".xml";
 
@@ -92,6 +95,8 @@ public class Game : MonoBehaviour
     /// </summary>
     protected void Awake()
     {
+        Screen.SetResolution(GameWidth, GameHeight, fullscreen: false);
+
         GameLogger.EnsureSingletonExists();
         GameLogger.Info("Game started.");
 

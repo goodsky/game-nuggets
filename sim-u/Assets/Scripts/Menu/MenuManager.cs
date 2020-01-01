@@ -7,6 +7,9 @@ namespace Menu
 {
     public class MenuManager : MonoBehaviour
     {
+        private static readonly int MenuWidth = 800;
+        private static readonly int MenuHeight = 600;
+
         private readonly Color[] Colors = new Color[]
         {
             Color.blue,
@@ -52,6 +55,8 @@ namespace Menu
         /// </summary>
         protected void Start()
         {
+            Screen.SetResolution(MenuWidth, MenuHeight, fullscreen: false);
+
             GameLogger.EnsureSingletonExists();
             GameLogger.Info("Menu loaded.");
 
