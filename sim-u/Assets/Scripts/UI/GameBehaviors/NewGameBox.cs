@@ -1,8 +1,6 @@
 ﻿using Common;
 using GameData;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,7 +8,7 @@ using UnityEngine.UI;
 namespace UI
 {
     /// <summary>
-    /// The box where you can load games from
+    /// The box where you can load a saved scenario.
     /// </summary>
     public class NewGameBox : Common.Selectable
     {
@@ -40,7 +38,7 @@ namespace UI
         private void StartGame()
         {
             string savePath = _selectedScenario.SavePath;
-            Game.SavedGameInfo = new SaveInfo(savePath);
+            Game.SetGameSaveStateForReload(savePath);
 
             // Reload the game scene to force the game load.
             GameLogger.Info("Setting global game save variable to '{0}'. Will be picked up upon scene reload.", savePath);

@@ -79,12 +79,6 @@ namespace GameData
 
             return true;
         }
-
-        public static bool TryReadFromResources(string path, out GameSaveState state)
-        {
-            state = null;
-            return false;
-        }
     }
 
     public class SavedGame

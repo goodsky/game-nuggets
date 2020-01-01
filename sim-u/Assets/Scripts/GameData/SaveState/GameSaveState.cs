@@ -2,6 +2,20 @@
 
 namespace GameData
 {
+    /// <summary>
+    /// Metadata to a <see cref="GameSaveState"/>.
+    /// The path to the file to load from disk.
+    /// </summary>
+    public class GameSaveStateMetadata
+    {
+        public GameSaveStateMetadata(string path)
+        {
+            Path = path;
+        }
+
+        public string Path { get; private set; }
+    }
+
     [Serializable]
     public class GameSaveState
     {
