@@ -15,6 +15,7 @@ namespace Simulation
             AcademicPrestige = data.ResearchPrestige.DefaultValue;
             ResearchPrestige = data.ResearchPrestige.DefaultValue;
             Popularity = data.Popularity.DefaultValue;
+            Money = data.StartingMoney;
         }
 
         /// <summary>
@@ -44,5 +45,10 @@ namespace Simulation
         /// Value: [0, 100]
         /// </summary>
         public int Popularity { get; private set; }
+
+        /// <summary>
+        /// Amount of money the University currently has.
+        /// </summary>
+        public int Money { get; private set; }
     }
 }

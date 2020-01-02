@@ -37,6 +37,9 @@ namespace GameData
         [XmlElement("Popularity")]
         public ScoreDefinition<int> Popularity { get; set; }
 
+        [XmlElement("StartingMoney")]
+        public int StartingMoney { get; set; }
+
         /// <summary>
         /// TODO: Calculate this from game state
         /// </summary>

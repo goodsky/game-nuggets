@@ -62,6 +62,24 @@ namespace Simulation
             }
         }
 
+        public UniversityScore Score
+        {
+            get
+            {
+                // TODO: this should be a readonly copy
+                return _score;
+            }
+        }
+
+        public UniversityVariables Variables
+        {
+            get
+            {
+                // TODO: this should be a readonly copy
+                return _variables;
+            }
+        }
+
         /// <summary>
         /// Gets the current year/quarter/week time in the simulation.
         /// </summary>
@@ -179,6 +197,8 @@ namespace Simulation
                 SavedIsFrozen = _isFrozen,
                 SavedDate = Date,
                 StudentBody = _studentBody.SaveGameState(),
+                Score = _score,
+                Variables = _variables,
             };
         }
 

@@ -9,6 +9,7 @@
   <AcademicPrestige min="0" max="100" default="20" />
   <ResearchPrestige min="0" max="100" default="20" />
   <Popularity min="0" max="100" default="5" />
+  <StartingMoney>10000</StartingMoney>
 
   <GraduationRate>0.8</GraduationRate>
   
