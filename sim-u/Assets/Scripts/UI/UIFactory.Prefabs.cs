@@ -120,6 +120,7 @@ namespace UI
                 button.DefaultColor = config.SubMenuBackgroundColor;
                 button.SelectedColor = config.SubMenuSelectedColor;
                 button.MouseOverColor = config.SubMenuSelectedColor;
+                button.DisabledColor = config.SubMenuDisabledColor;
             }
 
             return statusBar;
@@ -241,6 +242,7 @@ namespace UI
                 button.DefaultColor = config.SubMenuBackgroundColor;
                 button.SelectedColor = config.SubMenuSelectedColor;
                 button.MouseOverColor = config.SubMenuSelectedColor;
+                button.DisabledColor = config.SubMenuDisabledColor;
             }
 
             window.SetActive(false);

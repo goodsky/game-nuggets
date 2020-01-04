@@ -8,9 +8,11 @@
     <MainMenuBackground>DarkestGray</MainMenuBackground>
     <MainMenuSelected>DarkerGray</MainMenuSelected>
     <MainMenuAccent>DarkGray</MainMenuAccent>
+    <MainMenuDisabled>Red</MainMenuDisabled>
     <SubMenuBackground>DarkGray</SubMenuBackground>
     <SubMenuSelected>Gray</SubMenuSelected>
     <SubMenuAccent>LightGray</SubMenuAccent>
+    <SubMenuDisabled>Red</SubMenuDisabled>
     <WindowBackground>LightGray</WindowBackground>
     <SpeedSelection>DarkGreen</SpeedSelection>
   </Configuration>

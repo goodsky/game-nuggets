@@ -186,6 +186,7 @@ namespace UI
             Color background = Color.white;
             Color selected = Color.white;
             Color accent = Color.white;
+            Color disabled = Color.white;
             bool active = true;
 
             if (buttonGroup is MainButtonGroupData)
@@ -194,6 +195,7 @@ namespace UI
                 background = config.MainMenuBackgroundColor;
                 selected = config.MainMenuSelectedColor;
                 accent = config.MainMenuAccentColor;
+                disabled = config.MainMenuDisabledColor;
                 active = true;
             }
             else if (buttonGroup is SubButtonGroupData)
@@ -202,6 +204,7 @@ namespace UI
                 background = config.SubMenuBackgroundColor;
                 selected = config.SubMenuSelectedColor;
                 accent = config.SubMenuAccentColor;
+                disabled = config.SubMenuDisabledColor;
                 active = false;
             }
 
@@ -220,6 +223,7 @@ namespace UI
                     ButtonsDefaultColor = background,
                     ButtonsMouseOverColor = accent,
                     ButtonsSelectedColor = selected,
+                    ButtonsDisabledColor = disabled,
                     Buttons = CreateButtonArgs(buttonGroup.Buttons, config)
                 });
 

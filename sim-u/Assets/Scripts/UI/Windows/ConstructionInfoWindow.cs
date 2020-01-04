@@ -135,7 +135,8 @@ namespace UI
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Cost:</b> {0:C0}{1}", data.ConstructionCost, Environment.NewLine);
+            string costColor = Accessor.Simulation.CanPurchase(data.ConstructionCost) ? "#323232" : "red";
+            sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Cost:</b> <color={0}>{1:C0}</color>{2}",costColor, data.ConstructionCost, Environment.NewLine);
 
             if (data.MaintenanceCost != 0)
                 sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per year{1}", data.MaintenanceCost, Environment.NewLine);

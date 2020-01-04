@@ -21,7 +21,9 @@ namespace GameData
             { "LightGray",      new Color32(204, 204, 204, 255) },
             { "LighterGray",    new Color32(230, 230, 230, 255) },
             { "LightestGray",   new Color32(242, 242, 242, 255) },
-            { "DarkGreen", new Color32(22, 195, 0, 255) },
+            { "DarkGreen",      new Color32(22, 195, 0, 255) },
+            { "White",          Color.white },
+            { "Red",            Color.red },
         };
 
         /// <summary>

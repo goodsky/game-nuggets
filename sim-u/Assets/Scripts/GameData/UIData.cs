@@ -61,6 +61,12 @@ namespace GameData
         [ColorPalette(nameof(MainMenuAccent))]
         public Color MainMenuAccentColor { get; set; }
 
+        [XmlElement("MainMenuDisabled")]
+        public string MainMenuDisabled { get; set; }
+
+        [ColorPalette(nameof(MainMenuDisabled))]
+        public Color MainMenuDisabledColor { get; set; }
+
         [XmlElement("SubMenuBackground")]
         public string SubMenuBackground { get; set; }
 
@@ -78,6 +84,13 @@ namespace GameData
 
         [ColorPalette(nameof(SubMenuAccent))]
         public Color SubMenuAccentColor { get; set; }
+
+        [XmlElement("SubMenuDisabled")]
+        public string SubMenuDisabled { get; set; }
+
+        [ColorPalette(nameof(SubMenuDisabled))]
+        public Color SubMenuDisabledColor { get; set; }
+
 
         [XmlElement("WindowBackground")]
         public string WindowBackground { get; set; }

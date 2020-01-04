@@ -30,6 +30,7 @@ namespace UI
         public Color DefaultColor;
         public Color MouseOverColor;
         public Color SelectedColor;
+        public Color DisabledColor;
     }
 
     /// <summary>
@@ -50,6 +51,7 @@ namespace UI
         public Color ButtonsDefaultColor;
         public Color ButtonsMouseOverColor;
         public Color ButtonsSelectedColor;
+        public Color ButtonsDisabledColor;
 
         public float Left;
         public float Right;
@@ -120,6 +122,7 @@ namespace UI
             script.DefaultColor = args.DefaultColor;
             script.MouseOverColor = args.MouseOverColor;
             script.SelectedColor = args.SelectedColor;
+            script.DisabledColor = args.DisabledColor;
             script.OnSelect = args.OnSelect;
             script.OnDeselect = args.OnDeselect;
             script.Tooltip = args.Tooltip;
@@ -182,6 +185,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
+                    DisabledColor = args.ButtonsDisabledColor,
                     IconImage = args.ArrowLeft,
                 });
 
@@ -200,6 +204,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
+                    DisabledColor = args.ButtonsDisabledColor,
                     IconImage = args.ArrowRight,
                 });
 
@@ -243,6 +248,7 @@ namespace UI
                 button.DefaultColor = args.ButtonsDefaultColor;
                 button.MouseOverColor = args.ButtonsMouseOverColor;
                 button.SelectedColor = args.ButtonsSelectedColor;
+                button.DisabledColor = args.ButtonsDisabledColor;
 
                 var buttonObject = GenerateButton(content.transform, button);
                 buttons.Add(buttonObject.GetComponent<Button>());
