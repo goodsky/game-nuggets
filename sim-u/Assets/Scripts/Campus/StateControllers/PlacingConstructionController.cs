@@ -1,10 +1,18 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class PlacingConstructionContext
+    {
+        public BuildingData BuildingData { get; set; }
+
+        public ConstructionPlacingWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingContruction game state.
     /// </summary>
@@ -14,6 +22,7 @@ namespace Campus
         private GridMesh _terrain;
 
         private BuildingData _building;
+        private ConstructionPlacingWindow _window;
         private FootprintCursor _cursors;
 
         /// <summary>
@@ -38,9 +47,12 @@ namespace Campus
         /// <param name="context">The construction to place.</param>
         public override void TransitionIn(object context)
         {
-            _building = context as BuildingData;
-            if (_building == null)
-                GameLogger.FatalError("PlacingConstructionController was not given a building data!");
+            var constructionContext = context as PlacingConstructionContext;
+            if (constructionContext == null)
+                GameLogger.FatalError("PlacingConstructionController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
+
+            _building = constructionContext.BuildingData;
+            _window = constructionContext.Window;
 
             _cursors.Create(_building.Footprint);
         }
@@ -50,13 +62,22 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
+            _building = null;
+            _window = null;
             _cursors.Destroy();
         }
 
         /// <summary>
         /// Called each step of this state.
         /// </summary>
-        public override void Update() { }
+        public override void Update()
+        {
+            if (_building != null)
+            {
+                // Note: this call is needed to update the color of the cost text.
+                _window.UpdateInfo(_building.ConstructionCost);
+            }
+        }
 
         /// <summary>
         /// Event handler for selection updates on the terrain.

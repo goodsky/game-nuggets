@@ -1,4 +1,5 @@
-﻿using Common;
+﻿using Campus;
+using Common;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -7,9 +8,14 @@ namespace UI
     public class RoadsWindow : Window
     {
         /// <summary>
-        /// The window Title UI text element.
+        /// The length of the road UI text element.
         /// </summary>
-        public Text TitleText;
+        public Text RoadLengthText;
+
+        /// <summary>
+        /// The cost of the road UI text element.
+        /// </summary>
+        public Text RoadCostText;
 
         /// <summary>
         /// The window stop UI button.
@@ -29,7 +35,12 @@ namespace UI
         public override void Open(object data)
         {
             Accessor.CampusManager.SetTerrainSelectionParent(this);
-            Accessor.StateMachine.StartDoing(GameState.SelectingRoad, data);
+            Accessor.StateMachine.StartDoing(
+                GameState.SelectingRoad,
+                new SelectingRoadContext
+                {
+                    Window = this,
+                });
 
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
@@ -41,6 +52,21 @@ namespace UI
         {
             Accessor.CampusManager.SetTerrainSelectionParent(null);
             Accessor.StateMachine.StopDoing();
+        }
+
+        /// <summary>
+        /// Update the window info texts.
+        /// </summary>
+        /// <param name="roadLength">The length of the road being built.</param>
+        /// <param name="roadCost">The cost of the road being built.</param>
+        public void UpdateInfo(int roadLength, int roadCost)
+        {
+            RoadLengthText.text = roadLength.ToString();
+            LayoutRebuilder.MarkLayoutForRebuild(RoadLengthText.rectTransform);
+
+            string color = Accessor.Simulation.CanPurchase(roadCost) ? "green" : "red";
+            RoadCostText.text = $"<color={color}>${roadCost:n0}</color>";
+            LayoutRebuilder.MarkLayoutForRebuild(RoadCostText.rectTransform);
         }
     }
 }

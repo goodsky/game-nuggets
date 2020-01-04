@@ -1,4 +1,5 @@
-﻿using Common;
+﻿using Campus;
+using Common;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -7,9 +8,14 @@ namespace UI
     public class ParkingLotWindow : Window
     {
         /// <summary>
-        /// The window Title UI text element.
+        /// The size of the parking lot UI text element.
         /// </summary>
-        public Text TitleText;
+        public Text ParkingLotSizeText;
+
+        /// <summary>
+        /// The cost of the parking lot UI text element.
+        /// </summary>
+        public Text ParkingLotCostText;
 
         /// <summary>
         /// The window stop UI button.
@@ -25,11 +31,15 @@ namespace UI
         /// <summary>
         /// Open the window to display the game data.
         /// </summary>
-        /// <param name="data">The game data</param>
-        public override void Open(object data)
+        public override void Open(object _)
         {
             Accessor.CampusManager.SetTerrainSelectionParent(this);
-            Accessor.StateMachine.StartDoing(GameState.SelectingParkingLot, data);
+            Accessor.StateMachine.StartDoing(
+                GameState.SelectingParkingLot,
+                new SelectingParkingLotContext
+                {
+                    Window = this,
+                });
 
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
@@ -41,6 +51,22 @@ namespace UI
         {
             Accessor.CampusManager.SetTerrainSelectionParent(null);
             Accessor.StateMachine.StopDoing();
+        }
+
+        /// <summary>
+        /// Update the window info texts.
+        /// </summary>
+        /// <param name="lotLength">The length of the parking lot being built.</param>
+        /// <param name="lotWidth">The length of the parking lot being built.</param>
+        /// <param name="lotCost">The cost of the parking lot being built.</param>
+        public void UpdateInfo(int lotLength, int lotWidth, int lotCost)
+        {
+            ParkingLotSizeText.text = $"{lotLength}x{lotWidth}";
+            LayoutRebuilder.MarkLayoutForRebuild(ParkingLotSizeText.rectTransform);
+
+            string color = Accessor.Simulation.CanPurchase(lotCost) ? "green" : "red";
+            ParkingLotCostText.text = $"<color={color}>${lotCost:n0}</color>";
+            LayoutRebuilder.MarkLayoutForRebuild(ParkingLotCostText.rectTransform);
         }
     }
 }

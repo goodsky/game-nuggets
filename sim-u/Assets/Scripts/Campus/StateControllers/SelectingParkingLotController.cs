@@ -1,10 +1,16 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class SelectingParkingLotContext
+    {
+        public ParkingLotWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the SelectingParkingLot game state.
     /// </summary>
@@ -12,6 +18,7 @@ namespace Campus
     internal class SelectingParkingLotController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
+        private ParkingLotWindow _window;
 
         private Material _validMaterial;
         private Material _invalidMaterial;
@@ -35,9 +42,15 @@ namespace Campus
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="_">Not used.</param>
-        public override void TransitionIn(object _)
+        public override void TransitionIn(object context)
         {
+            var parkingLotContext = context as SelectingParkingLotContext;
+            if (parkingLotContext == null)
+                GameLogger.FatalError("SelectingParkingLotController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
+
+            _window = parkingLotContext.Window;
+            _window.UpdateInfo(0, 0, 0);
+
             _cursor.Activate();
             _cursor.Place(_cursor.Position);
         }
@@ -92,7 +105,13 @@ namespace Campus
             {
                 if (Accessor.CampusManager.IsValidForParkingLot(new Rectangle(args.GridSelection), out bool[,] _, ignoreSizeConstraint: true))
                 {
-                    Transition(GameState.PlacingParkingLot, args);
+                    Transition(
+                        GameState.PlacingParkingLot,
+                        new PlacingParkingLotContext
+                        {
+                            ClickedArgs = args,
+                            Window = _window,
+                        });
                 }
             }
         }

@@ -128,6 +128,7 @@ namespace UI
             if (string.Compare(text.text, str, StringComparison.Ordinal) != 0)
             {
                 text.text = str;
+                LayoutRebuilder.MarkLayoutForRebuild(text.rectTransform);
                 return true;
             }
 
@@ -141,7 +142,7 @@ namespace UI
 
             // Why do I call a loop? Because the changes don't percalate down correctly.
             // So I'm calling it once per nested layout group.
-            const int NestedLayoutGroupCount = 4;
+            const int NestedLayoutGroupCount = 3;
             for (int i = 0; i < NestedLayoutGroupCount; ++i)
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(transform);

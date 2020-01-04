@@ -1,4 +1,6 @@
-﻿using Common;
+﻿using Campus;
+using Campus.GridTerrain;
+using Common;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -7,9 +9,14 @@ namespace UI
     public class PathsWindow : Window
     {
         /// <summary>
-        /// The window Title UI text element.
+        /// The length of the path UI text element.
         /// </summary>
-        public Text TitleText;
+        public Text PathLengthText;
+
+        /// <summary>
+        /// The cost of the path UI text element.
+        /// </summary>
+        public Text PathCostText;
 
         /// <summary>
         /// The window stop UI button.
@@ -25,11 +32,15 @@ namespace UI
         /// <summary>
         /// Open the window to display the game data.
         /// </summary>
-        /// <param name="data">The game data</param>
-        public override void Open(object data)
+        public override void Open(object _)
         {
             Accessor.CampusManager.SetTerrainSelectionParent(this);
-            Accessor.StateMachine.StartDoing(GameState.SelectingPath, data);
+            Accessor.StateMachine.StartDoing(
+                GameState.SelectingPath,
+                new SelectingPathContext
+                {
+                    Window = this,
+                });
 
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
@@ -41,6 +52,21 @@ namespace UI
         {
             Accessor.CampusManager.SetTerrainSelectionParent(null);
             Accessor.StateMachine.StopDoing();
+        }
+
+        /// <summary>
+        /// Update the window info texts.
+        /// </summary>
+        /// <param name="pathLength">The length of the path being built.</param>
+        /// <param name="pathCost">The cost of the path being built.</param>
+        public void UpdateInfo(int pathLength, int pathCost)
+        {
+            PathLengthText.text = pathLength.ToString();
+            LayoutRebuilder.MarkLayoutForRebuild(PathLengthText.rectTransform);
+
+            string color = Accessor.Simulation.CanPurchase(pathCost) ? "green" : "red";
+            PathCostText.text = $"<color={color}>${pathCost:n0}</color>";
+            LayoutRebuilder.MarkLayoutForRebuild(PathCostText.rectTransform);
         }
     }
 }

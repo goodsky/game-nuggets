@@ -1,10 +1,18 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class PlacingPathContext
+    {
+        public TerrainClickedArgs ClickedArgs { get; set; }
+
+        public PathsWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingPath game state.
     /// </summary>
@@ -12,6 +20,7 @@ namespace Campus
     internal class PlacingPathController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
+        private PathsWindow _window;
         private LineCursor _cursor;
 
         private AxisAlignedLine _line;
@@ -34,13 +43,14 @@ namespace Campus
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="context">The construction to place.</param>
         public override void TransitionIn(object context)
         {
-            var args = context as TerrainClickedArgs;
-            if (args == null)
-                GameLogger.FatalError("PlacingPathController was given incorrect context.");
+            var pathsContext = context as PlacingPathContext;
+            if (pathsContext == null)
+                GameLogger.FatalError("PlacingPathController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
 
+            var args = pathsContext.ClickedArgs;
+            _window = pathsContext.Window;
             _line = new AxisAlignedLine(args.GridSelection);
 
             Accessor.CampusManager.IsValidForPath(_line, out bool[] validGrids);
@@ -68,7 +78,12 @@ namespace Campus
                     Accessor.CampusManager.ConstructPath(_line);
                 }
 
-                Transition(GameState.SelectingPath);
+                Transition(
+                    GameState.SelectingPath,
+                    new SelectingPathContext
+                    {
+                        Window = _window,
+                    });
                 return;
             }
         }
@@ -97,7 +112,17 @@ namespace Campus
                     _line.UpdateEndPointAlongAxis(new Point2(_line.End.x, _terrain.CountZ - 1));
             }
 
+            int costOfPath = CostOfPath();
+            _window.UpdateInfo(_line.Length, costOfPath);
+
             Accessor.CampusManager.IsValidForPath(_line, out bool[] validGrids);
+            
+            if (!Accessor.Simulation.CanPurchase(costOfPath))
+            {
+                for (int i = 0; i < validGrids.Length; ++i)
+                    validGrids[i] = false;
+            }
+
             _cursor.Place(_line, validGrids);
         }
 
@@ -111,7 +136,12 @@ namespace Campus
             if (args.Button == MouseButton.Right)
             {
                 // Cancel placing path.
-                Transition(GameState.SelectingPath);
+                Transition(
+                    GameState.SelectingPath,
+                    new SelectingPathContext
+                    {
+                        Window = _window,
+                    });
             }
         }
 

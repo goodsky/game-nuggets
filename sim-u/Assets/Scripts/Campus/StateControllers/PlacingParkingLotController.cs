@@ -1,10 +1,18 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class PlacingParkingLotContext
+    {
+        public TerrainClickedArgs ClickedArgs { get; set; }
+
+        public ParkingLotWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingParkingLot game state.
     /// </summary>
@@ -12,6 +20,7 @@ namespace Campus
     internal class PlacingParkingLotController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
+        private ParkingLotWindow _window;
         private Rectangle _rect;
 
         private RectangleCursor _cursor;
@@ -34,13 +43,14 @@ namespace Campus
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="context">The construction to place.</param>
         public override void TransitionIn(object context)
         {
-            var args = context as TerrainClickedArgs;
-            if (args == null)
-                GameLogger.FatalError("PlacingPathController was given incorrect context.");
+            var pathsContext = context as PlacingParkingLotContext;
+            if (pathsContext == null)
+                GameLogger.FatalError("PlacingParkingLotController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
 
+            var args = pathsContext.ClickedArgs;
+            _window = pathsContext.Window;
             _rect = new Rectangle(args.GridSelection);
 
             Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids);
@@ -70,7 +80,12 @@ namespace Campus
                 }
                 else
                 {
-                    Transition(GameState.SelectingParkingLot);
+                    Transition(
+                        GameState.SelectingParkingLot,
+                        new SelectingParkingLotContext
+                        {
+                            Window = _window,
+                        });
                 }
 
                 return;
@@ -93,7 +108,18 @@ namespace Campus
                 _rect.UpdateEndPoint(_rect.Start);
             }
 
+            int costOfParkingLot = CostOfParkingLot();
+            _window.UpdateInfo(_rect.SizeX, _rect.SizeZ, costOfParkingLot);
+
             Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids);
+
+            if (!Accessor.Simulation.CanPurchase(costOfParkingLot))
+            {
+                for (int i = 0; i < validGrids.GetLength(0); ++i)
+                    for (int j = 0; j < validGrids.GetLength(1); ++j)
+                        validGrids[i, j] = false;
+            }
+
             _cursor.Place(_rect, validGrids);
         }
 
@@ -107,7 +133,12 @@ namespace Campus
             if (args.Button == MouseButton.Right)
             {
                 // Cancel placing path.
-                Transition(GameState.SelectingParkingLot);
+                Transition(
+                    GameState.SelectingParkingLot,
+                    new SelectingParkingLotContext
+                    {
+                        Window = _window,
+                    });
             }
         }
 

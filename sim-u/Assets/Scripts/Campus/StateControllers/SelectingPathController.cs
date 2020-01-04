@@ -1,10 +1,16 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class SelectingPathContext
+    {
+        public PathsWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingPath game state.
     /// </summary>
@@ -12,6 +18,7 @@ namespace Campus
     internal class SelectingPathController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
+        private PathsWindow _window;
 
         private Material _validMaterial;
         private Material _invalidMaterial;
@@ -35,9 +42,15 @@ namespace Campus
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="_">Not used.</param>
-        public override void TransitionIn(object _)
+        public override void TransitionIn(object context)
         {
+            var pathsContext = context as SelectingPathContext;
+            if (pathsContext == null)
+                GameLogger.FatalError("SelectingPathController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
+
+            _window = pathsContext.Window;
+            _window.UpdateInfo(0, 0);
+
             _cursor.Activate();
             _cursor.Place(_cursor.Position);
         }
@@ -92,7 +105,13 @@ namespace Campus
             {
                 if (Accessor.CampusManager.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] _))
                 {
-                    Transition(GameState.PlacingPath, args);
+                    Transition(
+                        GameState.PlacingPath,
+                        new PlacingPathContext
+                        {
+                            ClickedArgs = args,
+                            Window = _window,
+                        });
                 }
             }
             else if (args.Button == MouseButton.Right)

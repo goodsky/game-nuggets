@@ -1,10 +1,18 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class PlacingRoadContext
+    {
+        public TerrainClickedArgs ClickedArgs { get; set; }
+
+        public RoadsWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingRoad game state.
     /// </summary>
@@ -12,6 +20,7 @@ namespace Campus
     internal class PlacingRoadController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
+        private RoadsWindow _window;
         private LineCursor _cursor1;
         private LineCursor _cursor2;
 
@@ -42,10 +51,12 @@ namespace Campus
         /// <param name="context">The construction to place.</param>
         public override void TransitionIn(object context)
         {
-            var args = context as TerrainClickedArgs;
-            if (args == null)
-                GameLogger.FatalError("PlacingRoadController was given incorrect context.");
+            var roadsContext = context as PlacingRoadContext;
+            if (roadsContext == null)
+                GameLogger.FatalError("PlacingRoadController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
 
+            var args = roadsContext.ClickedArgs;
+            _window = roadsContext.Window;
             _vertexLine = new AxisAlignedLine(args.VertexSelection);
 
             Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
@@ -75,7 +86,12 @@ namespace Campus
                     Accessor.CampusManager.ConstructRoad(_vertexLine);
                 }
 
-                Transition(GameState.SelectingRoad);
+                Transition(
+                    GameState.SelectingRoad,
+                    new SelectingRoadContext
+                    {
+                        Window = _window,
+                    });
                 return;
             }
         }
@@ -91,7 +107,18 @@ namespace Campus
             {
                 _vertexLine.UpdateEndPointAlongAxis(args.VertexSelection);
 
+                int costOfRoad = CostOfRoad();
+                _window.UpdateInfo(_vertexLine.Length, costOfRoad);
+
                 Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] lines, out bool[][] validGrids);
+
+                if (!Accessor.Simulation.CanPurchase(costOfRoad))
+                {
+                    for (int i = 0; i < validGrids.Length; ++i)
+                        for (int j = 0; j < validGrids[i].Length; ++j)
+                            validGrids[i][j] = false;
+                }
+
                 _cursor1.Place(lines[0], validGrids[0]);
                 _cursor2.Place(lines[1], validGrids[1]);
             }
@@ -107,7 +134,12 @@ namespace Campus
             if (args.Button == MouseButton.Right)
             {
                 // Cancel placing path.
-                Transition(GameState.SelectingRoad);
+                Transition(
+                    GameState.SelectingRoad,
+                    new SelectingRoadContext
+                    {
+                        Window = _window,
+                    });
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using Common;
+﻿using Campus;
+using Common;
 using GameData;
 using System.Collections.Generic;
 using UnityEngine.UI;
@@ -8,9 +9,14 @@ namespace UI
     public class ConstructionPlacingWindow : Window
     {
         /// <summary>
-        /// The window Title UI text element.
+        /// The name of the building UI text element.
         /// </summary>
-        public Text TitleText;
+        public Text BuildingNameText;
+
+        /// <summary>
+        /// The cost of the building UI text element.
+        /// </summary>
+        public Text BuildingCostText;
 
         /// <summary>
         /// The window stop UI button.
@@ -32,13 +38,23 @@ namespace UI
             var buildingData = data as BuildingData;
             if (buildingData == null)
             {
-                GameLogger.FatalError("ConstructionPlacingWindow was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
+                GameLogger.FatalError("ConstructionPlacingWindow was passed invalid data. Data = {0}", data?.GetType().Name ?? "null");
             }
 
             Accessor.CampusManager.SetTerrainSelectionParent(this);
-            Accessor.StateMachine.StartDoing(GameState.PlacingConstruction, data);
+            Accessor.StateMachine.StartDoing(
+                GameState.PlacingConstruction,
+                new PlacingConstructionContext()
+                {
+                    BuildingData = buildingData,
+                    Window = this,
+                });
 
-            TitleText.text = string.Format("Constructing {0}", buildingData.Name);
+            BuildingNameText.text = buildingData.Name;
+            LayoutRebuilder.MarkLayoutForRebuild(BuildingNameText.rectTransform);
+
+            UpdateInfo(buildingData.ConstructionCost);
+
             StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
         }
 
@@ -49,6 +65,17 @@ namespace UI
         {
             Accessor.CampusManager.SetTerrainSelectionParent(null);
             Accessor.StateMachine.StopDoing();
+        }
+
+        /// <summary>
+        /// Update the window info.
+        /// </summary>
+        /// <param name="buildingCost">Current cost of the building.</param>
+        public void UpdateInfo(int buildingCost)
+        {
+            string color = Accessor.Simulation.CanPurchase(buildingCost) ? "green" : "red";
+            BuildingCostText.text = $"<color={color}>${buildingCost:n0}</color>";
+            LayoutRebuilder.MarkLayoutForRebuild(BuildingCostText.rectTransform);
         }
     }
 }

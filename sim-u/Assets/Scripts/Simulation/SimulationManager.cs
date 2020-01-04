@@ -316,8 +316,6 @@ namespace Simulation
                 WeeklyAccounting,
                 UpdateType.Weekly);
 
-           
-
             // The link step runs after all intial data has been loaded.
             // The perfect time to load the saved game data.
             SimulationSaveState savedGame = gameData.SavedData?.Simulation;
