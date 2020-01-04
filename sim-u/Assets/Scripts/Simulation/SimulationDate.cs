@@ -18,6 +18,7 @@ namespace Simulation
     public struct SimulationDate
     {
         public const int WeeksPerQuarter = 13;
+        public const int QuartersPerYear = 4;
 
         public SimulationDate(int year, SimulationQuarter quarter, int week)
         {
@@ -58,6 +59,11 @@ namespace Simulation
             }
 
             return new SimulationDate(nextYear, nextQuarter, nextWeek);
+        }
+
+        public override string ToString()
+        {
+            return $"Year {Year} / {Quarter} / Week {Week}";
         }
     }
 }

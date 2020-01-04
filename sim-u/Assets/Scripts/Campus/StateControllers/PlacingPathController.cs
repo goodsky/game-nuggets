@@ -62,7 +62,8 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Accessor.CampusManager.IsValidForPath(_line, out bool[] _))
+                if (Accessor.CampusManager.IsValidForPath(_line, out bool[] _) &&
+                    Accessor.Simulation.Purchase(CostOfPath()))
                 {
                     Accessor.CampusManager.ConstructPath(_line);
                 }
@@ -112,6 +113,12 @@ namespace Campus
                 // Cancel placing path.
                 Transition(GameState.SelectingPath);
             }
+        }
+
+        private int CostOfPath()
+        {
+            int squares = _line.Length;
+            return Accessor.CampusManager.GetCostOfConstruction(CampusGridUse.Path, squares);
         }
     }
 }

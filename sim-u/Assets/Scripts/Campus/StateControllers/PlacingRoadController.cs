@@ -69,7 +69,8 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __))
+                if (Accessor.CampusManager.IsValidForRoad(_vertexLine, out AxisAlignedLine[] _, out bool[][] __) &&
+                    Accessor.Simulation.Purchase(CostOfRoad()))
                 {
                     Accessor.CampusManager.ConstructRoad(_vertexLine);
                 }
@@ -108,6 +109,12 @@ namespace Campus
                 // Cancel placing path.
                 Transition(GameState.SelectingRoad);
             }
+        }
+
+        private int CostOfRoad()
+        {
+            int squares = _vertexLine.Length * 2;
+            return Accessor.CampusManager.GetCostOfConstruction(CampusGridUse.Road, squares);
         }
     }
 }

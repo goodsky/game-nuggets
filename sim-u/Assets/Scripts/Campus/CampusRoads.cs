@@ -13,6 +13,7 @@ namespace Campus
     {
         private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
+        private readonly RoadsData _data;
         private readonly bool[,] _road;
 
         private readonly int _startIndex;
@@ -22,6 +23,7 @@ namespace Campus
         public CampusRoads(CampusData campusData, GameAccessor accessor)
         {
             _campusManager = accessor.CampusManager;
+            _data = campusData.Roads;
             _terrain = accessor.Terrain;
             
             SetupRoadMapping();
@@ -32,6 +34,8 @@ namespace Campus
 
             _road = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
         }
+
+        public int CostPerSquare => _data.CostPerSquare;
 
         /// <summary>
         /// Gets the internal save state for campus roads.

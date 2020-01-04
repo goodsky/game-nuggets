@@ -554,6 +554,30 @@ namespace Campus
         }
 
         /// <summary>
+        /// Gets the cost of constructing things on campus.
+        /// </summary>
+        /// <param name="type">The type of construction</param>
+        /// <param name="squares">The number of squares to construct.</param>
+        /// <returns>The cost of the construction project in dollars.</returns>
+        public int GetCostOfConstruction(CampusGridUse type, int squares)
+        {
+            switch (type)
+            {
+                case CampusGridUse.Path:
+                    return _paths.CostPerSquare * squares;
+
+                case CampusGridUse.Road:
+                    return _roads.CostPerSquare * squares;
+
+                case CampusGridUse.ParkingLot:
+                    return _lots.CostPerSquare * squares;
+            }
+
+            GameLogger.Error("Attempted to get cost of an invalid construction type: {0}", type);
+            return 0;
+        }
+
+        /// <summary>
         /// Set the parent of the terrain object.
         /// In essence, this makes it so when you click the terrain,
         /// the parent selectable is not closed.

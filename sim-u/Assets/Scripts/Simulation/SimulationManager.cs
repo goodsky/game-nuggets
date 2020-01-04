@@ -3,6 +3,7 @@ using GameData;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using UI;
 
 namespace Simulation
 {
@@ -96,6 +97,47 @@ namespace Simulation
         }
 
         /// <summary>
+        /// Check if the university can afford this purchase.
+        /// </summary>
+        public bool CanPurchase(int cost)
+        {
+            return cost <= 0 || // can always purchase free things!
+                _score.Money >= cost ||
+                Accessor.Game.AdminMode; // admin mode allows us to go into mega debt
+        }
+
+        /// <summary>
+        /// Lower the university money score by the cost.
+        /// Pops up the floating money effect by the mouse to indicate money spent.
+        /// </summary>
+        /// <param name="cost">The number in dollars to purchase.</param>
+        /// <param name="required">If the purchase is required, then it will happen even
+        /// if the university does not have enough dollars to pay for it.</param>
+        public bool Purchase(int cost, bool required = false)
+        {
+            if (CanPurchase(cost) ||
+                required)
+            {
+                _score.Money -= cost;
+                TriggerUpdates(UpdateType.Tick);
+
+                FloatingMoneyManager.Spawn(cost);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Update money without checking if it is a valid update.
+        /// </summary>
+        public void UpdateMoney(int deltaMoney)
+        {
+            _score.Money += deltaMoney;
+        }
+
+        /// <summary>
         /// Register an action to be run each simulation tick.
         /// Be careful with this! If you put something expensive here it'll get nasty fast.
         /// </summary>
@@ -115,6 +157,10 @@ namespace Simulation
         public void EnrollStudents(StudentHistogram students)
         {
             _studentBody.EnrollClass(students);
+
+            // Don't forget to get the freshmen's money
+            int tuition = _variables.TuitionPerQuarter * students.TotalStudentCount;
+            UpdateMoney(tuition);
         }
 
         /// <summary>
@@ -261,6 +307,16 @@ namespace Simulation
                 AcademicYearWrapUp,
                 UpdateType.AcademicYearly);
 
+            // Link the Accounting calculations that happen every quarter / every week
+            RegisterSimulationUpdateCallback(nameof(QuarterlyAccounting),
+               QuarterlyAccounting,
+               UpdateType.Quarterly);
+
+            RegisterSimulationUpdateCallback(nameof(WeeklyAccounting),
+                WeeklyAccounting,
+                UpdateType.Weekly);
+
+           
 
             // The link step runs after all intial data has been loaded.
             // The perfect time to load the saved game data.
@@ -272,6 +328,33 @@ namespace Simulation
         {
             GraduationResults graduationResult = _studentBody.GraduateStudents();
             Accessor.UiManager.OpenWindow(nameof(UI.AcademicYearPopUp), graduationResult);
+        }
+
+        private void QuarterlyAccounting()
+        {
+            // Tuition Money
+            // Hack: purchasing negative cost adds money.
+            int tuition = _variables.TuitionPerQuarter * _studentBody.TotalStudentCount;
+
+            GameLogger.Debug("Tuition: ${0:n0} for {1} quarter.", tuition, Date.Quarter);
+            UpdateMoney(tuition);
+        }
+
+        private void WeeklyAccounting()
+        {
+            // Paying employees weekly.
+            int paymentsDue = 0;
+            foreach (var faculty in Accessor.Faculty.HiredFaculty)
+            {
+                // These poor teachers are getting underpaid. Do you think anyone will notice?
+                int truncatedWeeklySalary =
+                    faculty.SalaryPerYear / (SimulationDate.WeeksPerQuarter * SimulationDate.QuartersPerYear);
+
+                paymentsDue += truncatedWeeklySalary;
+            }
+
+            GameLogger.Debug("Faculty Salary: ${0:n0} for {1}", paymentsDue, Date);
+            UpdateMoney(-paymentsDue);
         }
 
         /// <summary>

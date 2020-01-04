@@ -14,6 +14,7 @@ namespace UI
     /// </summary>
     public class ConstructionInfoWindow : Window
     {
+        private BuildingData _bulidingData;
         private string _title;
         private string _description;
 
@@ -86,6 +87,7 @@ namespace UI
                 GameLogger.FatalError("ConstructionInfoWindow was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
             }
 
+            _bulidingData = buildingData;
             Title = buildingData.Name;
             Description = WriteDescription(buildingData);
             ConstructionImage.sprite = buildingData.Icon;
@@ -104,6 +106,24 @@ namespace UI
         {
             var camera = Camera.main.GetComponent<OrthoPanningCamera>();
             camera.UnfreezeCamera();
+        }
+
+        /// <summary>
+        /// Unity update method
+        /// </summary>
+        protected override void Update()
+        {
+            // Make sure the building can be built
+            if (Accessor.Simulation.CanPurchase(_bulidingData.ConstructionCost))
+            {
+                BuildButton.Enable();
+            }
+            else
+            {
+                BuildButton.Disable();
+            }
+
+            base.Update();
         }
 
         /// <summary>

@@ -13,6 +13,7 @@ namespace Campus
     {
         private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
+        private readonly PathsData _data;
         private readonly bool[,] _path;
 
         private readonly int _startIndex;
@@ -23,6 +24,7 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
+            _data = campusData.Paths;
 
             SetupPathMapping();
 
@@ -32,6 +34,8 @@ namespace Campus
 
             _path = new bool[_terrain.CountX, _terrain.CountZ];
         }
+
+        public int CostPerSquare => _data.CostPerSquare;
 
         /// <summary>
         /// Gets the internal save state for campus paths.

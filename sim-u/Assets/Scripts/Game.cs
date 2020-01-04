@@ -163,6 +163,7 @@ public class Game : MonoBehaviour
         GameDataLoader<SimulationData>.SetGameData<SimulationManager>(simulation, GetConfigPath(SimulationConfig));
 
         TooltipManager.Initialize(ui.gameObject.transform);
+        FloatingMoneyManager.Initialize(ui.gameObject.transform);
     }
 
     private string GetConfigPath(string configName) => Path.Combine(Application.streamingAssetsPath, ConfigFolderName, configName + ConfigFileExtension);

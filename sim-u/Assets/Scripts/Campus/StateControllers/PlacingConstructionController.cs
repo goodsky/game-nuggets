@@ -87,7 +87,8 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, out bool[,] _))
+                if (Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, out bool[,] _) &&
+                    Accessor.Simulation.Purchase(_building.ConstructionCost))
                 {
                     Accessor.CampusManager.ConstructBuilding(_building, args.GridSelection);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());

@@ -77,12 +77,14 @@ namespace UI
             bool anyUpdate = false;
 
             // Update Money Status
-            string moneyStr = string.Format(CultureInfo.CurrentCulture, "{0:C0}", _simulation.Score.Money);
+            string moneyColor = _simulation.Score.Money >= 0 ? "green" : "red";
+            string moneyStr = string.Format(CultureInfo.CurrentCulture, "<color={1}>{0:C0}</color>", _simulation.Score.Money, moneyColor);
             anyUpdate |= UpdateTextCheckIfChanged(MoneyText, moneyStr);
 
             // Update Student Count Status
             StudentBody currentStudents = _simulation.CurrentStudentBody();
-            string studentCountStr = $"{currentStudents.TotalStudentCount} / {_campus.TotalConnectedClassroomCount}";
+            string studentCountColor = currentStudents.TotalStudentCount <= _campus.TotalConnectedClassroomCount ? "white" : "red";
+            string studentCountStr = $"<color={studentCountColor}>{currentStudents.TotalStudentCount} / {_campus.TotalConnectedClassroomCount}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(StudentCountText, studentCountStr);
 
             // Update Popularity

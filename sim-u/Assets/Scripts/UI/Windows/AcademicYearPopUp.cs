@@ -137,6 +137,7 @@ Total Classroom Capacity: {3:n0}";
                 _enrollingPopulation.TotalStudentCount,
                 _enrollingPopulation.ToString());
 
+            Accessor.Simulation.Variables.TuitionPerQuarter = TuitionSlider.Value;
             Accessor.Simulation.EnrollStudents(_enrollingPopulation);
 
             // NB: Hack. Re-opening a window will close it...

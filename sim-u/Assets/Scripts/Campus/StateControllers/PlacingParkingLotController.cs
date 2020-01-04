@@ -62,7 +62,8 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids))
+                if (Accessor.CampusManager.IsValidForParkingLot(_rect, out bool[,] validGrids) &&
+                    Accessor.Simulation.Purchase(CostOfParkingLot()))
                 {
                     Accessor.CampusManager.ConstructParkingLot(_rect);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
@@ -108,6 +109,12 @@ namespace Campus
                 // Cancel placing path.
                 Transition(GameState.SelectingParkingLot);
             }
+        }
+
+        private int CostOfParkingLot()
+        {
+            int squares = _rect.SizeX * _rect.SizeZ;
+            return Accessor.CampusManager.GetCostOfConstruction(CampusGridUse.ParkingLot, squares);
         }
     }
 }

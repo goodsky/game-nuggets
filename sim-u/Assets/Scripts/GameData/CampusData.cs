@@ -15,8 +15,35 @@ namespace GameData
         [XmlElement("Terrain")]
         public TerrainData Terrain { get; set; }
 
+        [XmlElement("Paths")]
+        public PathsData Paths { get; set; }
+
+        [XmlElement("Roads")]
+        public RoadsData Roads { get; set; }
+
+        [XmlElement("ParkingLots")]
+        public ParkingLotData ParkingLots { get; set; }
+
         [XmlArray("Buildings")]
         [XmlArrayItem("Building")]
         public List<BuildingData> Buildings { get; set; }
+    }
+
+    public class PathsData
+    {
+        [XmlElement("CostPerSquare")]
+        public int CostPerSquare{ get; set; }
+    }
+
+    public class RoadsData
+    {
+        [XmlElement("CostPerSquare")]
+        public int CostPerSquare { get; set; }
+    }
+
+    public class ParkingLotData
+    {
+        [XmlElement("CostPerSquare")]
+        public int CostPerSquare { get; set; }
     }
 }

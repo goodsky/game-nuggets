@@ -181,6 +181,17 @@ namespace UI
         }
 
         /// <summary>
+        /// Instantiates a floating money textbox.
+        /// It pops up whenever money is spent to remind you of the lost dollars.
+        /// </summary>
+        public static GameObject LoadFloatingMoney(Transform parent)
+        {
+            string FloatingMoney = "FloatingMoney";
+
+            return InstantiatePrefab(FloatingMoney, FloatingMoney, parent);
+        }
+
+        /// <summary>
         /// Instantiates the small UI divider between buttons.
         /// It's entirely for looking pretty.
         /// </summary>

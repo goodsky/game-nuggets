@@ -14,6 +14,18 @@
     <DefaultMaxDepth>6</DefaultMaxDepth>
   </Terrain>
 
+  <Paths>
+    <CostPerSquare>24</CostPerSquare>
+  </Paths>
+
+  <Roads>
+    <CostPerSquare>24</CostPerSquare>
+  </Roads>
+
+  <ParkingLots>
+    <CostPerSquare>24</CostPerSquare>
+  </ParkingLots>
+  
   <!-- Registry of buildings that can be built. -->
   <Buildings>
     <Building name="Test Building">

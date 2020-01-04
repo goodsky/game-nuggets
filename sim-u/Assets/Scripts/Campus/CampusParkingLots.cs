@@ -13,6 +13,7 @@ namespace Campus
     {
         private readonly CampusManager _campusManager;
         private readonly GridMesh _terrain;
+        private readonly ParkingLotData _data;
         private readonly ParkingLot[,] _lotAtGridPosition;
 
         private readonly int _startIndex;
@@ -23,12 +24,15 @@ namespace Campus
         {
             _campusManager = accessor.CampusManager;
             _terrain = accessor.Terrain;
+            _data = campusData.ParkingLots;
             _lotAtGridPosition = new ParkingLot[_terrain.CountX, _terrain.CountZ];
 
             _startIndex = campusData.Terrain.SubmaterialParkingLotsIndex;
             _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
             _emptyIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
         }
+
+        public int CostPerSquare => _data.CostPerSquare;
 
         /// <summary>
         /// Gets the internal save state for campus parking lots.
