@@ -33,7 +33,7 @@ namespace Common
         public GridMesh Terrain => _lazyTerrain.Value;
         public FacultyManager Faculty => _lazyFaculty.Value;
         public SimulationManager Simulation => _lazySimulation.Value;
-        public OrthoPanningCamera Camera => UnityEngine.Camera.main.GetComponent<OrthoPanningCamera>();
+        public OrthoPanningCamera Camera => UnityEngine.Camera.main?.GetComponent<OrthoPanningCamera>();
 
         private class LazyGameObject<T> where T : UnityEngine.Object
         {

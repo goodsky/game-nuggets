@@ -104,15 +104,16 @@ namespace UI
         private void UpdateSummary(bool recalculating = false)
         {
             const string SummaryTextFormat =
-@"Graduating Student Count: {0:n0}
-Enrolling Student Count: {1:n0}
-New Total Student Count: {2:n0}
-Total Classroom Capacity: {3:n0}";
+@"Graduating Student Count: {0:n0} ({1:n0} Failed)
+Enrolling Student Count: {2:n0}
+New Total Student Count: {3:n0}
+Total Classroom Capacity: {4:n0}";
 
             if (recalculating)
             {
                 SummaryText.text = string.Format(SummaryTextFormat,
                     _graduatingPopulation.GraduatedStudents.TotalStudentCount,
+                    _graduatingPopulation.FailedStudents.TotalStudentCount,
                     "...",
                     "...",
                     Accessor.CampusManager.TotalConnectedClassroomCount);
@@ -121,6 +122,7 @@ Total Classroom Capacity: {3:n0}";
             {
                 SummaryText.text = string.Format(SummaryTextFormat,
                     _graduatingPopulation.GraduatedStudents.TotalStudentCount,
+                    _graduatingPopulation.FailedStudents.TotalStudentCount,
                     _enrollingPopulation.TotalStudentCount,
                     Accessor.Simulation.CurrentStudentBody().TotalStudentCount + _enrollingPopulation.TotalStudentCount,
                     Accessor.CampusManager.TotalConnectedClassroomCount);
