@@ -95,8 +95,7 @@ namespace UI
             BuildButton.OnSelect = () => { Accessor.UiManager.OpenWindow("ConstructionPlacing", buildingData); };
             CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent); };
 
-            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.FreezeCamera();
+            Accessor.Camera.FreezeCamera();
         }
 
         /// <summary>
@@ -105,7 +104,7 @@ namespace UI
         public override void Close()
         {
             var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.UnfreezeCamera();
+            Accessor.Camera?.UnfreezeCamera();
         }
 
         /// <summary>

@@ -325,7 +325,7 @@ namespace Simulation
         private void AcademicYearWrapUp()
         {
             GraduationResults graduationResult = _studentBody.GraduateStudents();
-            Accessor.UiManager.OpenWindow(nameof(UI.AcademicYearPopUp), graduationResult);
+            Accessor.UiManager.OpenAlertWindow(nameof(UI.AcademicYearPopUp), graduationResult);
         }
 
         private void QuarterlyAccounting()

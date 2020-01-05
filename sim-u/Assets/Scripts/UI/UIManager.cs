@@ -62,6 +62,47 @@ namespace UI
         }
 
         /// <summary>
+        /// Opens a special window on the screen the covers all other UI.
+        /// NB: Once an alert window is open, it is responsible for destroying itself.
+        /// SERIOUSLY. THE ALERT WINDOW NEEDS TO DESTROY ITSELF!!!
+        /// </summary>
+        /// <param name="name">Name of the window to pop up.</param>
+        /// <param name="data">The data to pass to the alert window.</param>
+        public void OpenAlertWindow(string name, object data)
+        {
+            if (!_windowManager.TryGetWindow(name, out Window window))
+            {
+                GameLogger.Error("Attempted to open unknown window '{0}'", name);
+                return;
+            }
+
+            if (!(window is AlertWindow))
+            {
+                GameLogger.Error("Attempted to open a non-alert window '{0}'", name);
+                return;
+            }
+
+            // NB: Clone the window because it needs to be moved outside of the WindowManager
+            GameObject alertWindowGameObject = Instantiate(window.gameObject, transform);
+            Window alertWindow = alertWindowGameObject.GetComponent<Window>();
+
+            // The buttons have lost their selection parenting. Re-link them after clone.
+            foreach (var button in alertWindow.Buttons)
+            {
+                button.SelectionParent = alertWindow;
+            }
+
+            var selected = SelectionManager.Selected;
+            if (selected != null)
+            {
+                alertWindow.SelectionParent = selected;
+            }
+
+            alertWindow.Open(data);
+            alertWindowGameObject.SetActive(true);
+        }
+
+        /// <summary>
         /// Load UI runtime instances.
         /// </summary>
         /// <param name="data">UI GameData</param>

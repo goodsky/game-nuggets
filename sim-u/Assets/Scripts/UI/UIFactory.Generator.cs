@@ -99,6 +99,22 @@ namespace UI
         }
 
         /// <summary>
+        /// Instantiates a UI game object with a filter effect to fade out the entire screen.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static GameObject GenerateFullScreenFade(string name, Transform parent)
+        {
+            var fade = GenerateEmptyUI(name, parent);
+
+            var image = fade.AddComponent<Image>();
+            image.color = new Color32(0, 0, 0, 128);
+
+            return fade;
+        }
+
+        /// <summary>
         /// Instantiates a button.
         /// </summary>
         /// <param name="name">The name of the button.</param>

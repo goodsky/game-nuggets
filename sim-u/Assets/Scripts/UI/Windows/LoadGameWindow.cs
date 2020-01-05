@@ -22,14 +22,12 @@ namespace UI
         {
             LoadGameBox.Initialize(() => { SelectionManager.UpdateSelection(null); });
 
-            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.FreezeCamera();
+            Accessor.Camera.FreezeCamera();
         }
 
         public override void Close()
         {
-            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.UnfreezeCamera();
+            Accessor.Camera?.UnfreezeCamera();
         }
     }
 }

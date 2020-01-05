@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UI;
 
 namespace Common
@@ -15,37 +14,6 @@ namespace Common
 
         private static object globalSelectionLock = new object();
 
-        private static bool _frozen = false;
-        private static Selectable[] _exceptions;
-
-        /// <summary>
-        /// Make it so you can't select anything.
-        /// Useful if something has taken command of the full screen.
-        /// </summary>
-        public static void FreezeSelection(params Selectable[] exceptions)
-        {
-            lock (globalSelectionLock)
-            {
-                // We get into a weird state if we don't unselect whatever you're doing
-                UpdateSelection(null);
-
-                _frozen = true;
-                _exceptions = exceptions;
-            }
-        }
-
-        /// <summary>
-        /// Enable selecting things again.
-        /// </summary>
-        public static void UnfreezeSelection()
-        {
-            lock (globalSelectionLock)
-            {
-                _frozen = false;
-                _exceptions = Array.Empty<Selectable>();
-            }
-        }
-
         /// <summary>
         /// Updates which object is currently selected.
         /// </summary>
@@ -54,12 +22,6 @@ namespace Common
         {
             lock (globalSelectionLock)
             {
-                if (_frozen &&
-                    !_exceptions.Contains(selection))
-                {
-                    return;
-                }
-
                 // NB: If you select the same item twice the Deselect() event will not be fired.
                 //    However, the Select() event will be fired again.
                 var oldSelection = globalSelection;

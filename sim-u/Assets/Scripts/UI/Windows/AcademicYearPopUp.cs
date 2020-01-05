@@ -2,12 +2,15 @@
 using Simulation;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
 {
-    public class AcademicYearPopUp : Window
+    /// <summary>
+    /// The alert that pops up at the start of each academic year.
+    /// Since this is an Alert Window, this window must 'Close' itself.
+    /// </summary>
+    public class AcademicYearPopUp : AlertWindow
     {
         private bool _pendingRecalculation = false;
         private long _nextRecalulationTimeInTicks;
@@ -26,28 +29,23 @@ namespace UI
 
         public override void Open(object data)
         {
-            Freeze();
-
-            TitleText.text = "Academic Year " + Accessor.Simulation.Date.Year;
+            base.Open(data);
 
             _graduatingPopulation = data as GraduationResults;
             if (_graduatingPopulation == null)
             {
-                // BUGBUG: This can be null when this pop up interupts another window.
-                GameLogger.Error("Unexpected graduation result! Type = {0}", data?.GetType());
+                GameLogger.FatalError("Unexpected graduation result! Type = {0}", data?.GetType().Name ?? "null");
             }
 
+            Freeze();
+
+            TitleText.text = "Academic Year " + Accessor.Simulation.Date.Year;
             TuitionSlider.OnValueChanged = _ => SetPendingRecalculation(recalculateSAT: true, recalculateEnrollment: true);
             SatSlider.OnValueChanged = _ => SetPendingRecalculation(recalculateEnrollment: true);
 
             ApproveButton.OnSelect = ConfirmEnrollment;
 
             RecalculateStudentPopulation();
-        }
-
-        public override void Close()
-        {
-            Unfreeze();
         }
 
         /// <summary>
@@ -140,24 +138,20 @@ Total Classroom Capacity: {3:n0}";
             Accessor.Simulation.Variables.TuitionPerQuarter = TuitionSlider.Value;
             Accessor.Simulation.EnrollStudents(_enrollingPopulation);
 
-            // NB: Hack. Re-opening a window will close it...
-            Accessor.UiManager.OpenWindow(this.name, null);
+            Unfreeze();
+            Close();
         }
 
         private void Freeze()
         {
             Accessor.Simulation.SetSimulationFreeze(freeze: true);
-            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.FreezeCamera();
-            SelectionManager.FreezeSelection(ApproveButton);
+            Accessor.Camera.FreezeCamera();
         }
 
         private void Unfreeze()
         {
             Accessor.Simulation.SetSimulationFreeze(freeze: false);
-            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
-            camera.UnfreezeCamera();
-            SelectionManager.UnfreezeSelection();
+            Accessor.Camera?.UnfreezeCamera();
         }
     }
 }
