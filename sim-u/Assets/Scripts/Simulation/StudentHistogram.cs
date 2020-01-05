@@ -104,12 +104,12 @@ namespace Simulation
             int leftToTake = count;
 
             int[] takeValues = new int[HistogramLength];
-            for (int i = HistogramLength - 1; i >= 0; --i)
+            for (int i = HistogramLength - 1; i >= 0 && leftToTake > 0; --i)
             {
                 int takeCount = _scoreHistogram[i];
-                if (leftToTake - takeCount < 0)
+                if (takeCount > leftToTake)
                 {
-                    takeCount = leftToTake - takeCount;
+                    takeCount = leftToTake;
                 }
 
                 takeValues[i] = takeCount;
@@ -129,12 +129,12 @@ namespace Simulation
             int leftToTake = count;
 
             int[] takeValues = new int[HistogramLength];
-            for (int i = 0; i < HistogramLength; ++i)
+            for (int i = 0; i < HistogramLength && leftToTake > 0; ++i)
             {
                 int takeCount = _scoreHistogram[i];
-                if (leftToTake - takeCount < 0)
+                if (takeCount > leftToTake)
                 {
-                    takeCount = leftToTake - takeCount;
+                    takeCount = leftToTake;
                 }
 
                 takeValues[i] = takeCount;

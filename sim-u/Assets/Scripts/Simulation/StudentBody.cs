@@ -76,11 +76,11 @@ namespace Simulation
                     ((StudentBodyYear)i).ToString(),
                     notGrads.TotalStudentCount);
 
-                graduated.Merge(grads);
+                graduated = graduated.Merge(grads);
                 if (i == (int)StudentBodyYear.MaxYearsToGraduate - 1)
                 {
                     // failed the last chance.
-                    dropped = notGrads;
+                    dropped = dropped.Merge(notGrads);
                     _academicScores[i] = _generator.GenerateEmpty();
                 }
                 else
