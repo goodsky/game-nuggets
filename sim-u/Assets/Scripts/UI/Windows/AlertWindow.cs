@@ -13,7 +13,7 @@ namespace UI
         public override void Open(object data)
         {
             _fullScreenBlock = UIFactory.GenerateFullScreenFade("AlertWindowBlock", transform.parent);
-            transform.parent = _fullScreenBlock.transform;
+            transform.SetParent(_fullScreenBlock.transform);
         }
 
         /// <summary>

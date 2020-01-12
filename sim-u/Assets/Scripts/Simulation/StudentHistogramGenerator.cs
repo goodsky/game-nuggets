@@ -110,6 +110,38 @@ namespace Simulation
         }
 
         /// <summary>
+        /// Generates a normally distributed population of students.
+        /// An internal utility for manually creating a specific population.
+        /// </summary>
+        /// <param name="studentCount">The number of students to take. Will take Top N from the population.</param>
+        /// <param name="populationMeanAcademicScore">The mean academic score of these students.</param>
+        /// <param name="variance">The variance of the students academic score around the mean.</param>
+        /// <param name="populationSize">The number of students to generate.</param>
+        /// <returns>A generated population of students represented as a histogram.</returns>
+        public StudentHistogram GenerateStudentPopulation(int studentCount, int populationMeanAcademicScore, int populationSize)
+        {
+            double variance = Math.Pow(_config.EnrollingPopulationAcademicScoreStdDev, 2);
+            int[] population = GeneratePopulation(
+                populationMeanAcademicScore,
+                variance,
+                _config.StudentAcademicScore.MinValue,
+                _config.StudentAcademicScore.MaxValue,
+                populationSize);
+
+            var histogram = new StudentHistogram(population, _config.StudentAcademicScore.MinValue);
+            histogram = histogram.TakeTop(studentCount);
+
+            GameLogger.Debug("Generating a student population. studentCount={0}; populationSize={1}; meanAcademicScore={2}; variance={3}. Result={4}",
+                studentCount,
+                populationSize,
+                populationMeanAcademicScore,
+                variance,
+                histogram.ToString());
+
+            return histogram;
+        }
+
+        /// <summary>
         /// Given the state of the university, calculate the 'optimal' tuition for the university.
         /// As judged by prospective students.
         /// </summary>

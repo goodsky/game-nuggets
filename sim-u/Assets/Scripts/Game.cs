@@ -3,6 +3,7 @@ using Common;
 using Faculty;
 using GameData;
 using Simulation;
+using System;
 using System.IO;
 using UI;
 using UnityEngine;
@@ -25,9 +26,20 @@ public class Game : MonoBehaviour
     public string SimulationConfig;
 
     [Space(10)]
-    [Header("DebuggingFlags")]
-    public bool AdminMode;
+    [Header("Debugging Flags")]
     public bool VisualizeConnections;
+
+    [Space(10)]
+    [Header("Admin Overrides")]
+    public bool AdminMode;
+    public OverrideInt OverrideMoney;
+    public OverrideSimulationDate OverrideDate;
+    public OverrideInt OverrideAcademicPrestige;
+    public OverrideInt OverrideResearchPrestige;
+    public OverrideInt OverridePopularity;
+    public OverrideInt OverrideAcademicScore;
+    public OverrideInt OverrideResearchScore;
+    public OverrideStudentBody[] OverrideStudents;
 
     [Header("If no save game is specified use this")]
     public string DefaultSaveGame;
@@ -154,17 +166,135 @@ public class Game : MonoBehaviour
         GameDataLoader<UIData>.SetGameData<UIManager>(ui, GetConfigPath(UIConfig));
 
         GameObject campus = UIFactory.GenerateEmpty("Campus", transform);
-        GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, GetConfigPath(CampusConfig));
+        GameDataLoader<CampusData>.SetGameData<CampusManager>(campus, GetConfigPath(CampusConfig), OverrideCampusValues);
 
         GameObject faculty = UIFactory.GenerateEmpty("Faculty", transform);
-        GameDataLoader<FacultyData>.SetGameData<FacultyManager>(faculty, GetConfigPath(FacultyConfig));
+        GameDataLoader<FacultyData>.SetGameData<FacultyManager>(faculty, GetConfigPath(FacultyConfig), OverrideFacultyValues);
 
         GameObject simulation = UIFactory.GenerateEmpty("Simulation", transform);
-        GameDataLoader<SimulationData>.SetGameData<SimulationManager>(simulation, GetConfigPath(SimulationConfig));
+        GameDataLoader<SimulationData>.SetGameData<SimulationManager>(simulation, GetConfigPath(SimulationConfig), OverrideSimulationValues);
 
         TooltipManager.Initialize(ui.gameObject.transform);
         FloatingMoneyManager.Initialize(ui.gameObject.transform);
     }
 
+    private void OverrideCampusValues(CampusData data)
+    {
+        if (AdminMode)
+        {
+        }
+    }
+
+    private void OverrideFacultyValues(FacultyData data)
+    {
+        if (AdminMode)
+        {
+        }
+    }
+
+    private void OverrideSimulationValues(SimulationData data)
+    {
+        if (AdminMode)
+        {
+            SimulationManager simulation = new GameAccessor().Simulation;
+            SimulationSaveState saveData = data.SavedData?.Simulation;
+            if (saveData == null)
+            {
+                GameLogger.FatalError("Tried to overwrite null save data!");
+            }
+
+            if (OverrideMoney.Override)
+            {
+                GameLogger.Info("[Override] Money = ${0:n0}", OverrideMoney.Value);
+                saveData.Score.Money = OverrideMoney.Value;
+            }
+
+            if (OverrideAcademicPrestige.Override)
+            {
+                GameLogger.Info("[Override] Academic Prestige = {0}", OverrideAcademicPrestige.Value);
+                saveData.Score.AcademicPrestige = OverrideAcademicPrestige.Value;
+            }
+
+            if (OverrideResearchPrestige.Override)
+            {
+                GameLogger.Info("[Override] Research Prestige = {0}", OverrideResearchPrestige.Value);
+                saveData.Score.ResearchPrestige = OverrideResearchPrestige.Value;
+            }
+
+            if (OverridePopularity.Override)
+            {
+                GameLogger.Info("[Override] Popularity = ${0:n0}", OverridePopularity.Value);
+                saveData.Score.Popularity = OverridePopularity.Value;
+            }
+
+            if (OverrideAcademicScore.Override)
+            {
+                GameLogger.Info("[Override] Academic Score = ${0:n0}", OverrideAcademicScore.Value);
+                saveData.Score.AcademicScore = OverrideAcademicScore.Value;
+            }
+
+            if (OverrideResearchScore.Override)
+            {
+                GameLogger.Info("[Override] Research Score = ${0:n0}", OverrideResearchScore.Value);
+                saveData.Score.ResearchScore = OverrideResearchScore.Value;
+            }
+
+            if (OverrideDate.Override)
+            {
+                GameLogger.Info("[Override] Date = {0}", OverrideDate.Value);
+                saveData.SavedDate = OverrideDate.Value;
+            }
+
+            for (int i = 0; i < OverrideStudents.Length; ++i)
+            {
+                if (OverrideStudents[i].Override)
+                {
+                    var students = simulation.GenerateStudentPopulation(
+                        OverrideStudents[i].StudentCount,
+                        OverrideStudents[i].MeanAcademicScore,
+                        OverrideStudents[i].StudentCount);
+
+                    GameLogger.Info("[Override] Student Year {0} = {2}", i, students);
+                    saveData.StudentBody.AcademicScoreHistograms[i] = students;
+                }
+            }
+        }
+    }
+
     private string GetConfigPath(string configName) => Path.Combine(Application.streamingAssetsPath, ConfigFolderName, configName + ConfigFileExtension);
+
+    [Serializable]
+    public class OverrideInt
+    {
+        public bool Override;
+
+        public int Value;
+    }
+
+    [Serializable]
+    public class OverrideSimulationDate
+    {
+        public bool Override;
+
+        [Range(0, 9999)]
+        public int Year;
+
+        public SimulationQuarter Quarter;
+
+        [Range(1, SimulationDate.WeeksPerQuarter)]
+        public int Week;
+
+        public SimulationDate Value => new SimulationDate(Year, Quarter, Week);
+    }
+
+    [Serializable]
+    public class OverrideStudentBody
+    {
+        public bool Override;
+
+        public int StudentCount;
+
+        [Range(60, 110)]
+        public int MeanAcademicScore;
+    }
 }

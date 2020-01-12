@@ -21,15 +21,19 @@ namespace GameData
         /// <typeparam name="U">Type of the GameDataLoader.</typeparam>
         /// <param name="gameObject">The game object to add the data loader to.</param>
         /// <param name="configPath">The path to the configuration file to parse into a GameData object.</param>
+        /// <param name="overrideValues">Override the values after they are loaded.</param>
         /// <returns>The GameDataLoader.</returns>
-        public static U SetGameData<U>(GameObject gameObject, string configPath) where U : GameDataLoader<T>
+        public static U SetGameData<U>(GameObject gameObject, string configPath, Action<T> overrideValues = null) where U : GameDataLoader<T>
         {
             gameObject.SetActive(false);
             U dataLoader = gameObject.AddComponent<U>();
+            dataLoader._overrideValues = overrideValues;
             dataLoader.SetConfig(configPath);
             gameObject.SetActive(true);
             return dataLoader;
         }
+
+        private Action<T> _overrideValues = null;
 
         /// <summary>Game manager accessor. Fake DI pipeline.</summary>
         protected GameAccessor Accessor = new GameAccessor();
@@ -62,6 +66,7 @@ namespace GameData
             }
 
             LoadDataInternal(GameData);
+            _overrideValues?.Invoke(GameData);
             LoadData(GameData);
         }
 

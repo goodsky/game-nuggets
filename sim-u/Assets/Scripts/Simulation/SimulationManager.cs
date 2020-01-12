@@ -193,6 +193,18 @@ namespace Simulation
         }
 
         /// <summary>
+        /// Generates a hypothetical student population with the given variables.
+        /// </summary>
+        /// <param name="studentCount">Number of students to return. Takes Top N.</param>
+        /// <param name="medianAcademicScore">Average grade of the population.</param>
+        /// <param name="populationSize">Number of students to generate.</param>
+        /// <returns>The generated student population represented as a histogram.</returns>
+        public StudentHistogram GenerateStudentPopulation(int studentCount, int medianAcademicScore, int populationSize)
+        {
+            return _generator.GenerateStudentPopulation(studentCount, medianAcademicScore, populationSize);
+        }
+
+        /// <summary>
         /// Map an academic score to an SAT score. Used for displaying academic score (sometimes).
         /// </summary>
         /// <param name="academicScore">A student's academic score.</param>
