@@ -68,8 +68,8 @@ namespace GameData
         /// A sigmoid dampener used to calculate positive tuition bonus on popularity.
         /// Used while calculating enrollment population size.
         /// </summary>
-        [XmlElement("TuitionBonusSigmoidFactor")]
-        public double TuitionBonusSigmoidFactor { get; set; }
+        [XmlElement("TuitionBonus90PercentileRange")]
+        public double TuitionBonus90PercentileRange { get; set; }
 
         /// <summary>
         /// A linear penalty of 1 popularity point per $X over-setting tuition.

@@ -28,6 +28,24 @@ namespace Common
         }
 
         /// <summary>
+        /// Camp a value between a low and high range.
+        /// </summary>
+        /// <param name="val">Value to clamp</param>
+        /// <param name="lo">Low range</param>
+        /// <param name="hi">High range</param>
+        /// <returns>The value between Low and High</returns>
+        public static double Clamp(double val, int lo, int hi)
+        {
+            if (val < lo)
+                return lo;
+
+            if (val > hi)
+                return hi;
+
+            return val;
+        }
+
+        /// <summary>
         /// Return either the majority or the average (if there is a tie).
         /// I think this is optimizing this algorithm since we only have 4 floats.
         /// Maybe I'm just being lazy and don't want to use a sort.

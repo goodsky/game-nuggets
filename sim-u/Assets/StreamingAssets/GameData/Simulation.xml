@@ -6,23 +6,24 @@
 
   <UniversityAcademicScore min="0" max="1000000" default="0" />
   <UniversityResearchScore min="0" max="1000000" default="0" />
-  <AcademicPrestige min="0" max="100" default="20" />
-  <ResearchPrestige min="0" max="100" default="20" />
-  <Popularity min="0" max="100" default="5" />
+  <AcademicPrestige min="0" max="100" default="10" />
+  <ResearchPrestige min="0" max="100" default="10" />
+  <Popularity min="0" max="100" default="10" />
   <StartingMoney>10000</StartingMoney>
 
   <GraduationRate>0.8</GraduationRate>
   
-  <TuitionRange min="2000" max="50000" default="3000" />
+  <TuitionRange min="1000" max="50000" default="3000" />
   <TuitionRangeExponentialFactor>2.1</TuitionRangeExponentialFactor>
   
+  <!-- Note: the min and max tuition bonus values add to 0, or else the sigmoid will be weird-->
   <TuitionBonus min="-10" max="10" default="0" />
-  <TuitionBonusSigmoidFactor>2500</TuitionBonusSigmoidFactor>
-  <TuitionBonusLinearFactor>500</TuitionBonusLinearFactor>
+  <TuitionBonus90PercentileRange>5000</TuitionBonus90PercentileRange>
+  <TuitionBonusLinearFactor>400</TuitionBonusLinearFactor>
 
-  <EnrollingPopulationSize min="100" max="10000" default="100" />
-  <EnrollingPopulationSizeExponentialFactor>4</EnrollingPopulationSizeExponentialFactor>
-  <EnrollingPopulationAcademicScoreStdDev>5</EnrollingPopulationAcademicScoreStdDev>
+  <EnrollingPopulationSize min="0" max="10000" default="100" />
+  <EnrollingPopulationSizeExponentialFactor>2.0</EnrollingPopulationSizeExponentialFactor>
+  <EnrollingPopulationAcademicScoreStdDev>5.0</EnrollingPopulationAcademicScoreStdDev>
   
   <StudentAcademicScore min="60" max="110" default="70" />
   <MaxStudentAcademicScoreDuringEnrollment>100</MaxStudentAcademicScoreDuringEnrollment>

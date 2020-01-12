@@ -29,7 +29,7 @@ namespace Simulation
         /// <param name="minOutput">Minimum output value.</param>
         /// <param name="maxOutput">Maximum output value.</param>
         /// <returns>The value, mapped to the output range.</returns>
-        public static int LinearMapping(int value, int minInput, int maxInput, int minOutput, int maxOutput)
+        public static double LinearMapping(double value, int minInput, int maxInput, int minOutput, int maxOutput)
         {
             if (value < minInput || value > maxInput)
             {
@@ -40,7 +40,7 @@ namespace Simulation
             double outputRange = maxOutput - minOutput;
             double scalingFactor = outputRange / inputRange;
 
-            return (int)Math.Round(((value - minInput) * scalingFactor) + minOutput);
+            return ((value - minInput) * scalingFactor) + minOutput;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Simulation
         /// <param name="maxOutput">Maximum output value.</param>
         /// <param name="exponent">The exponent used in the model. Larger means curvier.</param>
         /// <returns>The value, mapped to the output range.</returns>
-        public static int ExponentialMapping(int value, int minInput, int maxInput, int minOutput, int maxOutput, double exponent)
+        public static double ExponentialMapping(double value, int minInput, int maxInput, int minOutput, int maxOutput, double exponent)
         {
             if (value < minInput || value > maxInput)
             {
@@ -63,21 +63,23 @@ namespace Simulation
             double maxInputValue = Math.Pow(maxInput - minInput, exponent);
             double slope = (maxOutput - minOutput) / maxInputValue;
 
-            return (int)Math.Round(Math.Pow(value - minInput, exponent) * slope + minOutput);
+            return Math.Pow(value - minInput, exponent) * slope + minOutput;
         }
 
         /// <summary>
-        /// Clamps a value within a specific range using a sigmoi model.
+        /// Clamps a value within a specific range using a sigmoid model.
         /// </summary>
         /// <param name="value">The value to clamp within the range.</param>
-        /// <param name="minOutput">Minimum output value.</param>
+        /// <param name="inputFor90percentile">Input value where 90% of maxOutput will be met.</param>
         /// <param name="maxOutput">Maximum output value.</param>
-        /// <param name="sigmoidSlope">The curve of the sigmoid. Larger means lower slope at the origin.</param>
-        /// <returns>The value, capped between minOutput and maxOutput.</returns>
-        public static int SigmoidMapping(int value, int minOutput, int maxOutput, double sigmoidSlope)
+        /// <returns>The value, mapped to a sigmoid curve between -maxOutput,maxOutput</returns>
+        public static double SigmoidMapping(double value, double inputFor90percentile, int maxOutput)
         {
-            int range = maxOutput - minOutput;
-            return (int)Math.Round(range / (1 + Math.Exp(-value / sigmoidSlope)) + minOutput);
+            const double percentile = 0.90;
+            double range = maxOutput * 2.0;
+            double minValue = -maxOutput;
+            double sigmoidSlope = -inputFor90percentile / Math.Log((1 - percentile) / percentile);
+            return range / (1 + Math.Exp(-value / sigmoidSlope)) + minValue;
         }
     }
 }

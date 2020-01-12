@@ -41,12 +41,13 @@ namespace Simulation
                 academicScore = _config.MaxStudentAcademicScoreDuringEnrollment;
             }
 
-            return SimulationUtils.LinearMapping(
-                value: academicScore,
-                minInput: _config.StudentAcademicScore.MinValue,
-                maxInput: _config.MaxStudentAcademicScoreDuringEnrollment,
-                minOutput: _config.StudentSATScore.MinValue,
-                maxOutput: _config.StudentSATScore.MaxValue);
+            return (int)Math.Round(
+                SimulationUtils.LinearMapping(
+                    value: academicScore,
+                    minInput: _config.StudentAcademicScore.MinValue,
+                    maxInput: _config.MaxStudentAcademicScoreDuringEnrollment,
+                    minOutput: _config.StudentSATScore.MinValue,
+                    maxOutput: _config.StudentSATScore.MaxValue));
         }
 
         /// <summary>
@@ -56,12 +57,13 @@ namespace Simulation
         /// <returns>The academic score for this student.</returns>
         public int ConvertSATScoreToAcademicScore(int satScore)
         {
-            return SimulationUtils.LinearMapping(
-                value: satScore,
-                minInput: _config.StudentSATScore.MinValue,
-                maxInput: _config.StudentSATScore.MaxValue,
-                minOutput: _config.StudentAcademicScore.MinValue,
-                maxOutput: _config.MaxStudentAcademicScoreDuringEnrollment);
+            return (int)Math.Round(
+                SimulationUtils.LinearMapping(
+                    value: satScore,
+                    minInput: _config.StudentSATScore.MinValue,
+                    maxInput: _config.StudentSATScore.MaxValue,
+                    minOutput: _config.StudentAcademicScore.MinValue,
+                    maxOutput: _config.MaxStudentAcademicScoreDuringEnrollment));
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace Simulation
             int targetTuition = CalculateTargetTuition(currentScore);
 
             // 2) Calculate 'Tuition Bonus' based off of Requested Tuition vs Target Tuition
-            int tuitionBonus = CalculateTuitionBonus(tuition, targetTuition);
+            double tuitionBonus = CalculateTuitionBonus(tuition, targetTuition);
 
             // 3) Calculate 'ApplyingClassSize' based off of Popularity and Tuition Bonus
             int populationSize = CalculateEnrollingClassPopulationSize(currentScore, tuitionBonus);
@@ -85,7 +87,7 @@ namespace Simulation
             // 4) Calculate 'Mean SAT Score' based off of Academic Prestige
             int populationMeanAcademicScore = CalculateMeanPopulationAcademicScore(currentScore);
 
-            // Generate Population based off of Mean Academic Score, Variance, and Applying Class Size
+            // 5) Generate Population based off of Mean Academic Score, Variance, and Applying Class Size
             double variance = Math.Pow(_config.EnrollingPopulationAcademicScoreStdDev, 2);
             int[] population = GeneratePopulation(
                 populationMeanAcademicScore,
@@ -95,7 +97,7 @@ namespace Simulation
                 populationSize);
 
             var histogram = new StudentHistogram(population, _config.StudentAcademicScore.MinValue);
-            GameLogger.Debug("Generating a student population for tuition ${0:n0} /yr. Variables: targetTuition=${1:n0}; tuitionBonus={2}; populationSize={3}; meanAcademicScore={4}; variance={5}. Result={6}",
+            GameLogger.Debug("Generating a student population for tuition ${0:n0} /yr. Variables: targetTuition=${1:n0}; tuitionBonus={2:0.000}; populationSize={3}; meanAcademicScore={4}; variance={5}. Result={6}",
                 tuition,
                 targetTuition,
                 tuitionBonus,
@@ -125,13 +127,14 @@ namespace Simulation
 
             tuitionScore = Utils.Clamp(tuitionScore, minTuitionScore, maxTuitionScore);
 
-            return SimulationUtils.ExponentialMapping(
-                value: tuitionScore,
-                minInput: minTuitionScore,
-                maxInput: maxTuitionScore,
-                minOutput: _config.TuitionRange.MinValue,
-                maxOutput: _config.TuitionRange.MaxValue,
-                exponent: _config.TuitionRangeExponentialFactor);
+            return (int)Math.Round(
+                SimulationUtils.ExponentialMapping(
+                    value: tuitionScore,
+                    minInput: minTuitionScore,
+                    maxInput: maxTuitionScore,
+                    minOutput: _config.TuitionRange.MinValue,
+                    maxOutput: _config.TuitionRange.MaxValue,
+                    exponent: _config.TuitionRangeExponentialFactor));
         }
 
         /// <summary>
@@ -141,7 +144,7 @@ namespace Simulation
         /// <param name="tuition">The requested tuition ($/yr).</param>
         /// <param name="targetTuition">The optimal tuition ($/yr).</param>
         /// <returns>The tuition bonus score.</returns>
-        private int CalculateTuitionBonus(int tuition, int targetTuition)
+        private double CalculateTuitionBonus(int tuition, int targetTuition)
         {
             int tuitionDelta = targetTuition - tuition;
             if (tuitionDelta >= 0)
@@ -149,14 +152,13 @@ namespace Simulation
                 // Positive tuition bonuses are dampened by a sigmoid to max out the effect.
                 return SimulationUtils.SigmoidMapping(
                     value: tuitionDelta,
-                    minOutput: _config.TuitionBonus.MinValue,
                     maxOutput: _config.TuitionBonus.MaxValue,
-                    sigmoidSlope: _config.TuitionBonusSigmoidFactor);
+                    inputFor90percentile: _config.TuitionBonus90PercentileRange);
             }
             else
             {
                 // Negative tuition bonuses (some call these 'penalties') are not dampened and DO NOT MAX OUT.
-                return (int)Math.Round(tuitionDelta / _config.TuitionBonusLinearFactor);
+                return tuitionDelta / _config.TuitionBonusLinearFactor;
             }
         }
 
@@ -167,21 +169,22 @@ namespace Simulation
         /// <param name="score">The current university scores.</param>
         /// <param name="tuitionBonus">The calculated tuition Bonus</param>
         /// <returns>The population size of the enrolling class.</returns>
-        private int CalculateEnrollingClassPopulationSize(UniversityScore score, int tuitionBonus)
+        private int CalculateEnrollingClassPopulationSize(UniversityScore score, double tuitionBonus)
         {
-            int popularityScore = score.Popularity + tuitionBonus;
+            double popularityScore = score.Popularity + tuitionBonus;
             popularityScore = Utils.Clamp(
                 popularityScore,
                 _config.Popularity.MinValue,
                 _config.Popularity.MaxValue);
 
-            return SimulationUtils.ExponentialMapping(
-                value: popularityScore,
-                minInput: _config.Popularity.MinValue,
-                maxInput: _config.Popularity.MaxValue,
-                minOutput: _config.EnrollingPopulationSize.MinValue,
-                maxOutput: _config.EnrollingPopulationSize.MaxValue,
-                exponent: _config.EnrollingPopulationSizeExponentialFactor);
+            return (int)Math.Round(
+                SimulationUtils.ExponentialMapping(
+                    value: popularityScore,
+                    minInput: _config.Popularity.MinValue,
+                    maxInput: _config.Popularity.MaxValue,
+                    minOutput: _config.EnrollingPopulationSize.MinValue,
+                    maxOutput: _config.EnrollingPopulationSize.MaxValue,
+                    exponent: _config.EnrollingPopulationSizeExponentialFactor));
         }
 
         /// <summary>
@@ -191,12 +194,13 @@ namespace Simulation
         /// <returns>The mean student academic score of an enrolling class.</returns>
         private int CalculateMeanPopulationAcademicScore(UniversityScore score)
         {
-            return SimulationUtils.LinearMapping(
-                value: score.AcademicPrestige,
-                minInput: _config.AcademicPrestige.MinValue,
-                maxInput: _config.AcademicPrestige.MaxValue,
-                minOutput: _config.StudentAcademicScore.MinValue,
-                maxOutput: _config.StudentAcademicScore.MaxValue);
+            return (int)Math.Round(
+                SimulationUtils.LinearMapping(
+                    value: score.AcademicPrestige,
+                    minInput: _config.AcademicPrestige.MinValue,
+                    maxInput: _config.AcademicPrestige.MaxValue,
+                    minOutput: _config.StudentAcademicScore.MinValue,
+                    maxOutput: _config.StudentAcademicScore.MaxValue));
         }
 
         /// <summary>
