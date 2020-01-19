@@ -14,6 +14,7 @@ namespace Simulation
         private int[] _scoreHistogram { get; set; }
 
         public int MinValue { get; private set; }
+        private int BucketValue(int index) => MinValue + index;
         public int HistogramLength => _scoreHistogram.Length;
         public int TotalStudentCount => _scoreHistogram.Sum();
 
@@ -24,6 +25,26 @@ namespace Simulation
         }
 
         public int StudentCount(int index) => _scoreHistogram[index];
+
+        public int Mean
+        {
+            get
+            {
+                int count = TotalStudentCount;
+                if (count == 0)
+                {
+                    return 0;
+                }
+
+                long sum = 0;
+                for (int i = 0; i < _scoreHistogram.Length; ++i)
+                {
+                    sum += _scoreHistogram[i] * BucketValue(i);
+                }
+
+                return (int)(sum / count);
+            }
+        }
 
         public (int minScore, int maxScore) GetScoreRange()
         {
@@ -149,7 +170,7 @@ namespace Simulation
             var buckets = new Dictionary<int, int>();
             for (int i = 0; i < _scoreHistogram.Length; ++i)
             {
-                int value = MinValue + i;
+                int value = BucketValue(i);
                 int bucket = value / 10;
                 int histogramValue = _scoreHistogram[i];
 

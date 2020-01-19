@@ -120,10 +120,30 @@ namespace Simulation
         /// <summary>
         /// Gets the academic score of a certain class.
         /// </summary>
-        /// <returns></returns>
         public StudentHistogram GetClassAcademicScores(StudentBodyYear year)
         {
             return _academicScores[(int)year];
+        }
+
+        /// <summary>
+        /// Gets the mean academic score of all students.
+        /// </summary>
+        public int GetMeanAcademicScore()
+        {
+            long sum = 0;
+            long count = 0;
+            for (int i = 0; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
+            {
+                sum += _academicScores[i].Mean * _academicScores[i].TotalStudentCount;
+                count += _academicScores[i].TotalStudentCount; 
+            }
+
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            return (int)(sum / count);
         }
 
         public void LoadGameState(StudentBodySaveState state)

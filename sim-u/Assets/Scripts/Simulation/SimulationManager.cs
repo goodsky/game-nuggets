@@ -50,6 +50,8 @@ namespace Simulation
         private UniversityVariables _variables;
         private StudentHistogramGenerator _generator;
 
+        private SimulationData _config;
+
         /// <summary>
         /// Gets the current speed of the simulation.
         /// Freezing the simulation overrides this value to 'Paused'.
@@ -314,6 +316,8 @@ namespace Simulation
 
         protected override void LinkData(SimulationData gameData)
         {
+            _config = gameData;
+
             // Link the Academic Year calculation and pop-up into the Simulation Manager
             RegisterSimulationUpdateCallback(nameof(AcademicYearWrapUp),
                 AcademicYearWrapUp,
@@ -352,6 +356,24 @@ namespace Simulation
 
         private void WeeklyAccounting()
         {
+            int currentStudentBodyMean = _studentBody.GetMeanAcademicScore();
+
+            int newAcademicPrestige = (int)Math.Round(
+                SimulationUtils.LinearMapping(
+                    value: currentStudentBodyMean,
+                    minInput: _config.StudentAcademicScore.MinValue,
+                    maxInput: _config.StudentAcademicScore.MaxValue,
+                    minOutput: _config.AcademicPrestige.MinValue,
+                    maxOutput: _config.AcademicPrestige.MaxValue));
+
+            // TODO: probably want some sort of rolling average here
+            if (newAcademicPrestige >= _config.AcademicPrestige.MinValue &&
+                newAcademicPrestige <= _config.AcademicPrestige.MaxValue)
+            {
+                _score.AcademicPrestige = newAcademicPrestige;
+            }
+
+
             // Paying employees weekly.
             int paymentsDue = 0;
             foreach (var faculty in Accessor.Faculty.HiredFaculty)
@@ -363,7 +385,7 @@ namespace Simulation
                 paymentsDue += truncatedWeeklySalary;
             }
 
-            GameLogger.Debug("Faculty Salary: ${0:n0} for {1}", paymentsDue, Date);
+            GameLogger.Debug("[{0} Update] AP = {1}; Faculty Salary ${2:n0}", Date, newAcademicPrestige, paymentsDue);
             UpdateMoney(-paymentsDue);
         }
 
