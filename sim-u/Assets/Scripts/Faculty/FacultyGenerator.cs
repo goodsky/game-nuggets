@@ -7,6 +7,7 @@ namespace Faculty
 {
     public class FacultyGenerator
     {
+        private readonly FacultyData _config;
         private readonly Sprite _defaultHeadshot;
         private readonly List<string> _firstNamesMen;
         private readonly List<string> _firstNamesWomen;
@@ -16,6 +17,8 @@ namespace Faculty
 
         public FacultyGenerator(FacultyData data)
         {
+            _config = data;
+
             _defaultHeadshot = data.DefaultHeadshot;
             _firstNamesMen = data.FirstNamesMen.Names;
             _firstNamesWomen = data.FirstNamesWomen.Names;
@@ -40,8 +43,8 @@ namespace Faculty
             int lastIndex = Random.Range(0, _lastNames.Count);
             string name = $"{firstNames[firstIndex]} {_lastNames[lastIndex]}";
 
-            int teachingScore = Random.Range(50, 100);
-            int researchScore = Random.Range(50, 100);
+            int teachingScore = Random.Range(_config.TeachingScore.MinValue, _config.TeachingScore.MaxValue);
+            int researchScore = Random.Range(_config.ResearchScore.MinValue, _config.ResearchScore.MaxValue);
 
             int maximumSlots = 5; /* TODO: What to do with this? */
 

@@ -16,6 +16,12 @@ namespace GameData
         [ResourceLoader(ResourceType.Materials, ResourceCategory.Faculty, nameof(DefaultHeadshotName))]
         public Sprite DefaultHeadshot { get; set; }
 
+        [XmlElement("TeachingScore")]
+        public ScoreDefinition<int> TeachingScore { get; set; }
+
+        [XmlElement("ResearchScore")]
+        public ScoreDefinition<int> ResearchScore { get; set; }
+
         [XmlElement("AvailableFacultyCount")]
         public int AvailableFacultyCount { get; set; }
 

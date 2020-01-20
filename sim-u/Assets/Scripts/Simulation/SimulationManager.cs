@@ -355,7 +355,7 @@ namespace Simulation
             // Tuition Money
             int tuition = _variables.TuitionPerQuarter * _studentBody.TotalStudentCount;
 
-            GameLogger.Debug("Tuition: ${0:n0} for {1} quarter.", tuition, Date.Quarter);
+            GameLogger.Debug("[Quarterly {0}] Tuition: ${1:n0}", Date, tuition);
             UpdateMoney(tuition);
         }
 
@@ -398,7 +398,7 @@ namespace Simulation
                 paymentsDue += truncatedWeeklySalary;
             }
 
-            GameLogger.Debug("[{0} Update] AP = {1}; Faculty Salary ${2:n0}", Date, newAcademicPrestige, paymentsDue);
+            GameLogger.Debug("[Weekly {0}] AP = {1}; Faculty Salary ${2:n0}", Date, newAcademicPrestige, paymentsDue);
             UpdateMoney(-paymentsDue);
         }
 

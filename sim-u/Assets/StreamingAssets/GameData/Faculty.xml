@@ -3,6 +3,9 @@
   <DefaultHeadshot>DefaultIcon</DefaultHeadshot>
   <AvailableFacultyCount>5</AvailableFacultyCount>
 
+  <TeachingScore min="50" max="100" default="70" />
+  <ResearchScore min="50" max="100" default="70" />
+
   <!-- Data used to randomly generate faculty -->
   <FirstNamesMen>
     <Name>Skyler</Name>

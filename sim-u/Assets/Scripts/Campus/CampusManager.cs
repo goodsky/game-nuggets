@@ -30,6 +30,7 @@ namespace Campus
     /// </summary>
     public class CampusManager : GameDataLoader<CampusData>, IGameStateSaver<CampusSaveState>
     {
+        private CampusData _config;
         private Dictionary<string, BuildingData> _buildingRegistry = new Dictionary<string, BuildingData>();
 
         private GridMesh _terrain;
@@ -41,13 +42,31 @@ namespace Campus
 
         private int _defaultMaterialIndex;
 
+        public int SmallClassroomCapacity => _config.SmallClassroomCapacity;
+        public int MediumClassroomCapacty => _config.MediumClassroomCapacity;
+        public int LargeClassroomCapacity => _config.LargeClassroomCapacity;
+
         /// <summary>
         /// Gets the total number of accessible classrooms on the campus.
         /// </summary>
         public int TotalConnectedClassroomCount =>
             GetBuildingInfo(checkConnections: true)
                 .Where(building => building.IsConnectedToPaths.Value)
-                .Sum(building => building.ClassroomCount);
+                .Sum(building =>
+                    building.SmallClassroomCount +
+                    building.MediumClassroomCount +
+                    building.LargeClassroomCount);
+
+        /// <summary>
+        /// Gets the sum of available
+        /// </summary>
+        public int TotalConnectedClassroomCapacity =>
+            GetBuildingInfo(checkConnections: true)
+                .Where(building => building.IsConnectedToPaths.Value)
+                .Sum(building =>
+                    (building.SmallClassroomCount * SmallClassroomCapacity) +
+                    (building.MediumClassroomCount * MediumClassroomCapacty) +
+                    (building.LargeClassroomCount * LargeClassroomCapacity));
 
         /// <summary>
         /// Gets the total number of accessible laboratories on the campus.
@@ -631,6 +650,8 @@ namespace Campus
         /// <param name="gameData">Campus game data.</param>
         protected override void LoadData(CampusData gameData)
         {
+            _config = gameData;
+
             _terrain = CampusFactory.GenerateTerrain(transform, gameData);
             _buildings = new CampusBuildings(gameData, Accessor);
             _paths = new CampusPaths(gameData, Accessor);

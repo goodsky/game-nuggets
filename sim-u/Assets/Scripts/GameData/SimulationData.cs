@@ -132,18 +132,6 @@ namespace GameData
         [XmlElement("AcademicPrestigeLookBackStudentCount")]
         public int AcademicPrestigeLookBackStudentCount { get; set; }
     }
-    
-    public class ScoreDefinition<T>
-    {
-        [XmlAttribute("min")]
-        public T MinValue { get; set; }
-
-        [XmlAttribute("max")]
-        public T MaxValue { get; set; }
-
-        [XmlAttribute("default")]
-        public T DefaultValue { get; set; }
-    }
 
     /// <summary>
     /// Represents the graduation or drop out rate for a bucket of students.

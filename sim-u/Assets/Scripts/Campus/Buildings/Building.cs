@@ -22,7 +22,9 @@ namespace Campus
                 Id = GridPosition.GetHashCode(),
                 GridPosition = GridPosition,
                 Footprint = Data.Footprint,
-                ClassroomCount = Data.Classrooms,
+                SmallClassroomCount = Data.SmallClassrooms,
+                MediumClassroomCount = Data.MediumClassrooms,
+                LargeClassroomCount = Data.LargeClassrooms,
                 LaboratoryCount = Data.Laboratories,
                 IsConnectedToPaths = null,
             };

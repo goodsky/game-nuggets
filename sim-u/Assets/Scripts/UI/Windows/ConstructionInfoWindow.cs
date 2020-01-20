@@ -140,8 +140,22 @@ namespace UI
             if (data.MaintenanceCost != 0)
                 sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per year{1}", data.MaintenanceCost, Environment.NewLine);
 
-            if (data.Classrooms != 0)
-                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Classrooms:</b> {0}{1}", data.Classrooms, Environment.NewLine);
+            if (data.SmallClassrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Small Classrooms:</b> {0}{1}", data.SmallClassrooms, Environment.NewLine);
+
+            if (data.MediumClassrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Medium Classrooms:</b> {0}{1}", data.MediumClassrooms, Environment.NewLine);
+
+            if (data.LargeClassrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Large Classrooms:</b> {0}{1}", data.LargeClassrooms, Environment.NewLine);
+
+            int classroomCapacity =
+                (data.SmallClassrooms * Accessor.CampusManager.SmallClassroomCapacity) +
+                (data.MediumClassrooms * Accessor.CampusManager.MediumClassroomCapacty) +
+                (data.LargeClassrooms * Accessor.CampusManager.LargeClassroomCapacity);
+
+            if (classroomCapacity != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Student Capacity:</b> {0}{1}", classroomCapacity, Environment.NewLine);
 
             if (data.Laboratories != 0)
                 sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Laboratories:</b> {0}{1}", data.Laboratories, Environment.NewLine);

@@ -116,7 +116,7 @@ Total Classroom Capacity: {4:n0}";
                     _graduatingPopulation.DropOuts.TotalStudentCount,
                     "...",
                     "...",
-                    Accessor.CampusManager.TotalConnectedClassroomCount);
+                    Accessor.CampusManager.TotalConnectedClassroomCapacity);
             }
             else
             {
@@ -125,7 +125,7 @@ Total Classroom Capacity: {4:n0}";
                     _graduatingPopulation.DropOuts.TotalStudentCount,
                     _enrollingPopulation.TotalStudentCount,
                     Accessor.Simulation.CurrentStudentBody().TotalStudentCount + _enrollingPopulation.TotalStudentCount,
-                    Accessor.CampusManager.TotalConnectedClassroomCount);
+                    Accessor.CampusManager.TotalConnectedClassroomCapacity);
             }
         }
 

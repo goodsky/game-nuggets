@@ -8,7 +8,11 @@ namespace Campus
 
         public bool[,] Footprint { get; set; }
 
-        public int ClassroomCount { get; set; }
+        public int SmallClassroomCount { get; set; }
+
+        public int MediumClassroomCount { get; set; }
+
+        public int LargeClassroomCount { get; set; }
 
         public int LaboratoryCount { get; set; }
     }

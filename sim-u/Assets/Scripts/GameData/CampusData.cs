@@ -24,6 +24,15 @@ namespace GameData
         [XmlElement("ParkingLots")]
         public ParkingLotData ParkingLots { get; set; }
 
+        [XmlElement("SmallClassroomCapacity")]
+        public int SmallClassroomCapacity { get; set; }
+
+        [XmlElement("MediumClassroomCapacity")]
+        public int MediumClassroomCapacity { get; set; }
+
+        [XmlElement("LargeClassroomCapacity")]
+        public int LargeClassroomCapacity { get; set; }
+
         [XmlArray("Buildings")]
         [XmlArrayItem("Building")]
         public List<BuildingData> Buildings { get; set; }

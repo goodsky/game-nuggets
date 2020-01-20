@@ -83,8 +83,8 @@ namespace UI
 
             // Update Student Count Status
             StudentBody currentStudents = _simulation.CurrentStudentBody();
-            string studentCountColor = currentStudents.TotalStudentCount <= _campus.TotalConnectedClassroomCount ? "white" : "red";
-            string studentCountStr = $"<color={studentCountColor}>{currentStudents.TotalStudentCount} / {_campus.TotalConnectedClassroomCount}</color>";
+            string studentCountColor = currentStudents.TotalStudentCount <= _campus.TotalConnectedClassroomCapacity ? "white" : "red";
+            string studentCountStr = $"<color={studentCountColor}>{currentStudents.TotalStudentCount} / {_campus.TotalConnectedClassroomCapacity}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(StudentCountText, studentCountStr);
 
             // Update Popularity
