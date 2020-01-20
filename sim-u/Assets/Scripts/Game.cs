@@ -255,7 +255,7 @@ public class Game : MonoBehaviour
                         OverrideStudents[i].StudentCount);
 
                     GameLogger.Info("[Override] Student Year {0} = {2}", i, students);
-                    saveData.StudentBody.AcademicScoreHistograms[i] = students;
+                    saveData.StudentBody.ActiveStudents[i] = students;
                 }
             }
         }

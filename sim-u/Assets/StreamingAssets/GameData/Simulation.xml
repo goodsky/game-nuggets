@@ -1,7 +1,11 @@
 ﻿<SimulationData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
   
+  <!--
+  The speed of simulation:
+      Default: TickRate: 1 second, Normal: 6 ticks, Fast: 1 ticks
+    -->
   <TickRateInSeconds>0.1</TickRateInSeconds>
-  <NormalTicksPerWeek>70</NormalTicksPerWeek>
+  <NormalTicksPerWeek>60</NormalTicksPerWeek>
   <FastSpeedTicksPerWeek>1</FastSpeedTicksPerWeek>
 
   <UniversityAcademicScore min="0" max="1000000" default="0" />
@@ -10,11 +14,12 @@
   <ResearchPrestige min="0" max="100" default="10" />
   <Popularity min="0" max="100" default="10" />
   <StartingMoney>10000</StartingMoney>
-
-  <GraduationRate>0.8</GraduationRate>
   
   <TuitionRange min="1000" max="50000" default="3000" />
   <TuitionRangeExponentialFactor>2.1</TuitionRangeExponentialFactor>
+
+  <StudentAcademicScore min="60" max="110" default="70" />
+  <StudentSATScore min="800" max="1600" default="1000" />
   
   <!-- Note: the min and max tuition bonus values add to 0, or else the sigmoid will be weird-->
   <TuitionBonus min="-10" max="10" default="0" />
@@ -24,9 +29,47 @@
   <EnrollingPopulationSize min="0" max="10000" default="100" />
   <EnrollingPopulationSizeExponentialFactor>2.0</EnrollingPopulationSizeExponentialFactor>
   <EnrollingPopulationAcademicScoreStdDev>5.0</EnrollingPopulationAcademicScoreStdDev>
-  
-  <StudentAcademicScore min="60" max="110" default="70" />
   <MaxStudentAcademicScoreDuringEnrollment>100</MaxStudentAcademicScoreDuringEnrollment>
-  <StudentSATScore min="800" max="1600" default="1000" />
+  
+  <AcademicPrestigeLookBackYears>10</AcademicPrestigeLookBackYears>
+  <AcademicPrestigeLookBackStudentCount>1000</AcademicPrestigeLookBackStudentCount>
+
+  <!-- The graduation/dropout rates are set per bucket of student (year + academic score) -->
+  <!-- Defaults to 0 if a bucket does not exist - until Senior2 when any remaining drop out -->
+  <GraduationRateBucket year="Freshman" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="0.10" />
+  <GraduationRateBucket year="Freshman" lowScore="70" highScore="80" graduationRate="0.00" dropoutRate="0.01" />
+  <GraduationRateBucket year="Freshman" lowScore="80" highScore="90" graduationRate="0.00" dropoutRate="0.00" />
+  <GraduationRateBucket year="Freshman" lowScore="90" highScore="100" graduationRate="0.00" dropoutRate="0.00" />
+  <GraduationRateBucket year="Freshman" lowScore="100" highScore="111" graduationRate="0.01" dropoutRate="0.00" />
+  
+  <GraduationRateBucket year="Sophmore" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="0.10" />
+  <GraduationRateBucket year="Sophmore" lowScore="70" highScore="80" graduationRate="0.00" dropoutRate="0.01" />
+  <GraduationRateBucket year="Sophmore" lowScore="80" highScore="90" graduationRate="0.00" dropoutRate="0.00" />
+  <GraduationRateBucket year="Sophmore" lowScore="90" highScore="100" graduationRate="0.00" dropoutRate="0.00" />
+  <GraduationRateBucket year="Sophmore" lowScore="100" highScore="111" graduationRate="0.05" dropoutRate="0.00" />
+  
+  <GraduationRateBucket year="Junior" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="0.20" />
+  <GraduationRateBucket year="Junior" lowScore="70" highScore="80" graduationRate="0.00" dropoutRate="0.05" />
+  <GraduationRateBucket year="Junior" lowScore="80" highScore="90" graduationRate="0.00" dropoutRate="0.00" />
+  <GraduationRateBucket year="Junior" lowScore="90" highScore="100" graduationRate="0.05" dropoutRate="0.00" />
+  <GraduationRateBucket year="Junior" lowScore="100" highScore="111" graduationRate="0.25" dropoutRate="0.00" />
+  
+  <GraduationRateBucket year="Senior" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="0.50" />
+  <GraduationRateBucket year="Senior" lowScore="70" highScore="80" graduationRate="0.50" dropoutRate="0.10" />
+  <GraduationRateBucket year="Senior" lowScore="80" highScore="90" graduationRate="0.75" dropoutRate="0.01" />
+  <GraduationRateBucket year="Senior" lowScore="90" highScore="100" graduationRate="0.90" dropoutRate="0.00" />
+  <GraduationRateBucket year="Senior" lowScore="100" highScore="111" graduationRate="1.00" dropoutRate="0.00" />
+  
+  <GraduationRateBucket year="Senior1" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="0.90" />
+  <GraduationRateBucket year="Senior1" lowScore="70" highScore="80" graduationRate="0.50" dropoutRate="0.10" />
+  <GraduationRateBucket year="Senior1" lowScore="80" highScore="90" graduationRate="0.75" dropoutRate="0.00" />
+  <GraduationRateBucket year="Senior1" lowScore="90" highScore="100" graduationRate="0.95" dropoutRate="0.00" />
+  <GraduationRateBucket year="Senior1" lowScore="100" highScore="111" graduationRate="1.00" dropoutRate="0.00" />
+  
+  <GraduationRateBucket year="Senior2" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="1.00" />
+  <GraduationRateBucket year="Senior2" lowScore="70" highScore="80" graduationRate="0.50" dropoutRate="0.50" />
+  <GraduationRateBucket year="Senior2" lowScore="80" highScore="90" graduationRate="0.90" dropoutRate="0.10" />
+  <GraduationRateBucket year="Senior2" lowScore="90" highScore="100" graduationRate="1.00" dropoutRate="0.00" />
+  <GraduationRateBucket year="Senior2" lowScore="100" highScore="111" graduationRate="1.00" dropoutRate="0.00" />
   
 </SimulationData>

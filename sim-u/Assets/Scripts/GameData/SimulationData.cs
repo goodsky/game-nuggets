@@ -1,4 +1,6 @@
-﻿using System.Xml.Serialization;
+﻿using Simulation;
+using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace GameData
 {
@@ -41,10 +43,10 @@ namespace GameData
         public int StartingMoney { get; set; }
 
         /// <summary>
-        /// TODO: Calculate this from game state
+        /// The graduation rate buckets. Split by graduation year and academic scores.
         /// </summary>
-        [XmlElement("GraduationRate")]
-        public double GraduationRate { get; set; }
+        [XmlElement("GraduationRateBucket")]
+        public List<GraduationRateBucket> GraduationRateBuckets { get; set; }
 
         /// <summary>
         /// Range of possible tuition values you can set.
@@ -117,6 +119,18 @@ namespace GameData
         /// </summary>
         [XmlElement("StudentSATScore")]
         public ScoreDefinition<int> StudentSATScore { get; set; }
+
+        /// <summary>
+        /// The minimum number of years to look back while calculating academic prestige.
+        /// </summary>
+        [XmlElement("AcademicPrestigeLookBackYears")]
+        public int AcademicPrestigeLookBackYears { get; set; }
+
+        /// <summary>
+        /// The minimum number of students to look back while calculating academic prestige.
+        /// </summary>
+        [XmlElement("AcademicPrestigeLookBackStudentCount")]
+        public int AcademicPrestigeLookBackStudentCount { get; set; }
     }
     
     public class ScoreDefinition<T>
@@ -129,5 +143,28 @@ namespace GameData
 
         [XmlAttribute("default")]
         public T DefaultValue { get; set; }
+    }
+
+    /// <summary>
+    /// Represents the graduation or drop out rate for a bucket of students.
+    /// E.G. For students with academic scores between [LowerBound, UpperBound):
+    ///     Total * Rate will graduate/dropout at the end of a year.
+    /// </summary>
+    public class GraduationRateBucket
+    {
+        [XmlAttribute("year")]
+        public StudentBodyYear Year { get; set; }
+
+        [XmlAttribute("lowScore")]
+        public int LowerBoundAcademicScore { get; set; }
+
+        [XmlAttribute("highScore")]
+        public int UpperBoundAcademicScore { get; set; }
+
+        [XmlAttribute("graduationRate")]
+        public double GraduationRate { get; set; }
+
+        [XmlAttribute("dropoutRate")]
+        public double DropoutRate { get; set; }
     }
 }

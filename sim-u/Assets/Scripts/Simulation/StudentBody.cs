@@ -1,18 +1,19 @@
 ﻿using Common;
 using GameData;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Simulation
 {
     public enum StudentBodyYear
     {
-        Freshmen = 0,
-        Sophmores = 1,
-        Juniors = 2,
-        Seniors = 3,
-        Seniors1 = 4,
-        Seniors2 = 5,
+        Freshman = 0,
+        Sophmore = 1,
+        Junior = 2,
+        Senior = 3,
+        Senior1 = 4,
+        Senior2 = 5,
 
         // Be careful changing this enum.
         // It could break save games.
@@ -25,16 +26,18 @@ namespace Simulation
     /// </summary>
     public class StudentBody : IGameStateSaver<StudentBodySaveState>
     {
-        public const int AcademicScoreMin = 60;
-        public const int AcademicScoreRange = 51;
-
         private readonly SimulationData _config;
         private readonly StudentHistogramGenerator _generator;
 
         /// <summary>
         /// The academic score of students bucketed by the class.
         /// </summary>
-        private StudentHistogram[] _academicScores = new StudentHistogram[(int)StudentBodyYear.MaxYearsToGraduate];
+        private StudentHistogram[] _activeStudents = new StudentHistogram[(int)StudentBodyYear.MaxYearsToGraduate];
+
+        /// <summary>
+        /// The academic score of every student we have graduated.
+        /// </summary>
+        private List<GraduationResults> _graduatedStudents = new List<GraduationResults>();
 
         public StudentBody(SimulationData config, StudentHistogramGenerator generator)
         {
@@ -43,11 +46,11 @@ namespace Simulation
 
             for (int i = 0; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
             {
-                _academicScores[i] = generator.GenerateEmpty();
+                _activeStudents[i] = generator.GenerateEmpty();
             }
         }
 
-        public int TotalStudentCount => _academicScores.Sum(students => students.TotalStudentCount);
+        public int TotalStudentCount => _activeStudents.Sum(students => students.TotalStudentCount);
 
         /// <summary>
         /// Execute the graduation ceremony!
@@ -55,45 +58,85 @@ namespace Simulation
         /// otherwise you will graduate students faster than expected!
         /// </summary>
         /// <returns>The results of the graduation.</returns>
-        public GraduationResults GraduateStudents()
+        public GraduationResults GraduateStudents(SimulationDate date)
         {
-            // TODO: calculate this from game state
-            double graduationRate = _config.GraduationRate;
+            Dictionary<StudentBodyYear, List<GraduationRateBucket>> graduationRates =
+                _config.GraduationRateBuckets
+                    .GroupBy(bucket => bucket.Year)
+                    .ToDictionary(g => g.Key, g => g.ToList());
 
             StudentHistogram graduated = _generator.GenerateEmpty();
-            StudentHistogram dropped = _generator.GenerateEmpty();
+            StudentHistogram droppedOut = _generator.GenerateEmpty();
 
-            for (int i = (int)StudentBodyYear.Seniors; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
+            for (int i = (int)StudentBodyYear.Freshman; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
             {
-                StudentHistogram students = _academicScores[i];
-                int graduationCount = (int)Math.Ceiling(graduationRate * students.TotalStudentCount);
+                StudentHistogram students = _activeStudents[i];
 
-                StudentHistogram grads = students.TakeTop(graduationCount);
-                StudentHistogram notGrads = students.TakeBottom(students.TotalStudentCount - graduationCount);
+                StudentHistogram grads = _generator.GenerateEmpty();
+                StudentHistogram dropouts = _generator.GenerateEmpty();
 
-                GameLogger.Info("Graduated {0} students from class {1}. Remaining students {2}",
-                    grads.TotalStudentCount,
+                foreach (GraduationRateBucket rateBucket in graduationRates[(StudentBodyYear)i])
+                {
+                    StudentHistogram studentBucket = students.Slice(rateBucket.LowerBoundAcademicScore, rateBucket.UpperBoundAcademicScore);
+
+                    int graduatingCount = (int)Math.Round(rateBucket.GraduationRate * studentBucket.TotalStudentCount);
+                    int dropoutCount = (int)Math.Round(rateBucket.DropoutRate * studentBucket.TotalStudentCount);
+
+                    if (graduatingCount + dropoutCount > studentBucket.TotalStudentCount)
+                    {
+                        GameLogger.Error("More students are graduating or dropping out than possible! Bucket: {0} - ({1}, {2}] - Grad: {3:0.00}% - Drop: {4:0.00}%; Students: {5}; Graduating: {6}; DropOuts: {7};",
+                            rateBucket.Year,
+                            rateBucket.LowerBoundAcademicScore,
+                            rateBucket.UpperBoundAcademicScore,
+                            rateBucket.GraduationRate,
+                            rateBucket.DropoutRate,
+                            studentBucket.TotalStudentCount,
+                            graduatingCount,
+                            dropoutCount);
+
+                        // NB: I'm erring on the side of allowing more graduations
+                        graduatingCount = Math.Min(graduatingCount, studentBucket.TotalStudentCount);
+                        dropoutCount = Math.Min(dropoutCount, studentBucket.TotalStudentCount - graduatingCount);
+                    }
+
+                    grads = grads.Add(studentBucket.TakeTop(graduatingCount));
+                    dropouts = dropouts.Add(studentBucket.TakeBottom(dropoutCount));
+                }
+
+                StudentHistogram remainingStudents = students
+                    .Subtract(grads)
+                    .Subtract(dropouts);
+
+                GameLogger.Info("Graduation Class [{0}]: Graduated {1}; DropOuts: {2}; Remaining: {3};",
                     ((StudentBodyYear)i).ToString(),
-                    notGrads.TotalStudentCount);
+                    grads,
+                    dropouts,
+                    remainingStudents);
 
-                graduated = graduated.Merge(grads);
+                graduated = graduated.Add(grads);
+                droppedOut = dropouts.Add(dropouts);
+
                 if (i == (int)StudentBodyYear.MaxYearsToGraduate - 1)
                 {
                     // failed the last chance.
-                    dropped = dropped.Merge(notGrads);
-                    _academicScores[i] = _generator.GenerateEmpty();
+                    droppedOut = droppedOut.Add(remainingStudents);
+                    _activeStudents[i] = _generator.GenerateEmpty();
                 }
                 else
                 {
-                    _academicScores[i] = notGrads;
+                    _activeStudents[i] = remainingStudents;
                 }
             }
 
-            return new GraduationResults
+            var result = new GraduationResults
             {
+                GraduationDate = date,
                 GraduatedStudents = graduated,
-                FailedStudents = dropped,
+                DropOuts = droppedOut,
             };
+
+            _graduatedStudents.Add(result);
+            return result;
         }
 
         /// <summary>
@@ -103,18 +146,18 @@ namespace Simulation
         public void EnrollClass(StudentHistogram academicScores)
         {
             int maxStudentBodyIndex = (int)StudentBodyYear.MaxYearsToGraduate - 1;
-            if (_academicScores[maxStudentBodyIndex].TotalStudentCount != 0)
+            if (_activeStudents[maxStudentBodyIndex].TotalStudentCount != 0)
             {
                 GameLogger.Error("Attempting to enroll class before graduation has been completed! {0} Students dropped.",
-                    _academicScores[maxStudentBodyIndex].TotalStudentCount);
+                    _activeStudents[maxStudentBodyIndex].TotalStudentCount);
             }
 
             for (int i = maxStudentBodyIndex; i > 0; --i)
             {
-                _academicScores[i] = _academicScores[i - 1];
+                _activeStudents[i] = _activeStudents[i - 1];
             }
 
-            _academicScores[(int)StudentBodyYear.Freshmen] = academicScores;
+            _activeStudents[(int)StudentBodyYear.Freshman] = academicScores;
         }
 
         /// <summary>
@@ -122,35 +165,78 @@ namespace Simulation
         /// </summary>
         public StudentHistogram GetClassAcademicScores(StudentBodyYear year)
         {
-            return _academicScores[(int)year];
+            return _activeStudents[(int)year];
         }
 
         /// <summary>
-        /// Gets the mean academic score of all students.
+        /// This calculation takes into account the historic graduation results in addition
+        /// to the current student body to estimate the current "academic prestige".
         /// </summary>
-        public int GetMeanAcademicScore()
+        /// <param name="minLookbackYears">Minimum number of years to look back for results</param>
+        /// <param name="minHistoricStudents">Minimum number of students to look back</param>
+        /// <param name="defaultAcademicScore">Default academic score for students.</param>
+        /// <param name="dropOutAcademicScore">Academic score to use for drop outs.</param>
+        public int GetCurrentAcademicPrestige(
+            int minLookbackYears,
+            int minHistoricStudents,
+            int defaultAcademicScore,
+            int dropOutAcademicScore)
         {
-            long sum = 0;
-            long count = 0;
+            long activeSum = 0;
+            long activeCount = 0;
             for (int i = 0; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
             {
-                sum += _academicScores[i].Mean * _academicScores[i].TotalStudentCount;
-                count += _academicScores[i].TotalStudentCount; 
+                activeSum += _activeStudents[i].GetTotalSum();
+                activeCount += _activeStudents[i].TotalStudentCount; 
             }
 
-            if (count == 0)
+            long historicSum = 0;
+            long historicCount = 0;
+            for (int i = 1; i <= _graduatedStudents.Count; ++i)
             {
-                return 0;
+                GraduationResults historicResults = _graduatedStudents[_graduatedStudents.Count - i];
+
+                historicSum += historicResults.GraduatedStudents.GetTotalSum();
+                historicCount += historicResults.GraduatedStudents.TotalStudentCount;
+
+                // Drop outs have their own value to add to the academic score.
+                // Usually this is the minimum value or a little lower
+                int dropOutCount = historicResults.DropOuts.TotalStudentCount;
+                historicSum += dropOutCount * dropOutAcademicScore;
+                historicCount += dropOutCount;
+
+                if (historicCount > minHistoricStudents &&
+                    i > minLookbackYears)
+                {
+                    break;
+                }
             }
 
-            return (int)(sum / count);
+            while (historicCount < minHistoricStudents)
+            {
+                // Fill in the backlog with default values
+                historicSum += defaultAcademicScore;
+                ++historicCount;
+            }
+
+            int prestige = (int)((activeSum + historicSum) / (activeCount + historicCount));
+            GameLogger.Debug("Calculated Academic Prestige = {0}; Active Mean: {1:n0}; Active Count: {2:n0}; Historic Mean: {3:n0}; Historic Count: {4:n0}",
+                prestige,
+                activeCount == 0 ? 0 : activeSum / activeCount,
+                activeCount,
+                historicSum / historicCount,
+                historicCount);
+
+            // Current implementation, mean value of all active and historic students
+            return prestige;
         }
 
         public void LoadGameState(StudentBodySaveState state)
         {
-            if (state?.AcademicScoreHistograms != null)
+            if (state?.ActiveStudents != null)
             {
-                _academicScores = state.AcademicScoreHistograms;
+                _activeStudents = state.ActiveStudents;
+                _graduatedStudents = state.GraduatedStudents ?? new List<GraduationResults>();
             }
         }
 
@@ -158,7 +244,8 @@ namespace Simulation
         {
             return new StudentBodySaveState
             {
-                AcademicScoreHistograms = _academicScores,
+                ActiveStudents = _activeStudents,
+                GraduatedStudents = _graduatedStudents,
             };
         }
     }

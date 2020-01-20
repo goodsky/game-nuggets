@@ -96,7 +96,7 @@ namespace UI
 
             int satCutoff = SatSlider.Value;
             int academicScoreCutoff = Accessor.Simulation.ConvertSATScoreToAcademicScore(satCutoff);
-            _enrollingPopulation = _enrollingPopulation.Split(academicScoreCutoff);
+            _enrollingPopulation = _enrollingPopulation.Slice(academicScoreCutoff);
 
             UpdateSummary();
         }
@@ -113,7 +113,7 @@ Total Classroom Capacity: {4:n0}";
             {
                 SummaryText.text = string.Format(SummaryTextFormat,
                     _graduatingPopulation.GraduatedStudents.TotalStudentCount,
-                    _graduatingPopulation.FailedStudents.TotalStudentCount,
+                    _graduatingPopulation.DropOuts.TotalStudentCount,
                     "...",
                     "...",
                     Accessor.CampusManager.TotalConnectedClassroomCount);
@@ -122,7 +122,7 @@ Total Classroom Capacity: {4:n0}";
             {
                 SummaryText.text = string.Format(SummaryTextFormat,
                     _graduatingPopulation.GraduatedStudents.TotalStudentCount,
-                    _graduatingPopulation.FailedStudents.TotalStudentCount,
+                    _graduatingPopulation.DropOuts.TotalStudentCount,
                     _enrollingPopulation.TotalStudentCount,
                     Accessor.Simulation.CurrentStudentBody().TotalStudentCount + _enrollingPopulation.TotalStudentCount,
                     Accessor.CampusManager.TotalConnectedClassroomCount);

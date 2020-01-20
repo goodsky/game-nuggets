@@ -338,25 +338,38 @@ namespace Simulation
             LoadGameState(savedGame);
         }
 
+        /// <summary>
+        /// Update the simulation for once a year events.
+        /// </summary>
         private void AcademicYearWrapUp()
         {
-            GraduationResults graduationResult = _studentBody.GraduateStudents();
+            GraduationResults graduationResult = _studentBody.GraduateStudents(Date);
             Accessor.UiManager.OpenAlertWindow(nameof(UI.AcademicYearPopUp), graduationResult);
         }
 
+        /// <summary>
+        /// Update the simulation for once a quarter events.
+        /// </summary>
         private void QuarterlyAccounting()
         {
             // Tuition Money
-            // Hack: purchasing negative cost adds money.
             int tuition = _variables.TuitionPerQuarter * _studentBody.TotalStudentCount;
 
             GameLogger.Debug("Tuition: ${0:n0} for {1} quarter.", tuition, Date.Quarter);
             UpdateMoney(tuition);
         }
 
+        /// <summary>
+        /// Update the simulation for once a week events.
+        /// </summary>
         private void WeeklyAccounting()
         {
-            int currentStudentBodyMean = _studentBody.GetMeanAcademicScore();
+            // NB: Drop outs all count as StudentAcademicScore.MinValue - 10
+            int currentStudentBodyMean = _studentBody.GetCurrentAcademicPrestige(
+                _config.AcademicPrestigeLookBackYears,
+                _config.AcademicPrestigeLookBackStudentCount,
+                _config.StudentAcademicScore.DefaultValue,
+                _config.StudentAcademicScore.MinValue - 10);
 
             int newAcademicPrestige = (int)Math.Round(
                 SimulationUtils.LinearMapping(
@@ -366,12 +379,12 @@ namespace Simulation
                     minOutput: _config.AcademicPrestige.MinValue,
                     maxOutput: _config.AcademicPrestige.MaxValue));
 
-            // TODO: probably want some sort of rolling average here
-            if (newAcademicPrestige >= _config.AcademicPrestige.MinValue &&
-                newAcademicPrestige <= _config.AcademicPrestige.MaxValue)
-            {
-                _score.AcademicPrestige = newAcademicPrestige;
-            }
+            newAcademicPrestige = Utils.Clamp(
+                newAcademicPrestige,
+                _config.AcademicPrestige.MinValue,
+                _config.AcademicPrestige.MaxValue);
+
+            _score.AcademicPrestige = newAcademicPrestige;
 
 
             // Paying employees weekly.

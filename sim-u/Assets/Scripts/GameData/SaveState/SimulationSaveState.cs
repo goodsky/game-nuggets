@@ -1,5 +1,6 @@
 ﻿using Simulation;
 using System;
+using System.Collections.Generic;
 
 namespace GameData
 {
@@ -22,6 +23,8 @@ namespace GameData
     [Serializable]
     public class StudentBodySaveState
     {
-        public StudentHistogram[] AcademicScoreHistograms { get; set; }
+        public StudentHistogram[] ActiveStudents { get; set; }
+
+        public List<GraduationResults> GraduatedStudents { get; set; }
     }
 }
