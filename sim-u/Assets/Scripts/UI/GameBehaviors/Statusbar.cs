@@ -1,5 +1,6 @@
 ﻿using Campus;
 using Common;
+using Faculty;
 using Simulation;
 using System;
 using System.Globalization;
@@ -16,6 +17,7 @@ namespace UI
         private readonly GameAccessor _accessor = new GameAccessor();
         private SimulationManager _simulation;
         private CampusManager _campus;
+        private FacultyManager _faculty;
 
         [Header("Status Bar Texts")]
         public RectTransform RootStatusLayout;
@@ -26,6 +28,9 @@ namespace UI
         public Text ResearchText;
         public Text ScoreText;
         public Text DateText;
+
+        [Header("Selectables to update tool tip")]
+        public Common.Selectable StudentCount;
 
         [Space(5)]
         [Header("Pause Button")]
@@ -49,6 +54,7 @@ namespace UI
         {
             _simulation = _accessor.Simulation;
             _campus = _accessor.CampusManager;
+            _faculty = _accessor.Faculty;
 
             PauseButton.OnMouseDown = e =>
             {
@@ -83,9 +89,15 @@ namespace UI
 
             // Update Student Count Status
             StudentBody currentStudents = _simulation.CurrentStudentBody();
-            string studentCountColor = currentStudents.TotalStudentCount <= _campus.TotalConnectedClassroomCapacity ? "white" : "red";
-            string studentCountStr = $"<color={studentCountColor}>{currentStudents.TotalStudentCount} / {_campus.TotalConnectedClassroomCapacity}</color>";
+            string studentCountColor = currentStudents.TotalStudentCount <= _faculty.StaffedClassroomCapacity ? "white" : "red";
+            string studentCountStr = $"<color={studentCountColor}>{currentStudents.TotalStudentCount} / {_faculty.StaffedClassroomCapacity}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(StudentCountText, studentCountStr);
+
+            StudentCount.Tooltip =
+$@"Student Status:
+    - {currentStudents.TotalStudentCount:n0} Students
+    - {_campus.TotalConnectedClassroomCount:n0} Available Classrooms
+    - {_faculty.UsedClassroomCount:n0} Assigned Faculty";
 
             // Update Popularity
             string popularityStr = $"{_simulation.Score.Popularity}";

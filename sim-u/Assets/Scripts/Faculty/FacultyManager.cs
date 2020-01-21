@@ -28,6 +28,12 @@ namespace Faculty
 
         public IEnumerable<HiredFaculty> HiredFaculty => _hiredFaculty.Values;
 
+        public int StaffedClassroomCapacity
+        {
+            get;
+            private set;
+        }
+
         public int TotalClassroomCount
         {
             get
@@ -153,7 +159,6 @@ namespace Faculty
                     untaughtStudents[i] = Accessor.Simulation.GenerateStudentPopulation();
                 }
 
-                int staffedClassroomCapacity = classroomAssignments.Sum(t => t.capacity);
                 int currentClassroomIndex = 0;
                 int currentClassroomStudentCount = 0;
                 for (int i = (int)StudentBodyYear.MaxYearsToGraduate - 1; i >= 0; --i)
@@ -203,6 +208,9 @@ namespace Faculty
                         GameLogger.Debug("[TeachingAssignment - {1}] UNTAUGHT Students: {0};", untaughtStudents[i], ((StudentBodyYear)i).ToString());
                     }
                 }
+
+                // Update the "staffed" classroom capacity.
+                StaffedClassroomCapacity = classroomAssignments.Sum(t => t.capacity);
             }
         }
 
