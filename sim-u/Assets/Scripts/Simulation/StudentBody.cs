@@ -16,7 +16,7 @@ namespace Simulation
         Senior2 = 5,
 
         // Be careful changing this enum.
-        // It could break save games.
+        // It WILL break save games.
         MaxYearsToGraduate
     }
 
@@ -51,6 +51,29 @@ namespace Simulation
         }
 
         public int TotalStudentCount => _activeStudents.Sum(students => students.TotalStudentCount);
+
+        /// <summary>
+        /// Apply a delta to all students.
+        /// Done regularly to update student academics.
+        /// </summary>
+        /// <param name="delta">The deltas to apply to all students.</param>
+        public void UpdateStudents(StudentHistogram[] delta)
+        {
+            if (delta.Length != (int)StudentBodyYear.MaxYearsToGraduate)
+            {
+                GameLogger.FatalError("[UpdateStudents] Unexpected class size delta. Delta length = {0}", delta.Length);
+            }
+
+            for (int i = 0; i < _activeStudents.Length; ++i)
+            {
+                if (delta[i].HasValues)
+                {
+                    GameLogger.Debug("[UpdateStudents] Class: {0}; Delta: {1}", ((StudentBodyYear)i).ToString(), delta[i]);
+
+                    _activeStudents[i].Add(delta[i]);
+                }
+            }
+        }
 
         /// <summary>
         /// Execute the graduation ceremony!
@@ -99,32 +122,31 @@ namespace Simulation
                         dropoutCount = Math.Min(dropoutCount, studentBucket.TotalStudentCount - graduatingCount);
                     }
 
-                    grads = grads.Add(studentBucket.TakeTop(graduatingCount));
-                    dropouts = dropouts.Add(studentBucket.TakeBottom(dropoutCount));
+                    grads.Add(studentBucket.TakeTop(graduatingCount));
+                    dropouts.Add(studentBucket.TakeBottom(dropoutCount));
                 }
 
-                StudentHistogram remainingStudents = students
-                    .Subtract(grads)
-                    .Subtract(dropouts);
+                students.Subtract(grads);
+                students.Subtract(dropouts);
 
                 GameLogger.Info("Graduation Class [{0}]: Graduated {1}; DropOuts: {2}; Remaining: {3};",
                     ((StudentBodyYear)i).ToString(),
                     grads,
                     dropouts,
-                    remainingStudents);
+                    students);
 
-                graduated = graduated.Add(grads);
-                droppedOut = dropouts.Add(dropouts);
+                graduated.Add(grads);
+                droppedOut.Add(dropouts);
 
                 if (i == (int)StudentBodyYear.MaxYearsToGraduate - 1)
                 {
                     // failed the last chance.
-                    droppedOut = droppedOut.Add(remainingStudents);
+                    droppedOut.Add(students);
                     _activeStudents[i] = _generator.GenerateEmpty();
                 }
                 else
                 {
-                    _activeStudents[i] = remainingStudents;
+                    _activeStudents[i] = students;
                 }
             }
 

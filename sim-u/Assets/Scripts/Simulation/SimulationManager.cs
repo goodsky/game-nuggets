@@ -1,4 +1,5 @@
 ﻿using Common;
+using Faculty;
 using GameData;
 using System;
 using System.Collections.Generic;
@@ -46,9 +47,9 @@ namespace Simulation
         private Dictionary<string, (UpdateType type, Action action)> _updateActions = new Dictionary<string, (UpdateType type, Action action)>();
 
         private StudentBody _studentBody;
+        private StudentHistogramGenerator _generator;
         private UniversityScore _score;
         private UniversityVariables _variables;
-        private StudentHistogramGenerator _generator;
 
         private SimulationData _config;
 
@@ -163,6 +164,9 @@ namespace Simulation
             // Don't forget to get the freshmen's money
             int tuition = _variables.TuitionPerQuarter * students.TotalStudentCount;
             UpdateMoney(tuition);
+
+            // Update the teacher's assignments
+            Accessor.Faculty.AssignFacultyToStudents(_studentBody);
         }
 
         /// <summary>
@@ -204,6 +208,15 @@ namespace Simulation
         public StudentHistogram GenerateStudentPopulation(int studentCount, int medianAcademicScore, int populationSize)
         {
             return _generator.GenerateStudentPopulation(studentCount, medianAcademicScore, populationSize);
+        }
+
+        /// <summary>
+        /// Generates an empty student histogram.
+        /// </summary>
+        /// <returns>The empty student population represented as a histogram.</returns>
+        public StudentHistogram GenerateStudentPopulation()
+        {
+            return _generator.GenerateEmpty();
         }
 
         /// <summary>
@@ -364,6 +377,7 @@ namespace Simulation
         /// </summary>
         private void WeeklyAccounting()
         {
+            // Step 1: Update scores
             // NB: Drop outs all count as StudentAcademicScore.MinValue - 10
             int currentStudentBodyMean = _studentBody.GetCurrentAcademicPrestige(
                 _config.AcademicPrestigeLookBackYears,
@@ -386,8 +400,11 @@ namespace Simulation
 
             _score.AcademicPrestige = newAcademicPrestige;
 
+            // Step 2: Update student education
+            StudentHistogram[] educationDelta = Accessor.Faculty.ExecuteTeachingStep();
+            _studentBody.UpdateStudents(educationDelta);
 
-            // Paying employees weekly.
+            // Step 3: Pay employees
             int paymentsDue = 0;
             foreach (var faculty in Accessor.Faculty.HiredFaculty)
             {

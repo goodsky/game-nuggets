@@ -11,5 +11,7 @@ namespace GameData
         public GeneratedFaculty[] GeneratedFaculty { get; set; }
 
         public HiredFaculty[] HiredFaculty { get; set; }
+
+        public HiredFaculty NullFaculty { get; set; }
     }
 }

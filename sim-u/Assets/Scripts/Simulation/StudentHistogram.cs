@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,6 +21,7 @@ namespace Simulation
 
         public int HistogramLength => _scoreHistogram.Length;
         public int TotalStudentCount => _scoreHistogram.Sum();
+        public bool HasValues => _scoreHistogram.Any(i => i != 0);
 
         public StudentHistogram(int[] scoreHistogram, int minValue)
         {
@@ -85,15 +87,14 @@ namespace Simulation
         }
 
         /// <summary>
-        /// Add the values of two histograms.
+        /// Add the values to this histogram.
         /// </summary>
         /// <param name="other">The other histogram to add to this one.</param>
-        /// <returns>The sum of the histograms.</returns>
-        public StudentHistogram Add(StudentHistogram other)
+        public void Add(StudentHistogram other)
         {
             if (other == null)
             {
-                return this;
+                return;
             }
 
             if (MinValue != other.MinValue ||
@@ -102,25 +103,21 @@ namespace Simulation
                 throw new InvalidOperationException("Can't add histograms over different ranges!");
             }
 
-            int[] addedValues = new int[HistogramLength];
             for (int i = 0; i < HistogramLength; ++i)
             {
-                addedValues[i] = _scoreHistogram[i] + other._scoreHistogram[i];
+                _scoreHistogram[i] += other._scoreHistogram[i];
             }
-
-            return new StudentHistogram(addedValues, MinValue);
         }
 
         /// <summary>
-        /// Subtract the values of two histograms.
+        /// Subtract the values from this histogram.
         /// </summary>
         /// <param name="other">The other histogram to subtract from this one.</param>
-        /// <returns>The different between the histograms.</returns>
-        public StudentHistogram Subtract(StudentHistogram other)
+        public void Subtract(StudentHistogram other)
         {
             if (other == null)
             {
-                return this;
+                return;
             }
 
             if (MinValue != other.MinValue ||
@@ -129,13 +126,78 @@ namespace Simulation
                 throw new InvalidOperationException("Can't subtract histograms over different ranges!");
             }
 
-            int[] subtracedValues = new int[HistogramLength];
             for (int i = 0; i < HistogramLength; ++i)
             {
-                subtracedValues[i] = _scoreHistogram[i] - other._scoreHistogram[i];
+                _scoreHistogram[i] -= other._scoreHistogram[i];
+            }
+        }
+
+        /// <summary>
+        /// Shift the entire histogram by the requested value.
+        /// Effectively adds a value to each value in the histogram.
+        /// </summary>
+        /// <param name="value">The value to add.</param>
+        public void AddToValues(int value)
+        {
+            if (value == 0)
+            {
+                return;
             }
 
-            return new StudentHistogram(subtracedValues, MinValue);
+            int start;
+            int direction;
+            if (value > 0)
+            {
+                start = HistogramLength - 1;
+                direction = -1;
+            }
+            else
+            {
+                start = 0;
+                direction = 1;
+            }
+
+            for (int i = start; 0 <= i && i < HistogramLength; i += direction)
+            {
+                int count = _scoreHistogram[i];
+                _scoreHistogram[i] = 0;
+
+                int updateIndex = Utils.Clamp(i + value, 0, HistogramLength - 1);
+                _scoreHistogram[updateIndex] += count;
+            }
+        }
+
+        /// <summary>
+        /// Adds a single value into the histogram.
+        /// </summary>
+        /// <param name="value">The value to add.</param>
+        public void AddSingleValue(int value)
+        {
+            if (value < MinValue || value >= MinValue + HistogramLength)
+            {
+                GameLogger.FatalError("Attempted to add a value to histogram that is out of range! Value: {0}; Range: [{1}, {2}]",
+                    value,
+                    MinValue,
+                    MinValue + HistogramLength);
+            }
+
+            _scoreHistogram[value - MinValue] += 1;
+        }
+
+        /// <summary>
+        /// Returns the inverse histogram.
+        /// i.e. this value plus the inverse = 0.
+        /// </summary>
+        /// <returns></returns>
+        public StudentHistogram GetInverse()
+        {
+            int[] inverse = new int[HistogramLength];
+            for (int i = 0; i < HistogramLength; ++i)
+            {
+                inverse[i] = _scoreHistogram[i] * -1;
+            }
+
+            return new StudentHistogram(inverse, MinValue);
         }
 
         /// <summary>
@@ -172,6 +234,45 @@ namespace Simulation
             }
 
             return new StudentHistogram(splitValues, MinValue);
+        }
+
+        /// <summary>
+        /// Skips N values, then takes the count.
+        /// </summary>
+        /// <param name="skip">The number of students to skip.</param>
+        /// <param name="count">The number of students to take from the population.</param>
+        /// <returns>A histogram of the next N students after skipping.</returns>
+        public StudentHistogram SkipThenTake(int skip, int count)
+        {
+            int leftToSkip = skip;
+            int leftToTake = count;
+
+            int[] takeValues = new int[HistogramLength];
+            for (int i = 0; i < HistogramLength && leftToTake > 0; ++i)
+            {
+                int takeCount = _scoreHistogram[i];
+                if (leftToSkip > 0)
+                {
+                    if (takeCount <= leftToSkip)
+                    {
+                        leftToSkip -= takeCount;
+                        continue;
+                    }
+
+                    takeCount -= leftToSkip;
+                    leftToSkip = 0;
+                }
+
+                if (takeCount > leftToTake)
+                {
+                    takeCount = leftToTake;
+                }
+
+                takeValues[i] = takeCount;
+                leftToTake -= takeCount;
+            }
+
+            return new StudentHistogram(takeValues, MinValue);
         }
 
         /// <summary>
@@ -222,6 +323,24 @@ namespace Simulation
             }
 
             return new StudentHistogram(takeValues, MinValue);
+        }
+
+        /// <summary>
+        /// I wanted to iterate through all the students.
+        /// So I did this. Today is not a "good code" day.
+        /// NB: I want to iterate from highest value to lowest value,
+        /// to give best students first chance at classrooms.
+        /// </summary>
+        /// <returns>Enumerable to go through all histogram values.</returns>
+        public IEnumerable<int> EnumerateStudents()
+        {
+            for (int i = HistogramLength - 1; i >= 0; --i)
+            {
+                for (int j = 0; j < _scoreHistogram[i]; ++j)
+                {
+                    yield return BucketValue(i);
+                }
+            }
         }
 
         public override string ToString()
