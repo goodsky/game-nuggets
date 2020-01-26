@@ -364,6 +364,7 @@ namespace Faculty
                     GeneratedFaculty = _generatedFaculty.Values.ToArray(),
                     HiredFaculty = _hiredFaculty.Values.ToArray(),
                     NullFaculty = _nullFaculty,
+                    StaffedClassroomCapacity = StaffedClassroomCapacity,
                 };
             }
         }
@@ -396,6 +397,8 @@ namespace Faculty
                 {
                     _nullFaculty = state.NullFaculty;
                 }
+
+                StaffedClassroomCapacity = state.StaffedClassroomCapacity;
             }
         }
 

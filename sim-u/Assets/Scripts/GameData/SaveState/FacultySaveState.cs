@@ -13,5 +13,7 @@ namespace GameData
         public HiredFaculty[] HiredFaculty { get; set; }
 
         public HiredFaculty NullFaculty { get; set; }
+
+        public int StaffedClassroomCapacity { get; set; }
     }
 }
