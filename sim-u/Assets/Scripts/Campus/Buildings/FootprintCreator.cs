@@ -40,8 +40,8 @@ namespace Campus
 
             // FYI: FBX need to be exported with Z-forward Y-up to make sense in our world.
             var bounds = mesh.bounds;
-            Assert.AreApproximatelyEqual(0.0f, bounds.size.x % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. x-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.x));
-            Assert.AreApproximatelyEqual(0.0f, bounds.size.z % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. z-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.z));
+            //Assert.AreApproximatelyEqual(0.0f, bounds.size.x % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. x-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.x));
+            //Assert.AreApproximatelyEqual(0.0f, bounds.size.z % gridSize, string.Format("Building Mesh '{0}' does not fit prettily into a {1}x{1} grid. z-size: {2}", _meshCollider.sharedMesh.name, gridSize, bounds.size.z));
 
             int gridSizeX = Mathf.RoundToInt(bounds.size.x / gridSize);
             int gridSizeZ = Mathf.RoundToInt(bounds.size.z / gridSize);

@@ -1,4 +1,5 @@
-﻿using Campus.GridTerrain;
+﻿using Campus;
+using Campus.GridTerrain;
 using System;
 
 namespace GameData
@@ -49,7 +50,7 @@ namespace GameData
 
         public int PositionZ { get; set; }
 
-        public double Rotation { get; set; } // lol this isn't used
+        public BuildingRotation Rotation { get; set; }
     }
 
     [Serializable]

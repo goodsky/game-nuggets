@@ -164,6 +164,17 @@ namespace Common
         }
 
         /// <summary>
+        /// Resend the last terrain grid selection. Used to force an update in the controller.
+        /// </summary>
+        public void PumpTerrainGridSelection()
+        {
+            foreach (var controller in _currentStateControllers)
+            {
+                controller.TerrainGridSelectionUpdate(_lastTerrainGridSelection);
+            }
+        }
+
+        /// <summary>
         /// The grid selection on the terrain was updated.
         /// </summary>
         /// <param name="args"></param>

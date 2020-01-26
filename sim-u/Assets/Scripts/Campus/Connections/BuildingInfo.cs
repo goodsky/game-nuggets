@@ -2,9 +2,14 @@
 
 namespace Campus
 {
+    /// <summary>
+    /// Representation of a single building. 
+    /// Keeps track of the buildings real position and footprint on the terrain.
+    /// As well as data that the Campus Manager and Connections Manager may need.
+    /// </summary>
     public class BuildingInfo : PathDestination
     {
-        public Point3 GridPosition { get; set; }
+        public Point3 FootprintOrigin { get; set; }
 
         public bool[,] Footprint { get; set; }
 

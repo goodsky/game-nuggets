@@ -33,17 +33,14 @@ namespace Campus
         {
             return Utils.GetDistinct(_buildingAtGridPosition)
                 .Select(building =>
-                {
-                    Point3 gridPosition = building.GridPosition;
-                    return new BuildingSaveState
+                    new BuildingSaveState
                     {
                         BuildingDataName = building.Data.Name,
-                        PositionX = gridPosition.x,
-                        PositionY = gridPosition.y,
-                        PositionZ = gridPosition.z,
-                        Rotation = building.transform.rotation.z, // TODO: Rotations should happen eventually.
-                    };
-                })
+                        PositionX = building.Location.x,
+                        PositionY = building.Location.y,
+                        PositionZ = building.Location.z,
+                        Rotation = building.Rotation,
+                    })
                 .ToArray();
         }
 
@@ -58,7 +55,8 @@ namespace Campus
                 {
                     BuildingData buildingData = _gameData.Get<BuildingData>(GameDataType.Building, savedBuilding.BuildingDataName);
                     Point3 position = new Point3(savedBuilding.PositionX, savedBuilding.PositionY, savedBuilding.PositionZ);
-                    _campusManager.ConstructBuilding(buildingData, position, updateConnections: false);
+                    BuildingRotation rotation = savedBuilding.Rotation;
+                    _campusManager.ConstructBuilding(buildingData, position, rotation, updateConnections: false);
                 }
             }
         }
@@ -99,26 +97,36 @@ namespace Campus
         /// </summary>
         /// <param name="buildingData">The building to construct.</param>
         /// <param name="location">The location of the building.</param>
+        /// <param name="rotation">The rotation of the building.</param>
         /// <returns>The points on the terrain that have been modified.</returns>
-        public IEnumerable<Point2> ConstructBuilding(BuildingData buildingData, Point3 location)
+        public IEnumerable<Point2> ConstructBuilding(BuildingData buildingData, Point3 location, BuildingRotation rotation)
         {
+            (Point3 buildingOrigin, Quaternion worldRotation) =
+                BuildingRotationUtils.RotateBuilding(buildingData, location, rotation);
+
+            Vector3 worldPosition = _terrain.Convert.GridToWorld(buildingOrigin);
+
             var building = CampusFactory.GenerateBuilding(
                         buildingData,
                         _campusManager.transform,
                         location,
-                        _terrain.Convert.GridToWorld(location) + new Vector3(0f, 0.001f, 0f) /* Place just above the grass*/,
-                        Quaternion.identity);
+                        rotation,
+                        worldPosition + new Vector3(0f, 0.001f, 0f) /* Place just above the grass*/,
+                        worldRotation);
 
-            int xSize = buildingData.Footprint.GetLength(0);
-            int zSize = buildingData.Footprint.GetLength(1);
+            (Point3 footprintOrigin, bool[,] footprint) =
+                BuildingRotationUtils.RotateFootprint(buildingData, location, rotation);
+
+            int xSize = footprint.GetLength(0);
+            int zSize = footprint.GetLength(1);
             for (int dx = 0; dx < xSize; ++dx)
             {
                 for (int dz = 0; dz < zSize; ++dz)
                 {
-                    int gridX = location.x + dx;
-                    int gridZ = location.z + dz;
+                    int gridX = footprintOrigin.x + dx;
+                    int gridZ = footprintOrigin.z + dz;
 
-                    if (buildingData.Footprint[dx, dz])
+                    if (footprint[dx, dz])
                     {
                         _buildingAtGridPosition[gridX, gridZ] = building;
                     }
@@ -126,8 +134,8 @@ namespace Campus
             }
 
             // Notify CampusManager of updated tiles
-            for (int scanX = location.x - 1; scanX <= location.x + xSize; ++scanX)
-                for (int scanZ = location.z - 1; scanZ <= location.z + zSize; ++scanZ)
+            for (int scanX = footprintOrigin.x - 1; scanX <= footprintOrigin.x + xSize; ++scanX)
+                for (int scanZ = footprintOrigin.z - 1; scanZ <= footprintOrigin.z + zSize; ++scanZ)
                     if (_terrain.GridInBounds(scanX, scanZ))
                         yield return new Point2(scanX, scanZ);
         }
@@ -142,28 +150,32 @@ namespace Campus
             Building building = _buildingAtGridPosition[pos.x, pos.z];
             if (building != null)
             {
-                // Potential Bug: Does this WorldToGrid always work?
-                //                Could be a dangerous edge case w/ floating point numbers.
-                Point3 location = _terrain.Convert.WorldToGrid(building.transform.position);
+                (Point3 footprintOrigin, bool[,] footprint) =
+                    BuildingRotationUtils.RotateFootprint(building.Data, building.Location, building.Rotation);
 
-                int xSize = building.Data.Footprint.GetLength(0);
-                int zSize = building.Data.Footprint.GetLength(1);
+                int xSize = footprint.GetLength(0);
+                int zSize = footprint.GetLength(1);
                 for (int dx = 0; dx < xSize; ++dx)
                 {
                     for (int dz = 0; dz < zSize; ++dz)
                     {
-                        int gridX = location.x + dx;
-                        int gridZ = location.z + dz;
+                        int gridX = footprintOrigin.x + dx;
+                        int gridZ = footprintOrigin.z + dz;
 
-                        if (building.Data.Footprint[dx, dz])
+                        if (footprint[dx, dz])
                         {
                             _buildingAtGridPosition[gridX, gridZ] = null;
-                            yield return new Point2(gridX, gridZ);
                         }
                     }
                 }
 
                 Object.Destroy(building.gameObject);
+
+                // Return all the potentially modified grids around the building for updating.
+                for (int scanX = footprintOrigin.x - 1; scanX <= footprintOrigin.x + xSize; ++scanX)
+                    for (int scanZ = footprintOrigin.z - 1; scanZ <= footprintOrigin.z + zSize; ++scanZ)
+                        if (_terrain.GridInBounds(scanX, scanZ))
+                            yield return new Point2(scanX, scanZ);
             }
         }
     }

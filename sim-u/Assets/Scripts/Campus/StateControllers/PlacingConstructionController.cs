@@ -24,6 +24,7 @@ namespace Campus
         private BuildingData _building;
         private ConstructionPlacingWindow _window;
         private FootprintCursor _cursors;
+        private BuildingRotation _rotation = BuildingRotation.deg0;
 
         /// <summary>
         /// Instantiates an instance of the controller.
@@ -54,6 +55,10 @@ namespace Campus
             _building = constructionContext.BuildingData;
             _window = constructionContext.Window;
 
+            _rotation = BuildingRotation.deg0;
+            _window.RotateClockwiseButton.OnSelect = RotateClockwise;
+            _window.RotateCounterClockwiseButton.OnSelect = RotateCounterClockwise;
+
             _cursors.Create(_building.Footprint);
         }
 
@@ -74,6 +79,18 @@ namespace Campus
         {
             if (_building != null)
             {
+                // Rotate by pressing '<'
+                if (Input.GetKeyDown(KeyCode.Comma))
+                {
+                    RotateClockwise();
+                }
+
+                // Rotate by pressing '>'
+                if (Input.GetKeyDown(KeyCode.Period))
+                {
+                    RotateCounterClockwise();
+                }
+
                 // Note: this call is needed to update the color of the cost text.
                 _window.UpdateInfo(_building.ConstructionCost);
             }
@@ -88,10 +105,10 @@ namespace Campus
         {
             if (args.GridSelection != Point3.Null)
             {
-                Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, out bool[,] validGrids);
+                Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, _rotation, out bool[,] validGrids);
 
-                _cursors.Place(args.GridSelection);
-                _cursors.SetMaterials(validGrids);
+                _cursors.Place(args.GridSelection, _rotation);
+                _cursors.SetMaterials(validGrids, _rotation);
             }
             else
             {
@@ -108,13 +125,41 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, out bool[,] _) &&
+                if (Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, _rotation, out bool[,] _) &&
                     Accessor.Simulation.Purchase(_building.ConstructionCost))
                 {
-                    Accessor.CampusManager.ConstructBuilding(_building, args.GridSelection);
+                    Accessor.CampusManager.ConstructBuilding(_building, args.GridSelection, _rotation);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
             }
+        }
+
+        /// <summary>
+        /// Rotate the building CCW
+        /// </summary>
+        private void RotateClockwise()
+        {
+            int rInt = (int)_rotation;
+            rInt += 1;
+            if (rInt >= 4) rInt = 0;
+            _rotation = (BuildingRotation)rInt;
+
+            // Resend update even though the grid has not changed.
+            Accessor.StateMachine.PumpTerrainGridSelection();
+        }
+
+        /// <summary>
+        /// Rotate the building CW
+        /// </summary>
+        private void RotateCounterClockwise()
+        {
+            int rInt = (int)_rotation;
+            rInt -= 1;
+            if (rInt < 0) rInt = 3;
+            _rotation = (BuildingRotation)rInt;
+
+            // Resend update even though the grid has not changed.
+            Accessor.StateMachine.PumpTerrainGridSelection();
         }
     }
 }

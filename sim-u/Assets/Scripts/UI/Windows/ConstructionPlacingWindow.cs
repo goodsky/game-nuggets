@@ -19,6 +19,18 @@ namespace UI
         public Text BuildingCostText;
 
         /// <summary>
+        /// The rotate building button.
+        /// SUCK IT DEMETER! This is set by <see cref="PlacingConstructionController"/>.
+        /// </summary>
+        public Button RotateClockwiseButton;
+
+        /// <summary>
+        /// The rotate building button.
+        /// SUCK IT DEMETER! This is set by <see cref="PlacingConstructionController"/>.
+        /// </summary>
+        public Button RotateCounterClockwiseButton;
+
+        /// <summary>
         /// The window stop UI button.
         /// </summary>
         public Button StopButton;
@@ -26,7 +38,7 @@ namespace UI
         /// <summary>Gets the UI Buttons on this window.</summary>
         public override List<Button> Buttons
         {
-            get { return new List<Button>() { StopButton }; }
+            get { return new List<Button>() { RotateClockwiseButton, RotateCounterClockwiseButton, StopButton }; }
         }
 
         /// <summary>

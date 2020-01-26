@@ -10,7 +10,7 @@ namespace Campus
     /// </summary>
     public class FootprintCursor
     {
-        public Point2 Position { get; private set; }
+        public Point3 Location { get; private set; }
 
         private GridMesh _terrain;
         private Material _validMaterial;
@@ -28,40 +28,6 @@ namespace Campus
             _terrain = terrain;
             _validMaterial = validMaterial;
             _invalidMaterial = invalidMaterial;
-        }
-
-        /// <summary>
-        /// Place the cursors at a location.
-        /// </summary>
-        /// <param name="location"></param>
-        public void Place(Point3 location)
-        {
-            Position = new Point2(location.x, location.z);
-
-            int xSize = _cursors.GetLength(0);
-            int zSize = _cursors.GetLength(1);
-
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    if (_cursors != null && _cursors[x, z] != null)
-                    {
-                        int cursorX = location.x + x;
-                        int cursorZ = location.z + z;
-
-                        if (_terrain.GridInBounds(cursorX, cursorZ))
-                        {
-                            _cursors[x, z].Activate();
-                            _cursors[x, z].Place(new Point2(cursorX, cursorZ));
-                        }
-                        else
-                        {
-                            _cursors[x, z].Deactivate();
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -95,21 +61,57 @@ namespace Campus
         }
 
         /// <summary>
-        /// Set the color of the cursors based on valid locations.
+        /// Place the cursors at a location.
         /// </summary>
-        /// <param name="validLocations">An array representing which locations are valid.</param>
-        public void SetMaterials(bool[,] validLocations)
+        public void Place(Point3 location, BuildingRotation rotation)
         {
-            int xSize = _cursors.GetLength(0);
-            int zSize = _cursors.GetLength(1);
+            Location = location;
+
+            (Point3 cursorOrigin, GridCursor[,] cursors) = BuildingRotationUtils.RotateGridCursors(_cursors, location, rotation);
+            int xSize = cursors.GetLength(0);
+            int zSize = cursors.GetLength(1);
 
             for (int x = 0; x < xSize; ++x)
             {
                 for (int z = 0; z < zSize; ++z)
                 {
-                    if (_cursors != null && _cursors[x, z] != null)
+                    if (cursors[x, z] != null)
                     {
-                        _cursors[x, z].SetMaterial(validLocations[x, z] ? _validMaterial : _invalidMaterial);
+                        int cursorX = cursorOrigin.x + x;
+                        int cursorZ = cursorOrigin.z + z;
+
+                        if (_terrain.GridInBounds(cursorX, cursorZ))
+                        {
+                            cursors[x, z].Activate();
+                            cursors[x, z].Place(new Point2(cursorX, cursorZ));
+                        }
+                        else
+                        {
+                            cursors[x, z].Deactivate();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set the color of the cursors based on valid locations.
+        /// </summary>
+        /// <param name="validLocations">An array representing which locations are valid.</param>
+        /// <param name="rotation">The current rotation of the footprint.</param>
+        public void SetMaterials(bool[,] validLocations, BuildingRotation rotation)
+        {
+            (Point3 cursorOrigin, GridCursor[,] cursors) = BuildingRotationUtils.RotateGridCursors(_cursors, Location, rotation);
+            int xSize = cursors.GetLength(0);
+            int zSize = cursors.GetLength(1);
+
+            for (int x = 0; x < xSize; ++x)
+            {
+                for (int z = 0; z < zSize; ++z)
+                {
+                    if (cursors[x, z] != null)
+                    {
+                        cursors[x, z].SetMaterial(validLocations[x, z] ? _validMaterial : _invalidMaterial);
                     }
                 }
             }

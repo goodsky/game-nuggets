@@ -140,6 +140,27 @@
           <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Arrow Building"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
+
+        <Button name="BuildLBlock">
+          <Tooltip>Build L-Block Building</Tooltip>
+          <IconImage>icon-test2</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="L Block"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildCBlock">
+          <Tooltip>Build C-Block Building</Tooltip>
+          <IconImage>icon-test2</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="C Block"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildRandomBlock">
+          <Tooltip>Build Random-Block Building</Tooltip>
+          <IconImage>icon-test2</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Random Block"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
       </Buttons>
     </SubButtonGroup>
   </ButtonGroups>

@@ -76,6 +76,30 @@
       <Description>This building is testing Blender exporting. It should point toward the camera.</Description>
       <Model>test-building-arrow</Model>
     </Building>
+
+    <Building name="C Block">
+      <ConstructionCost>1</ConstructionCost>
+      <MaintenanceCost>1</MaintenanceCost>
+      <Icon>TestBuildingIcon</Icon>
+      <Description>This building is testing footprint rotation.</Description>
+      <Model>test-c-block</Model>
+    </Building>
+
+    <Building name="L Block">
+      <ConstructionCost>1</ConstructionCost>
+      <MaintenanceCost>1</MaintenanceCost>
+      <Icon>TestBuildingIcon</Icon>
+      <Description>This building is testing footprint rotation.</Description>
+      <Model>test-l-block</Model>
+    </Building>
+
+    <Building name="Random Block">
+      <ConstructionCost>1</ConstructionCost>
+      <MaintenanceCost>1</MaintenanceCost>
+      <Icon>TestBuildingIcon</Icon>
+      <Description>This building is testing footprint rotation.</Description>
+      <Model>test-random-block</Model>
+    </Building>
   </Buildings>
   
 </CampusData>

@@ -219,12 +219,14 @@ namespace Campus
         /// </summary>
         /// <param name="building">The building data.</param>
         /// <param name="location">The grid location for building.</param>
+        /// <param name="location">The rotation for the building.</param>
         /// <param name="validGrids">Output: The valid grids for building. Used for updating cursors.</param>
         /// <returns>True if the location is valid for the building, false otherwise.</returns>
-        public bool IsValidForBuilding(BuildingData building, Point3 location, out bool[,] validGrids)
+        public bool IsValidForBuilding(BuildingData building, Point3 location, BuildingRotation rotation, out bool[,] validGrids)
         {
-            int xSize = building.Footprint.GetLength(0);
-            int zSize = building.Footprint.GetLength(1);
+            (Point3 footprintOrigin, bool[,] footprint) = BuildingRotationUtils.RotateFootprint(building, location, rotation);
+            int xSize = footprint.GetLength(0);
+            int zSize = footprint.GetLength(1);
             validGrids = new bool[xSize, zSize];
 
             bool isValid = true;
@@ -232,18 +234,18 @@ namespace Campus
             {
                 for (int z = 0; z < zSize; ++z)
                 {
-                    if (!building.Footprint[x, z])
+                    if (!footprint[x, z])
                     {
                         continue; // Don't need to check outside of the building footprint
                     }
 
-                    int gridX = location.x + x;
-                    int gridZ = location.z + z;
+                    int gridX = footprintOrigin.x + x;
+                    int gridZ = footprintOrigin.z + z;
 
                     bool isInBoundsFlatAndFree =
                         _terrain.GridInBounds(gridX, gridZ) &&
                         _terrain.IsGridFlat(gridX, gridZ) &&
-                        _terrain.GetSquareHeight(gridX, gridZ) == location.y &&
+                        _terrain.GetSquareHeight(gridX, gridZ) == footprintOrigin.y &&
                         GetGridUse(new Point2(gridX, gridZ)) == CampusGridUse.Empty;
 
                     bool isOnEdge =
@@ -270,9 +272,10 @@ namespace Campus
         /// </summary>
         /// <param name="building">The building to construct.</param>
         /// <param name="location">The location of the building.</param>
-        public void ConstructBuilding(BuildingData building, Point3 location, bool updateConnections = true)
+        /// <param name="location">The rotation of the building.</param>
+        public void ConstructBuilding(BuildingData building, Point3 location, BuildingRotation rotation, bool updateConnections = true)
         {
-            UpdateGrids(_buildings.ConstructBuilding(building, location), updateConnections);
+            UpdateGrids(_buildings.ConstructBuilding(building, location, rotation), updateConnections);
         }
 
         /// <summary>

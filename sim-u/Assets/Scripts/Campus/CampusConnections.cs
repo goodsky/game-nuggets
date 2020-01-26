@@ -152,7 +152,7 @@ namespace Campus
                         if (!building.Footprint[x, z])
                             continue;
 
-                        Point2 footprintPoint = new Point2(building.GridPosition.x + x, building.GridPosition.z + z);
+                        Point2 footprintPoint = new Point2(building.FootprintOrigin.x + x, building.FootprintOrigin.z + z);
                         pSrcs.Add((building, footprintPoint));
                     }
                 }
