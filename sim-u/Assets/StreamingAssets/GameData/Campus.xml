@@ -32,6 +32,15 @@
   
   <!-- Registry of buildings that can be built. -->
   <Buildings>
+    <Building name="Small Portable">
+      <ConstructionCost>1000</ConstructionCost>
+      <MaintenanceCost>10</MaintenanceCost>
+      <SmallClassrooms>1</SmallClassrooms>
+      <Icon>TestBuildingIcon</Icon>
+      <Description>This classroom used to be a shipping container. With a new coat of paint and some basic classroom supplies however it works as a functional small classroom building.</Description>
+      <Model>portable-small</Model>
+    </Building>
+    
     <Building name="Test Building">
       <ConstructionCost>1000</ConstructionCost>
       <MaintenanceCost>10</MaintenanceCost>

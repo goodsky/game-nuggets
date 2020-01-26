@@ -106,6 +106,13 @@
     <!-- Construction Sub Menu Buttons -->
     <SubButtonGroup name="ConstructionMenu">
       <Buttons>
+        <Button name="BuildSmallPortable">
+          <Tooltip>Build Small Portable</Tooltip>
+          <IconImage>icon-test1</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Small Portable"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
         <Button name="BuildTest">
           <Tooltip>Build Test Building</Tooltip>
           <IconImage>icon-test1</IconImage>

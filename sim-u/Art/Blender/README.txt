@@ -9,6 +9,9 @@ Run the export.ps1 script. It will automatically export any .blend file from bel
 
 The script has been written so as to not overwrite any file.
 
+# Blender Python Docs
+https://docs.blender.org/api/blender_python_api_current
+
 ## Manually
 Export these blender files to .FBX using the following instructions:
   *  Scale: 0.01
