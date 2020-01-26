@@ -108,7 +108,7 @@
       <Buttons>
         <Button name="BuildSmallPortable">
           <Tooltip>Build Small Portable</Tooltip>
-          <IconImage>icon-test1</IconImage>
+          <IconImage>icon-building-portable-small</IconImage>
           <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Small Portable"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
