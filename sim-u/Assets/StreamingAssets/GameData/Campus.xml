@@ -39,6 +39,7 @@
       <Icon>portable-small-picture</Icon>
       <Description>This classroom used to be a shipping container. With a new coat of paint and some basic classroom supplies however it works as a functional small classroom building.</Description>
       <Model>portable-small</Model>
+      <Entry x="1" y="0" rotation="deg0" />
     </Building>
     
     <Building name="Test Building">
@@ -48,6 +49,7 @@
       <Icon>TestBuildingIcon</Icon>
       <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
       <Model>test-building-small</Model>
+      <Entry x="0" y="0" rotation="deg90" />
     </Building>
     
     <Building name="Weird Building">
@@ -57,6 +59,7 @@
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a weird footprint. It's just two buildings diagonally adjacent. Not that weird really.</Description>
       <Model>test-building-weird</Model>
+      <Entry x="1" y="1" rotation="deg270" />
     </Building>
 
     <Building name="Really Weird Building">
@@ -66,6 +69,7 @@
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a really weird footprint. It's a line of four buildings with a gap in the middle.</Description>
       <Model>test-building-really-weird</Model>
+      <Entry x="0" y="2" rotation="deg180" />
     </Building>
 
     <Building name="Arrow Building">
@@ -75,6 +79,8 @@
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing Blender exporting. It should point toward the camera.</Description>
       <Model>test-building-arrow</Model>
+      <Entry x="0" y="1" rotation="deg180" />
+      <Entry x="1" y="1" rotation="deg180" />
     </Building>
 
     <Building name="C Block">

@@ -215,6 +215,22 @@ namespace Campus
         }
 
         /// <summary>
+        /// Checks if there is a valid entry into a building from the point.
+        /// </summary>
+        /// <param name="buildingLocation">The location of the building.</param>
+        /// <param name="checkLocation">The location to check if you can enter from.</param>
+        /// <returns>True is this is a valid way to enter the building.</returns>
+        public bool CanEnterBuildingFrom(Point2 buildingLocation, Point2 checkLocation)
+        {
+            BuildingInfo building = _buildings.GetBuildingAtGrid(buildingLocation);
+
+            if (building == null)
+                return false;
+
+            return building.EntryPoints.Contains(checkLocation);
+        }
+
+        /// <summary>
         /// Checks that the requested location is valid for a new building.
         /// </summary>
         /// <param name="building">The building data.</param>
@@ -670,10 +686,26 @@ namespace Campus
                 // Load the buildings
                 foreach (var buildingData in gameData.Buildings)
                 {
+                    if (buildingData.BuildingEntries == null)
+                    {
+                        GameLogger.Info("Building {0} has no entries.", buildingData.Name);
+                        buildingData.BuildingEntries = Array.Empty<BuildingEntry>();
+                    }
+
                     buildingData.Footprint = footprintCreator.CalculateFootprint(buildingData.Model, Constant.GridSize);
                     _buildingRegistry[buildingData.Name] = buildingData;
 
                     GameLogger.Info("Loaded building {0}. Footprint size = {1}x{2}.", buildingData.Name, buildingData.Footprint.GetLength(0), buildingData.Footprint.GetLength(1));
+
+                    foreach (BuildingEntry entry in buildingData.BuildingEntries)
+                    {
+                        if (entry.X < 0 || entry.X > buildingData.Footprint.GetLength(0) ||
+                            entry.Y < 0 || entry.Y > buildingData.Footprint.GetLength(1) ||
+                            !buildingData.Footprint[entry.X, entry.Y])
+                        {
+                            GameLogger.Warning("[ASSERT] Invalid building entry. Building = {0}; Entry = ({1}, {2})", buildingData.Name, entry.X, entry.Y);
+                        }
+                    }
                 }
             }
         }

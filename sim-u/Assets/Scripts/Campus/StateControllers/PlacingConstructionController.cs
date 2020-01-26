@@ -36,7 +36,9 @@ namespace Campus
             _cursors = new FootprintCursor(
                 _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
-                ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
+                ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"),
+                ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_entry_valid"),
+                ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_entry_invalid"));
 
             OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Build;
@@ -59,7 +61,7 @@ namespace Campus
             _window.RotateClockwiseButton.OnSelect = RotateClockwise;
             _window.RotateCounterClockwiseButton.OnSelect = RotateCounterClockwise;
 
-            _cursors.Create(_building.Footprint);
+            _cursors.Create(_building);
         }
 
         /// <summary>
@@ -79,14 +81,14 @@ namespace Campus
         {
             if (_building != null)
             {
-                // Rotate by pressing '<'
-                if (Input.GetKeyDown(KeyCode.Comma))
+                // Rotate by pressing '>'
+                if (Input.GetKeyDown(KeyCode.Period))
                 {
                     RotateClockwise();
                 }
 
-                // Rotate by pressing '>'
-                if (Input.GetKeyDown(KeyCode.Period))
+                // Rotate by pressing '<'
+                if (Input.GetKeyDown(KeyCode.Comma))
                 {
                     RotateCounterClockwise();
                 }

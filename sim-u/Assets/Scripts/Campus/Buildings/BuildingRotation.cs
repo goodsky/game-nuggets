@@ -8,14 +8,22 @@ namespace Campus
 {
     public enum BuildingRotation
     {
-        deg0,
-        deg90,
-        deg180,
-        deg270
+        deg0 = 0,
+        deg90 = 1,
+        deg180 = 2,
+        deg270 = 3
     }
 
     public static class BuildingRotationUtils
     {
+        private static readonly Dictionary<BuildingRotation, (int dx, int dz)> _toUnitVector = new Dictionary<BuildingRotation, (int dx, int dz)>()
+        {
+            { BuildingRotation.deg0, (0, -1) },
+            { BuildingRotation.deg90, (-1, 0) },
+            { BuildingRotation.deg180, (0, 1) },
+            { BuildingRotation.deg270, (1, 0) },
+        };
+
         private static readonly Dictionary<BuildingRotation, Quaternion> _toQuaternion = new Dictionary<BuildingRotation, Quaternion>()
         {
             { BuildingRotation.deg0, Quaternion.Euler(0f, 0f, 0f) },
@@ -23,6 +31,12 @@ namespace Campus
             { BuildingRotation.deg180, Quaternion.Euler(0f, 180f, 0f) },
             { BuildingRotation.deg270, Quaternion.Euler(0f, 270f, 0f) },
         };
+
+        public static BuildingRotation Add(BuildingRotation rot1, BuildingRotation rot2)
+        {
+            int rotInt = (int)rot1 + (int)rot2;
+            return (BuildingRotation)(rotInt % 4);
+        }
 
         /// <summary>
         /// Rotates the grid cursor's footprint and returns back the new footprint along with the new footprint origin location.
@@ -39,7 +53,7 @@ namespace Campus
         /// <summary>
         /// Rotates the building's footprint and returns back the new footprint along with the new footprint origin location.
         /// </summary>
-        /// <param name="building">The building's saved data.</param>
+        /// <param name="building">The building's data.</param>
         /// <param name="location">The location to place the center of the building in the terrain.</param>
         /// <param name="rotation">The rotation to apply to the footprint.</param>
         /// <returns>The new terrain location along with the rotated footprint.</returns>
@@ -49,9 +63,75 @@ namespace Campus
         }
 
         /// <summary>
+        /// Rotates the building's entrances.
+        /// </summary>
+        /// <param name="building">The building's data.</param>
+        /// <param name="rotation">The rotation to apply to the building's entrances.</param>
+        /// <returns>The rotated building entrances.</returns>
+        public static BuildingEntry[] RotateBuildingEntries(BuildingEntry[] buildingEntries, int xWidth, int yWidth, BuildingRotation rotation)
+        {
+            int entryCount = buildingEntries.Length;
+            var rotatedEntries = new BuildingEntry[entryCount];
+            for (int i = 0; i < entryCount; ++i)
+            {
+                BuildingEntry entry = buildingEntries[i];
+
+                switch (rotation)
+                {
+                    case BuildingRotation.deg0:
+                        rotatedEntries[i] = entry;
+                        break;
+
+                    case BuildingRotation.deg90:
+                        rotatedEntries[i] = new BuildingEntry { X = entry.Y, Y = xWidth - entry.X - 1, Rotation = Add(entry.Rotation, rotation) };
+                        break;
+
+                    case BuildingRotation.deg180:
+                        rotatedEntries[i] = new BuildingEntry { X = xWidth - entry.X - 1, Y = yWidth - entry.Y - 1, Rotation = Add(entry.Rotation, rotation) };
+                        break;
+
+                    case BuildingRotation.deg270:
+                        rotatedEntries[i] = new BuildingEntry { X = yWidth - entry.Y - 1, Y = entry.X, Rotation = Add(entry.Rotation, rotation) };
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Unexpected rotation value! Roation = {rotation}");
+                }
+            }
+
+            return rotatedEntries;
+        }
+
+        /// <summary>
+        /// Rotates the building's entrances and then calculates the points
+        /// on the map that you can enter the building from.
+        /// </summary>
+        /// <param name="building">The building's data</param>
+        /// <param name="footprintOrigin">The origin of the building's footprint.</param>
+        /// <param name="rotation">The rotation to apply to the building entrances.</param>
+        /// <returns></returns>
+        public static Point2[] CalculateBuildingEntries(BuildingData building, Point3 footprintOrigin, BuildingRotation rotation)
+        {
+            int entryCount = building.BuildingEntries.Length;
+            int xWidth = building.Footprint.GetLength(0);
+            int yWidth = building.Footprint.GetLength(1);
+
+            BuildingEntry[] entries = RotateBuildingEntries(building.BuildingEntries, xWidth, yWidth, rotation);
+            Point2[] entryPoints = new Point2[entryCount];
+            for (int i = 0; i < entryCount; ++i)
+            {
+                BuildingEntry entry = entries[i];
+                (int dx, int dz) = _toUnitVector[entry.Rotation];
+                entryPoints[i] = new Point2(footprintOrigin.x + entry.X + dx, footprintOrigin.z + entry.Y + dz);
+            }
+
+            return entryPoints;
+        }
+
+        /// <summary>
         /// Rotates the building and returns back the terrain position along with the world rotation value.
         /// </summary>
-        /// <param name="building">The building's saved data.</param>
+        /// <param name="building">The building's data.</param>
         /// <param name="location">The location to place the center of the building in the terrain.</param>
         /// <param name="rotation">The rotation to apply to the footprint.</param>
         /// <returns>The new terrain location along with the world rotation.</returns>

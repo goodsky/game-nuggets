@@ -99,6 +99,39 @@ namespace Campus
         }
 
         /// <summary>
+        /// Set the cursor's material with a rotation applied.
+        /// </summary>
+        /// <param name="material">The new material</param>
+        /// <param name="rotation">The rotation to apply to the material</param>
+        public void SetMaterial(Material material, BuildingRotation rotation)
+        {
+            CursorMaterial = material;
+            _renderer.material = CursorMaterial;
+
+            int rotationOffset = 0;
+            switch (rotation)
+            {
+                case BuildingRotation.deg90:
+                    rotationOffset = 3;
+                    break;
+                case BuildingRotation.deg180:
+                    rotationOffset = 2;
+                    break;
+                case BuildingRotation.deg270:
+                    rotationOffset = 1;
+                    break;
+            }
+
+            _uv[(0 + rotationOffset) % 4] = new Vector2(0.0f, 0.0f);
+            _uv[(1 + rotationOffset) % 4] = new Vector2(1.0f, 0.0f);
+            _uv[(2 + rotationOffset) % 4] = new Vector2(1.0f, 1.0f);
+            _uv[(3 + rotationOffset) % 4] = new Vector2(0.0f, 1.0f);
+            _uv[4] = new Vector2(0.5f, 0.5f);
+
+            _mesh.uv = _uv;
+        }
+
+        /// <summary>
         /// Activate the Unity game object.
         /// </summary>
         public void Activate()

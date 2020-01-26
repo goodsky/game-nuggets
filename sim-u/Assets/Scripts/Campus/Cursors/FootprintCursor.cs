@@ -1,5 +1,7 @@
 ﻿using Campus.GridTerrain;
 using Common;
+using GameData;
+using System.Linq;
 using UnityEngine;
 
 namespace Campus
@@ -15,7 +17,10 @@ namespace Campus
         private GridMesh _terrain;
         private Material _validMaterial;
         private Material _invalidMaterial;
+        private Material _validEntryMaterial;
+        private Material _invalidEntryMaterial;
         private GridCursor[,] _cursors;
+        private BuildingEntry[] _entries;
 
         /// <summary>
         /// Instantiates a footprint cursor.
@@ -23,22 +28,35 @@ namespace Campus
         /// <param name="terrain">The terrain to put cursors on.</param>
         /// <param name="validMaterial">The material to use when a footprint location is valid.</param>
         /// <param name="invalidMaterial">The material to use when a footprint location is invalid.</param>
-        public FootprintCursor(GridMesh terrain, Material validMaterial, Material invalidMaterial)
+        /// <param name="validEntryMaterial">The material to use when a footprint location is the entry and valid.</param>
+        /// <param name="invalidEntryMaterial">The material to use when a footprint location is the entry and invalid.</param>
+        public FootprintCursor(GridMesh terrain,
+            Material validMaterial,
+            Material invalidMaterial,
+            Material validEntryMaterial,
+            Material invalidEntryMaterial)
         {
             _terrain = terrain;
             _validMaterial = validMaterial;
             _invalidMaterial = invalidMaterial;
+
+            // Fact. This could be more elegant.
+            _validEntryMaterial = validEntryMaterial;
+            _invalidEntryMaterial = invalidEntryMaterial;
         }
 
         /// <summary>
         /// Creates a new collection of cursors.
         /// </summary>
-        /// <param name="footprint">The footprint of the building.</param>
-        public void Create(bool[,] footprint)
+        /// <param name="building">The building data.</param>
+        public void Create(BuildingData building)
         {
             if (_cursors != null)
                 GameLogger.FatalError("Can't recreate a footprint cursor while one already exists!");
 
+            _entries = building.BuildingEntries;
+
+            var footprint = building.Footprint;
             int xSize = footprint.GetLength(0);
             int zSize = footprint.GetLength(1);
 
@@ -102,6 +120,8 @@ namespace Campus
         public void SetMaterials(bool[,] validLocations, BuildingRotation rotation)
         {
             (Point3 cursorOrigin, GridCursor[,] cursors) = BuildingRotationUtils.RotateGridCursors(_cursors, Location, rotation);
+            BuildingEntry[] entries = BuildingRotationUtils.RotateBuildingEntries(_entries, _cursors.GetLength(0), _cursors.GetLength(1), rotation);
+
             int xSize = cursors.GetLength(0);
             int zSize = cursors.GetLength(1);
 
@@ -111,7 +131,15 @@ namespace Campus
                 {
                     if (cursors[x, z] != null)
                     {
-                        cursors[x, z].SetMaterial(validLocations[x, z] ? _validMaterial : _invalidMaterial);
+                        BuildingEntry buildingEntry = entries.Where(entry => entry.X == x && entry.Y == z).FirstOrDefault();
+                        if (buildingEntry != null)
+                        {
+                            cursors[x, z].SetMaterial(validLocations[x, z] ? _validEntryMaterial : _invalidEntryMaterial, buildingEntry.Rotation);
+                        }
+                        else
+                        {
+                            cursors[x, z].SetMaterial(validLocations[x, z] ? _validMaterial : _invalidMaterial);
+                        }
                     }
                 }
             }

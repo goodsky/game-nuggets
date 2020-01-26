@@ -13,6 +13,8 @@ namespace Campus
 
         public bool[,] Footprint { get; set; }
 
+        public Point2[] EntryPoints { get; set; }
+
         public int SmallClassroomCount { get; set; }
 
         public int MediumClassroomCount { get; set; }

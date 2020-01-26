@@ -38,6 +38,7 @@ namespace Campus
                 Id = footprintOrigin.GetHashCode(),
                 FootprintOrigin = footprintOrigin,
                 Footprint = footprint,
+                EntryPoints = BuildingRotationUtils.CalculateBuildingEntries(Data, footprintOrigin, Rotation),
                 SmallClassroomCount = Data.SmallClassrooms,
                 MediumClassroomCount = Data.MediumClassrooms,
                 LargeClassroomCount = Data.LargeClassrooms,

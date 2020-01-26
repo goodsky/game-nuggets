@@ -1,4 +1,6 @@
-﻿using System.Xml.Serialization;
+﻿using Campus;
+using System;
+using System.Xml.Serialization;
 using UnityEngine;
 
 namespace GameData
@@ -41,7 +43,25 @@ namespace GameData
         [ResourceLoader(ResourceType.Models, ResourceCategory.Buildings, nameof(ModelName))]
         public GameObject Model { get; set; }
 
+        /// <summary>
+        /// This requires some manual set up to get the entry points right.
+        /// </summary>
+        [XmlElement("Entry")]
+        public BuildingEntry[] BuildingEntries { get; set; }
+
         [XmlIgnore]
         public bool[,] Footprint { get; set; }
+    }
+
+    public class BuildingEntry
+    {
+        [XmlAttribute("x")]
+        public int X { get; set; }
+
+        [XmlAttribute("y")]
+        public int Y { get; set; }
+
+        [XmlAttribute("rotation")]
+        public BuildingRotation Rotation { get; set; }
     }
 }

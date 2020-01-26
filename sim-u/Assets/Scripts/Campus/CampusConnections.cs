@@ -28,6 +28,11 @@ namespace Campus
             _pathConnections = new Dictionary<PathDestination, IList<PathConnection>>();
         }
 
+        /// <summary>
+        /// Gets the current list of connections to the desired destination.
+        /// </summary>
+        /// <param name="roadDestination">The road destination to query for. (e.g. parking lot)</param>
+        /// <returns>All valid connections to this destination.</returns>
         public IList<RoadConnection> GetConnections(RoadDestination roadDestination)
         {
             if (_roadConnections.TryGetValue(roadDestination, out IList<RoadConnection> connections))
@@ -38,6 +43,11 @@ namespace Campus
             return new List<RoadConnection>(0);
         }
 
+        /// <summary>
+        /// Gets the current list of connections to the desired destination.
+        /// </summary>
+        /// <param name="pathDestination">The path destination to query. (e.g. classroom building)</param>
+        /// <returns>All valid connections to this destination.</returns>
         public IList<PathConnection> GetConnections(PathDestination pathDestination)
         {
             if (_pathConnections.TryGetValue(pathDestination, out IList<PathConnection> connections))
@@ -48,6 +58,10 @@ namespace Campus
             return new List<PathConnection>(0);
         }
 
+        /// <summary>
+        /// Recompute all the campus connections.
+        /// This will calculate the connections from roads to parking lots and parking lots to buildings.
+        /// </summary>
         public void Recompute()
         {
             var roadConnections = new Dictionary<RoadDestination, IList<RoadConnection>>();
@@ -73,7 +87,7 @@ namespace Campus
             var pathConnectionsStopwatch = Stopwatch.StartNew();
 
             var pSrcs = GetPathSources();
-            // For paths we are acutally searching from destination -> source
+            // For paths we are actually searching from destination -> source
             foreach ((PathDestination dst, Point2 pSrc) in pSrcs)
             {
                 IEnumerable<PathConnection> pConnections = CalculatePathConnections(dst, pSrc);
@@ -100,11 +114,13 @@ namespace Campus
             _pathConnections = pathConnections;
         }
 
+        /// <summary>
+        /// Gets the Road Source nodes on the map.
+        /// Road Sources are any road vertex that is on the edge of the map.
+        /// </summary>
         private IEnumerable<Point2> GetRoadSources()
         {
             var rSrcs = new List<Point2>();
-
-            // Road sources are any road vertex that is along the edge of the map.
             for (int x = 0; x <= _terrain.CountX; ++x)
             {
                 var p0 = new Point2(x, 0);
@@ -138,22 +154,22 @@ namespace Campus
             return rSrcs;
         }
 
+        /// <summary>
+        /// Gets the Path Source nodes on the map.
+        /// Path "Sources" are actually human destinations.
+        /// We start searching from the entry points of buildings.
+        /// </summary>
         private IEnumerable<(PathDestination destination, Point2 point)> GetPathSources()
         {
             var pSrcs = new List<(PathDestination buildingInfo, Point2 footprint)>();
 
-            IEnumerable<BuildingInfo> buildings = _campusManager.GetBuildingInfo(checkConnections: false);
-            foreach (BuildingInfo building in buildings)
+            foreach (BuildingInfo building in _campusManager.GetBuildingInfo(checkConnections: false))
             {
-                for (int x = 0; x < building.Footprint.GetLength(0); ++x)
+                foreach (Point2 entry in building.EntryPoints)
                 {
-                    for (int z = 0; z < building.Footprint.GetLength(1); ++z)
+                    if (_campusManager.GetGridUse(entry).HasFlag(CampusGridUse.Path))
                     {
-                        if (!building.Footprint[x, z])
-                            continue;
-
-                        Point2 footprintPoint = new Point2(building.FootprintOrigin.x + x, building.FootprintOrigin.z + z);
-                        pSrcs.Add((building, footprintPoint));
+                        pSrcs.Add((building, entry));
                     }
                 }
             }

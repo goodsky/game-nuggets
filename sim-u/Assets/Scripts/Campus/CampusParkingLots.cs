@@ -238,10 +238,14 @@ namespace Campus
                 int vertX = pos.x + GridConverter.GridToVertexDx[i];
                 int vertZ = pos.z + GridConverter.GridToVertexDz[i];
 
-                adjLots[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ));
-                adjSpot[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(new Point2(gridX, gridZ)) && parkingLot.LotLines[spotX, spotZ];
-                adjPath[i] = _terrain.GridInBounds(gridX, gridZ) && (_campusManager.GetGridUse(new Point2(gridX, gridZ)) & CampusGridUse.Path) == CampusGridUse.Path;
-                adjRoad[i] = _terrain.VertexInBounds(vertX, vertZ) && (_campusManager.GetVertexUse(new Point2(vertX, vertZ)) & CampusGridUse.Road) == CampusGridUse.Road;
+                Point2 grid = new Point2(gridX, gridZ);
+                adjLots[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(grid);
+                adjSpot[i] = _terrain.GridInBounds(gridX, gridZ) && parkingLot.Footprint.IsPointInRectangle(grid) && parkingLot.LotLines[spotX, spotZ];
+                adjPath[i] = _terrain.GridInBounds(gridX, gridZ) &&
+                    (_campusManager.GetGridUse(grid).HasFlag(CampusGridUse.Path) ||
+                        (_campusManager.GetGridUse(grid).HasFlag(CampusGridUse.Building) && // Buildings count as path if it's an entrance
+                         _campusManager.CanEnterBuildingFrom(grid, pos)));
+                adjRoad[i] = _terrain.VertexInBounds(vertX, vertZ) && _campusManager.GetVertexUse(new Point2(vertX, vertZ)).HasFlag(CampusGridUse.Road);
             }
 
             // spots also need to check if they themselves are a parking spot

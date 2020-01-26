@@ -123,7 +123,8 @@ namespace Campus
                     adj[i] =
                         (!_terrain.GridInBounds(checkX, checkZ) || /* NB: The edge of the map connects to the edge. This is a path source. */
                         _campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Path) ||
-                        _campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Building))
+                            (_campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Building) &&
+                             _campusManager.CanEnterBuildingFrom(new Point2(checkX, checkZ), pos)))
                          ? 1 : 0;
                 }
 
