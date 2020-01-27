@@ -45,7 +45,9 @@ namespace UI
 
             ApproveButton.OnSelect = ConfirmEnrollment;
 
-            RecalculateStudentPopulation();
+            RecalculateStudentPopulation(
+                defaultTuition: Accessor.Simulation.Variables.TuitionPerQuarter,
+                defaultSatCutoff: Accessor.Simulation.Variables.SatCutoff);
         }
 
         /// <summary>
@@ -79,11 +81,11 @@ namespace UI
             }
         }
 
-        private void RecalculateStudentPopulation()
+        private void RecalculateStudentPopulation(int? defaultTuition = null, int? defaultSatCutoff = null)
         {
             (int minTuition, int maxTuition) = Accessor.Simulation.GenerateTuitionRange();
             TuitionSlider.SetRange(minTuition, maxTuition);
-            TuitionSlider.SetValue(TuitionSlider.Value, updateSlider: false);
+            TuitionSlider.SetValue(defaultTuition.HasValue ? defaultTuition.Value : TuitionSlider.Value, updateSlider: defaultTuition.HasValue);
 
             int tuitionValue = TuitionSlider.Value;
             _enrollingPopulation = Accessor.Simulation.GenerateStudentPopulation(tuitionValue);
@@ -92,7 +94,7 @@ namespace UI
             int minSAT = Accessor.Simulation.ConvertAcademicScoreToSATScore(minAcademicScore);
             int maxSAT = Accessor.Simulation.ConvertAcademicScoreToSATScore(maxAcademicScore);
             SatSlider.SetRange(minSAT, maxSAT);
-            SatSlider.SetValue(SatSlider.Value, updateSlider: false);
+            SatSlider.SetValue(defaultSatCutoff.HasValue ? defaultSatCutoff.Value : SatSlider.Value, updateSlider: defaultSatCutoff.HasValue);
 
             int satCutoff = SatSlider.Value;
             int academicScoreCutoff = Accessor.Simulation.ConvertSATScoreToAcademicScore(satCutoff);
@@ -138,6 +140,8 @@ Total Classroom Capacity: {4:n0}";
                 _enrollingPopulation.ToString());
 
             Accessor.Simulation.Variables.TuitionPerQuarter = TuitionSlider.Value;
+            Accessor.Simulation.Variables.SatCutoff = SatSlider.Value;
+
             Accessor.Simulation.EnrollStudents(_enrollingPopulation);
 
             Unfreeze();
