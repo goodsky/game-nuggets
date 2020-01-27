@@ -113,6 +113,13 @@
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
+        <Button name="BuildMediumPortable">
+          <Tooltip>Build Small Portable</Tooltip>
+          <IconImage>icon-building-portable-medium</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Medium Portable"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        
         <Button name="BuildTest">
           <Tooltip>Build Test Building</Tooltip>
           <IconImage>icon-test1</IconImage>

@@ -13,8 +13,8 @@ namespace GameData
         [XmlElement("ConstructionCost")]
         public int ConstructionCost { get; set; }
 
-        [XmlElement("MaintenanceCost")]
-        public int MaintenanceCost { get; set; }
+        [XmlElement("UtilitiesPerQuarter")]
+        public int UtilitiesPerQuarter { get; set; }
 
         [XmlElement("SmallClassrooms")]
         public int SmallClassrooms { get; set; }

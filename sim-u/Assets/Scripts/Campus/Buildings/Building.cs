@@ -39,6 +39,7 @@ namespace Campus
                 FootprintOrigin = footprintOrigin,
                 Footprint = footprint,
                 EntryPoints = BuildingRotationUtils.CalculateBuildingEntries(Data, footprintOrigin, Rotation),
+                UtilitiesCostPerQuarter = Data.UtilitiesPerQuarter,
                 SmallClassroomCount = Data.SmallClassrooms,
                 MediumClassroomCount = Data.MediumClassrooms,
                 LargeClassroomCount = Data.LargeClassrooms,

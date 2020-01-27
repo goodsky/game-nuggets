@@ -139,8 +139,8 @@ namespace UI
 
             sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Building Footprint:</b> {0}x{1}{2}", data.Footprint.GetLength(0), data.Footprint.GetLength(1), Environment.NewLine);
 
-            if (data.MaintenanceCost != 0)
-                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per year{1}", data.MaintenanceCost, Environment.NewLine);
+            if (data.UtilitiesPerQuarter != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per quarter{1}", data.UtilitiesPerQuarter, Environment.NewLine);
 
             if (data.SmallClassrooms != 0)
                 sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Small Classrooms:</b> {0}{1}", data.SmallClassrooms, Environment.NewLine);

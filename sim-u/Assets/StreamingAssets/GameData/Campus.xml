@@ -33,18 +33,29 @@
   <!-- Registry of buildings that can be built. -->
   <Buildings>
     <Building name="Small Portable">
-      <ConstructionCost>1000</ConstructionCost>
-      <MaintenanceCost>10</MaintenanceCost>
+      <ConstructionCost>30000</ConstructionCost>
+      <UtilitiesPerQuarter>200</UtilitiesPerQuarter>
       <SmallClassrooms>1</SmallClassrooms>
       <Icon>portable-small-picture</Icon>
-      <Description>This classroom used to be a shipping container. With a new coat of paint and some basic classroom supplies however it works as a functional small classroom building.</Description>
+      <Description>This classroom used to be a shipping container. With a new coat of paint and some basic classroom supplies however it is a functional small classroom building.</Description>
       <Model>portable-small</Model>
       <Entry x="1" y="0" rotation="deg0" />
+    </Building>
+
+    <Building name="Medium Portable">
+      <ConstructionCost>55000</ConstructionCost>
+      <UtilitiesPerQuarter>400</UtilitiesPerQuarter>
+      <MediumClassrooms>1</MediumClassrooms>
+      <Icon>portable-medium-picture</Icon>
+      <Description>This classroom used to be multiple shipping containers. With a new coat of paint and some basic classroom supplies however it is a functional  medium classroom building.</Description>
+      <Model>portable-medium</Model>
+      <Entry x="0" y="0" rotation="deg0" />
+      <Entry x="3" y="0" rotation="deg0" />
     </Building>
     
     <Building name="Test Building">
       <ConstructionCost>1000</ConstructionCost>
-      <MaintenanceCost>10</MaintenanceCost>
+      <UtilitiesPerQuarter>10</UtilitiesPerQuarter>
       <SmallClassrooms>1</SmallClassrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This is the first building added to the game. It has a silly icon and doesn't do anything. It's probably a cube if I'm being honest with myself.</Description>
@@ -54,7 +65,7 @@
     
     <Building name="Weird Building">
       <ConstructionCost>2000</ConstructionCost>
-      <MaintenanceCost>20</MaintenanceCost>
+      <UtilitiesPerQuarter>20</UtilitiesPerQuarter>
       <MediumClassrooms>1</MediumClassrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a weird footprint. It's just two buildings diagonally adjacent. Not that weird really.</Description>
@@ -64,7 +75,7 @@
 
     <Building name="Really Weird Building">
       <ConstructionCost>5000</ConstructionCost>
-      <MaintenanceCost>50</MaintenanceCost>
+      <UtilitiesPerQuarter>50</UtilitiesPerQuarter>
       <LargeClassrooms>1</LargeClassrooms>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building has a really weird footprint. It's a line of four buildings with a gap in the middle.</Description>
@@ -74,7 +85,7 @@
 
     <Building name="Arrow Building">
       <ConstructionCost>20000</ConstructionCost>
-      <MaintenanceCost>300</MaintenanceCost>
+      <UtilitiesPerQuarter>300</UtilitiesPerQuarter>
       <Laboratories>2</Laboratories>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing Blender exporting. It should point toward the camera.</Description>
@@ -85,7 +96,7 @@
 
     <Building name="C Block">
       <ConstructionCost>1</ConstructionCost>
-      <MaintenanceCost>1</MaintenanceCost>
+      <UtilitiesPerQuarter>1</UtilitiesPerQuarter>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing footprint rotation.</Description>
       <Model>test-c-block</Model>
@@ -93,7 +104,7 @@
 
     <Building name="L Block">
       <ConstructionCost>1</ConstructionCost>
-      <MaintenanceCost>1</MaintenanceCost>
+      <UtilitiesPerQuarter>1</UtilitiesPerQuarter>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing footprint rotation.</Description>
       <Model>test-l-block</Model>
@@ -101,7 +112,7 @@
 
     <Building name="Random Block">
       <ConstructionCost>1</ConstructionCost>
-      <MaintenanceCost>1</MaintenanceCost>
+      <UtilitiesPerQuarter>1</UtilitiesPerQuarter>
       <Icon>TestBuildingIcon</Icon>
       <Description>This building is testing footprint rotation.</Description>
       <Model>test-random-block</Model>

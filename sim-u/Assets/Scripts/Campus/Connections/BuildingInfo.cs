@@ -15,6 +15,8 @@ namespace Campus
 
         public Point2[] EntryPoints { get; set; }
 
+        public int UtilitiesCostPerQuarter { get; set; }
+
         public int SmallClassroomCount { get; set; }
 
         public int MediumClassroomCount { get; set; }

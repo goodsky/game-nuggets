@@ -405,18 +405,26 @@ namespace Simulation
             _studentBody.UpdateStudents(educationDelta);
 
             // Step 3: Pay employees
-            int paymentsDue = 0;
+            int facultySalaryDuePerYear = 0;
             foreach (var faculty in Accessor.Faculty.HiredFaculty)
             {
-                // These poor teachers are getting underpaid. Do you think anyone will notice?
-                int truncatedWeeklySalary =
-                    faculty.SalaryPerYear / (SimulationDate.WeeksPerQuarter * SimulationDate.QuartersPerYear);
-
-                paymentsDue += truncatedWeeklySalary;
+                facultySalaryDuePerYear += faculty.SalaryPerYear;
             }
 
-            GameLogger.Debug("[Weekly {0}] AP = {1}; Faculty Salary ${2:n0}", Date, newAcademicPrestige, paymentsDue);
-            UpdateMoney(-paymentsDue);
+            // Step 4: Pay utilities
+            int utilitiesDuePerQuarter = 0;
+            foreach (Campus.BuildingInfo building in Accessor.CampusManager.GetBuildingInfo(checkConnections: false))
+            {
+                utilitiesDuePerQuarter += building.UtilitiesCostPerQuarter;
+            }
+
+            // These poor teachers are getting underpaid. Do you think anyone will notice the truncated salary?
+            int facultySalaryDueThisWeek = facultySalaryDuePerYear / (SimulationDate.WeeksPerQuarter * SimulationDate.QuartersPerYear);
+            int utilitiesDueThisWeek = utilitiesDuePerQuarter / SimulationDate.WeeksPerQuarter;
+            int bills = facultySalaryDueThisWeek + utilitiesDueThisWeek;
+
+            GameLogger.Debug("[Weekly {0}] AP = {1}; Faculty Salary ${2:n0}; Utilities ${3:n0}", Date, newAcademicPrestige, facultySalaryDueThisWeek, utilitiesDueThisWeek);
+            UpdateMoney(-bills);
         }
 
         /// <summary>
