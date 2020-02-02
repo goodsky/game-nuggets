@@ -46,7 +46,7 @@ namespace UI
             ApproveButton.OnSelect = ConfirmEnrollment;
 
             RecalculateStudentPopulation(
-                defaultTuition: Accessor.Simulation.Variables.TuitionPerQuarter,
+                defaultTuition: Accessor.Simulation.Variables.TuitionPerYear,
                 defaultSatCutoff: Accessor.Simulation.Variables.SatCutoff);
         }
 
@@ -109,7 +109,7 @@ namespace UI
 @"Graduating Student Count: {0:n0} ({1:n0} Failed)
 Enrolling Student Count: {2:n0}
 New Total Student Count: {3:n0}
-Total Classroom Capacity: {4:n0}";
+Estimated Income per quarter: {4:n0}";
 
             if (recalculating)
             {
@@ -118,7 +118,7 @@ Total Classroom Capacity: {4:n0}";
                     _graduatingPopulation.DropOuts.TotalStudentCount,
                     "...",
                     "...",
-                    Accessor.CampusManager.TotalConnectedClassroomCapacity);
+                    "...");
             }
             else
             {
@@ -127,7 +127,7 @@ Total Classroom Capacity: {4:n0}";
                     _graduatingPopulation.DropOuts.TotalStudentCount,
                     _enrollingPopulation.TotalStudentCount,
                     Accessor.Simulation.CurrentStudentBody().TotalStudentCount + _enrollingPopulation.TotalStudentCount,
-                    Accessor.CampusManager.TotalConnectedClassroomCapacity);
+                    (TuitionSlider.Value / SimulationDate.QuartersPerYear) * (_enrollingPopulation.TotalStudentCount + Accessor.Simulation.CurrentStudentBody().TotalStudentCount));
             }
         }
 
@@ -139,7 +139,7 @@ Total Classroom Capacity: {4:n0}";
                 _enrollingPopulation.TotalStudentCount,
                 _enrollingPopulation.ToString());
 
-            Accessor.Simulation.Variables.TuitionPerQuarter = TuitionSlider.Value;
+            Accessor.Simulation.Variables.TuitionPerYear = TuitionSlider.Value;
             Accessor.Simulation.Variables.SatCutoff = SatSlider.Value;
 
             Accessor.Simulation.EnrollStudents(_enrollingPopulation);

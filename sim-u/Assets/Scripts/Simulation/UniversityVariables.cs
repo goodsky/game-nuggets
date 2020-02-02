@@ -9,9 +9,9 @@ namespace Simulation
         public UniversityVariables() { }
 
         /// <summary>
-        /// The current tuition of the university.
+        /// The current tuition rate of the university.
         /// </summary>
-        public int TuitionPerQuarter { get; set; }
+        public int TuitionPerYear { get; set; }
 
         /// <summary>
         /// The current SAT cutoff of the university.

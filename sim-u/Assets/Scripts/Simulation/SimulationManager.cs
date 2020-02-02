@@ -162,8 +162,10 @@ namespace Simulation
             _studentBody.EnrollClass(students);
 
             // Don't forget to get the freshmen's money
-            int tuition = _variables.TuitionPerQuarter * students.TotalStudentCount;
+            int tuition = (_variables.TuitionPerYear / SimulationDate.QuartersPerYear) * students.TotalStudentCount;
             UpdateMoney(tuition);
+
+            GameLogger.Debug("Got ${0:n0} from {1} freshmen.", tuition, students.TotalStudentCount);
 
             // Update the teacher's assignments
             Accessor.Faculty.AssignFacultyToStudents(_studentBody);
@@ -366,9 +368,9 @@ namespace Simulation
         private void QuarterlyAccounting()
         {
             // Tuition Money
-            int tuition = _variables.TuitionPerQuarter * _studentBody.TotalStudentCount;
+            int tuition = (_variables.TuitionPerYear / SimulationDate.QuartersPerYear) * _studentBody.TotalStudentCount;
 
-            GameLogger.Debug("[Quarterly {0}] Tuition: ${1:n0}", Date, tuition);
+            GameLogger.Debug("[Quarterly {0}] Tuition: ${1:n0} for {2} students", Date, tuition, _studentBody.TotalStudentCount);
             UpdateMoney(tuition);
         }
 

@@ -101,14 +101,12 @@ namespace UI
 
             if (updateSlider)
             {
-                // The slider callback will re-invoke this method with the new value
+                // Setting this slider value can invoke a callback that re-invokes this method.
                 Slider.value = value;
             }
-            else
-            {
-                _value = value;
-                ValueText.text = string.Format(ValueFormat, value);
-            }
+
+            _value = value;
+            ValueText.text = string.Format(ValueFormat, value);
         }
     }
 }

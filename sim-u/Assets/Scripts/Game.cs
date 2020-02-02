@@ -42,6 +42,7 @@ public class Game : MonoBehaviour
     public OverrideStudentBody[] OverrideStudents;
 
     [Header("If no save game is specified use this")]
+    public bool UseDefaultSaveGame;
     public string DefaultSaveGame;
 
     private static object _singletonLock = new object();
@@ -129,7 +130,9 @@ public class Game : MonoBehaviour
             _singleton = this;
         }
 
-        if (_saveStateMetadata == null && !string.IsNullOrEmpty(DefaultSaveGame))
+        if (_saveStateMetadata == null &&
+            UseDefaultSaveGame &&
+            !string.IsNullOrEmpty(DefaultSaveGame))
         {
             GameLogger.Info("Using default save game '{0}'", DefaultSaveGame);
             SetGameSaveStateForReload(DefaultSaveGame);
@@ -200,7 +203,8 @@ public class Game : MonoBehaviour
             SimulationSaveState saveData = data.SavedData?.Simulation;
             if (saveData == null)
             {
-                GameLogger.FatalError("Tried to overwrite null save data!");
+                GameLogger.Error("Cannot set overrides. No save data exists!");
+                return;
             }
 
             if (OverrideMoney.Override)
