@@ -696,6 +696,16 @@ namespace Campus
                     _buildingRegistry[buildingData.Name] = buildingData;
 
                     GameLogger.Info("Loaded building {0}. Footprint size = {1}x{2}.", buildingData.Name, buildingData.Footprint.GetLength(0), buildingData.Footprint.GetLength(1));
+                    //for (int y = 0; y < buildingData.Footprint.GetLength(1); ++y)
+                    //{
+                    //    string footprintString = string.Empty;
+                    //    for (int x = 0; x < buildingData.Footprint.GetLength(0); ++x)
+                    //    {
+                    //        footprintString += buildingData.Footprint[x, y] ? "X" : "O";
+                    //    }
+
+                    //    GameLogger.Debug("   > {0}", footprintString);
+                    //}
 
                     foreach (BuildingEntry entry in buildingData.BuildingEntries)
                     {

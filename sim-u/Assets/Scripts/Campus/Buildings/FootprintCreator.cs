@@ -45,10 +45,9 @@ namespace Campus
 
             int gridSizeX = Mathf.RoundToInt(bounds.size.x / gridSize);
             int gridSizeZ = Mathf.RoundToInt(bounds.size.z / gridSize);
-
             var footprint = new bool[gridSizeX, gridSizeZ];
 
-            float height = 1000f;
+            float height = 50f;
             float castDistance = height * 2;
             for (int x = 0; x < gridSizeX; ++x)
             {
@@ -60,6 +59,7 @@ namespace Campus
                         z * gridSize + gridSize / 2), 
                         Vector3.down);
 
+                    // NB: If this starts returning false on a model, make sure the "Generate Colliders" bool is set to true on the model's Unity import.
                     RaycastHit hit;
                     bool isSolid = _meshCollider.Raycast(ray, out hit, castDistance);
                     footprint[x, z] = isSolid;

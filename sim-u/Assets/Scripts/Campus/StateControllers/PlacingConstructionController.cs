@@ -130,6 +130,8 @@ namespace Campus
                 if (Accessor.CampusManager.IsValidForBuilding(_building, args.GridSelection, _rotation, out bool[,] _) &&
                     Accessor.Simulation.Purchase(_building.ConstructionCost))
                 {
+                    GameLogger.Info("Constructing '{0}' at {1} w/ rotation {2}.", _building.Name, args.GridSelection, _rotation.ToString());
+
                     Accessor.CampusManager.ConstructBuilding(_building, args.GridSelection, _rotation);
                     SelectionManager.UpdateSelection(SelectionManager.Selected.ToMainMenu());
                 }
