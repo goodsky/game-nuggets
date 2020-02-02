@@ -52,6 +52,36 @@
       <Entry x="0" y="0" rotation="deg0" />
       <Entry x="3" y="0" rotation="deg0" />
     </Building>
+
+    <Building name="Small Brick Classroom">
+      <ConstructionCost>100000</ConstructionCost>
+      <UtilitiesPerQuarter>800</UtilitiesPerQuarter>
+      <SmallClassrooms>4</SmallClassrooms>
+      <Icon>brick-small-picture</Icon>
+      <Description>A classic sight on school campuses. A basic sturdy building constructed out of red bricks. This building has several small classrooms.</Description>
+      <Model>brick-small</Model>
+      <Entry x="1" y="0" rotation="deg0" />
+    </Building>
+
+    <Building name="Medium Brick Classroom">
+      <ConstructionCost>200000</ConstructionCost>
+      <UtilitiesPerQuarter>1600</UtilitiesPerQuarter>
+      <MediumClassrooms>4</MediumClassrooms>
+      <Icon>brick-medium-picture</Icon>
+      <Description>A classic sight on school campuses. A basic sturdy building constructed out of red bricks. This building has several medium classrooms.</Description>
+      <Model>brick-medium</Model>
+      <Entry x="1" y="0" rotation="deg0" />
+    </Building>
+
+    <Building name="Large Brick Classroom">
+      <ConstructionCost>250000</ConstructionCost>
+      <UtilitiesPerQuarter>1600</UtilitiesPerQuarter>
+      <LargeClassrooms>2</LargeClassrooms>
+      <Icon>brick-large-picture</Icon>
+      <Description>A classic sight on school campuses. A basic sturdy building constructed out of red bricks. This building has a couple large classrooms.</Description>
+      <Model>brick-large</Model>
+      <Entry x="2" y="0" rotation="deg0" />
+    </Building>
     
     <Building name="Test Building">
       <ConstructionCost>1000</ConstructionCost>
@@ -94,28 +124,34 @@
       <Entry x="1" y="1" rotation="deg180" />
     </Building>
 
-    <Building name="C Block">
+    <Building name="Test L Block">
       <ConstructionCost>1</ConstructionCost>
-      <UtilitiesPerQuarter>1</UtilitiesPerQuarter>
+      <UtilitiesPerQuarter>300</UtilitiesPerQuarter>
+      <Laboratories>1</Laboratories>
       <Icon>TestBuildingIcon</Icon>
-      <Description>This building is testing footprint rotation.</Description>
-      <Model>test-c-block</Model>
-    </Building>
-
-    <Building name="L Block">
-      <ConstructionCost>1</ConstructionCost>
-      <UtilitiesPerQuarter>1</UtilitiesPerQuarter>
-      <Icon>TestBuildingIcon</Icon>
-      <Description>This building is testing footprint rotation.</Description>
+      <Description>Test Building.</Description>
       <Model>test-l-block</Model>
+      <Entry x="0" y="0" rotation="deg0" />
     </Building>
 
-    <Building name="Random Block">
+    <Building name="Test C Block">
       <ConstructionCost>1</ConstructionCost>
-      <UtilitiesPerQuarter>1</UtilitiesPerQuarter>
+      <UtilitiesPerQuarter>300</UtilitiesPerQuarter>
+      <Laboratories>1</Laboratories>
       <Icon>TestBuildingIcon</Icon>
-      <Description>This building is testing footprint rotation.</Description>
+      <Description>Test Building.</Description>
+      <Model>test-c-block</Model>
+      <Entry x="0" y="0" rotation="deg0" />
+    </Building>
+
+    <Building name="Test Random Blocks">
+      <ConstructionCost>1</ConstructionCost>
+      <UtilitiesPerQuarter>300</UtilitiesPerQuarter>
+      <Laboratories>1</Laboratories>
+      <Icon>TestBuildingIcon</Icon>
+      <Description>Test Building.</Description>
       <Model>test-random-block</Model>
+      <Entry x="0" y="0" rotation="deg0" />
     </Building>
   </Buildings>
   

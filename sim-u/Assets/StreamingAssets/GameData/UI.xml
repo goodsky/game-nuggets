@@ -119,25 +119,25 @@
           <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Medium Portable"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
-        
-        <Button name="BuildTest">
-          <Tooltip>Build Test Building</Tooltip>
-          <IconImage>icon-test1</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Test Building"/>
+
+        <Button name="BuildSmallBrick">
+          <Tooltip>Build Small Brick Classroom</Tooltip>
+          <IconImage>icon-building-brick-small</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Small Brick Classroom"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
-        <Button name="BuildWeird">
-          <Tooltip>Build Weird Building</Tooltip>
-          <IconImage>icon-test1</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Weird Building"/>
+        <Button name="BuildMediumBrick">
+          <Tooltip>Build Medium Brick Classroom</Tooltip>
+          <IconImage>icon-building-brick-medium</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Medium Brick Classroom"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
-        <Button name="BuildReallyWeird">
-          <Tooltip>Build Really Weird Building</Tooltip>
-          <IconImage>icon-test1</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Really Weird Building"/>
+        <Button name="BuildLargeBrick">
+          <Tooltip>Build Large Brick Classroom</Tooltip>
+          <IconImage>icon-building-brick-large</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Large Brick Classroom"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
@@ -145,27 +145,6 @@
           <Tooltip>Build Arrow Building</Tooltip>
           <IconImage>icon-test1</IconImage>
           <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Arrow Building"/>
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-
-        <Button name="BuildLBlock">
-          <Tooltip>Build L-Block Building</Tooltip>
-          <IconImage>icon-test2</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="L Block"/>
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-
-        <Button name="BuildCBlock">
-          <Tooltip>Build C-Block Building</Tooltip>
-          <IconImage>icon-test2</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="C Block"/>
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-
-        <Button name="BuildRandomBlock">
-          <Tooltip>Build Random-Block Building</Tooltip>
-          <IconImage>icon-test2</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Random Block"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
