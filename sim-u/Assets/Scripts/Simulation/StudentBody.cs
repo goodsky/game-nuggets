@@ -201,7 +201,6 @@ namespace Simulation
         public int GetCurrentAcademicPrestige(
             int minLookbackYears,
             int minHistoricStudents,
-            int defaultAcademicScore,
             int dropOutAcademicScore)
         {
             long activeSum = 0;
@@ -234,6 +233,14 @@ namespace Simulation
                 }
             }
 
+            int defaultAcademicScore = (int)Math.Round(
+                SimulationUtils.LinearMapping(
+                    value: _config.AcademicPrestige.DefaultValue,
+                    minInput: _config.AcademicPrestige.MinValue,
+                    maxInput: _config.AcademicPrestige.MaxValue,
+                    minOutput: _config.StudentAcademicScore.MinValue,
+                    maxOutput: _config.StudentAcademicScore.MaxValue));
+
             while (historicCount < minHistoricStudents)
             {
                 // Fill in the backlog with default values
@@ -241,16 +248,31 @@ namespace Simulation
                 ++historicCount;
             }
 
-            int prestige = (int)((activeSum + historicSum) / (activeCount + historicCount));
-            GameLogger.Debug("Calculated Academic Prestige = {0}; Active Mean: {1:n0}; Active Count: {2:n0}; Historic Mean: {3:n0}; Historic Count: {4:n0}",
-                prestige,
+            // Current implementation: mean value of all active and historic students
+            double totalMean = ((activeSum + historicSum) / (double)(activeCount + historicCount));
+
+            int academicPrestige = (int)Math.Round(
+                SimulationUtils.LinearMapping(
+                    value: totalMean,
+                    minInput: _config.StudentAcademicScore.MinValue,
+                    maxInput: _config.StudentAcademicScore.MaxValue,
+                    minOutput: _config.AcademicPrestige.MinValue,
+                    maxOutput: _config.AcademicPrestige.MaxValue));
+
+            academicPrestige = Utils.Clamp(
+                academicPrestige,
+                _config.AcademicPrestige.MinValue,
+                _config.AcademicPrestige.MaxValue);
+
+            GameLogger.Debug("Calculated Academic Prestige = {0}; Total Mean: {1:0.00}; Active Mean: {2:n0}; Active Count: {3:n0}; Historic Mean: {4:n0}; Historic Count: {5:n0}",
+                academicPrestige,
+                totalMean,
                 activeCount == 0 ? 0 : activeSum / activeCount,
                 activeCount,
                 historicSum / historicCount,
                 historicCount);
 
-            // Current implementation, mean value of all active and historic students
-            return prestige;
+            return academicPrestige;
         }
 
         public void LoadGameState(StudentBodySaveState state)

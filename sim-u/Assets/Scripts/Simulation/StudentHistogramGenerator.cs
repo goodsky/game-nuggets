@@ -97,7 +97,9 @@ namespace Simulation
                 populationSize);
 
             var histogram = new StudentHistogram(population, _config.StudentAcademicScore.MinValue);
-            GameLogger.Debug("Generating a student population for tuition ${0:n0} /yr. Variables: targetTuition=${1:n0}; tuitionBonus={2:0.000}; populationSize={3}; meanAcademicScore={4}; variance={5}. Result={6}",
+            GameLogger.Debug("Generating a student population for AP: {0} RP: {1} Tuition ${2:n0} /yr. Variables: targetTuition=${3:n0}; tuitionBonus={4:0.000}; populationSize={5}; meanAcademicScore={6}; variance={7}. Result={8}",
+                currentScore.AcademicPrestige,
+                currentScore.ResearchPrestige,
                 tuition,
                 targetTuition,
                 tuitionBonus,

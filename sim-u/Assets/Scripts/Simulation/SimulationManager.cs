@@ -380,27 +380,12 @@ namespace Simulation
         private void WeeklyAccounting()
         {
             // Step 1: Update scores
-            // NB: Drop outs all count as StudentAcademicScore.MinValue - 10
-            int currentStudentBodyMean = _studentBody.GetCurrentAcademicPrestige(
+            int currentAcademicPrestige = _studentBody.GetCurrentAcademicPrestige(
                 _config.AcademicPrestigeLookBackYears,
                 _config.AcademicPrestigeLookBackStudentCount,
-                _config.StudentAcademicScore.DefaultValue,
-                _config.StudentAcademicScore.MinValue - 10);
+                0 /* NB: Drop outs all count as a score of 0 - this may need to be a higher penalty */);
 
-            int newAcademicPrestige = (int)Math.Round(
-                SimulationUtils.LinearMapping(
-                    value: currentStudentBodyMean,
-                    minInput: _config.StudentAcademicScore.MinValue,
-                    maxInput: _config.StudentAcademicScore.MaxValue,
-                    minOutput: _config.AcademicPrestige.MinValue,
-                    maxOutput: _config.AcademicPrestige.MaxValue));
-
-            newAcademicPrestige = Utils.Clamp(
-                newAcademicPrestige,
-                _config.AcademicPrestige.MinValue,
-                _config.AcademicPrestige.MaxValue);
-
-            _score.AcademicPrestige = newAcademicPrestige;
+            _score.AcademicPrestige = currentAcademicPrestige;
 
             // Step 2: Update student education
             StudentHistogram[] educationDelta = Accessor.Faculty.ExecuteTeachingStep();
@@ -425,7 +410,7 @@ namespace Simulation
             int utilitiesDueThisWeek = utilitiesDuePerQuarter / SimulationDate.WeeksPerQuarter;
             int bills = facultySalaryDueThisWeek + utilitiesDueThisWeek;
 
-            GameLogger.Debug("[Weekly {0}] AP = {1}; Faculty Salary ${2:n0}; Utilities ${3:n0}", Date, newAcademicPrestige, facultySalaryDueThisWeek, utilitiesDueThisWeek);
+            GameLogger.Debug("[Weekly {0}] AP = {1}; Faculty Salary ${2:n0}; Utilities ${3:n0}", Date, currentAcademicPrestige, facultySalaryDueThisWeek, utilitiesDueThisWeek);
             UpdateMoney(-bills);
         }
 

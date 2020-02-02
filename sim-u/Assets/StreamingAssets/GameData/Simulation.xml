@@ -18,7 +18,7 @@
   <TuitionRange min="1000" max="50000" default="3000" />
   <TuitionRangeExponentialFactor>2.1</TuitionRangeExponentialFactor>
 
-  <StudentAcademicScore min="60" max="110" default="70" />
+  <StudentAcademicScore min="60" max="110" />
   <StudentSATScore min="800" max="1600" default="1000" />
   
   <!-- Note: the min and max tuition bonus values add to 0, or else the sigmoid will be weird-->
