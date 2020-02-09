@@ -87,17 +87,17 @@
     <!-- Faculty Sub Menu Buttons -->
     <SubButtonGroup name="FacultyMenu">
       <Buttons>
-        <Button name="FacultyOverview">
-          <Tooltip>Faculty Overview</Tooltip>
-          <IconImage>icon-faculty-manage</IconImage>
-          <OnSelect x:type="OpenWindowAction" windowName="FacultyOverview" />
-          <OnDeselect x:type="CloseWindowAction" />
-        </Button>
-
         <Button name="FacultyHiring">
           <Tooltip>Hire new Faculty</Tooltip>
           <IconImage>icon-faculty-hire</IconImage>
           <OnSelect x:type="OpenWindowAction" windowName="FacultyHiring" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="FacultyOverview">
+          <Tooltip>Faculty Overview</Tooltip>
+          <IconImage>icon-faculty-manage</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="FacultyOverview" />
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>
@@ -141,10 +141,10 @@
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
 
-        <Button name="BuildArrow">
-          <Tooltip>Build Arrow Building</Tooltip>
-          <IconImage>icon-test1</IconImage>
-          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Arrow Building"/>
+        <Button name="BuildResearchLab">
+          <Tooltip>Build Research Laboratory</Tooltip>
+          <IconImage>icon-building-modern-medium</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Research Laboratory"/>
           <OnDeselect x:type="CloseWindowAction" />
         </Button>
       </Buttons>

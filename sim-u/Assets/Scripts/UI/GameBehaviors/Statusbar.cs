@@ -100,15 +100,18 @@ $@"Student Status:
     - {_faculty.UsedClassroomCount:n0} Assigned Faculty";
 
             // Update Popularity
-            string popularityStr = $"{_simulation.Score.Popularity}";
+            string popularityColor = _simulation.Score.Popularity >= 0 ? "white" : "red";
+            string popularityStr = $"<color={popularityColor}>{_simulation.Score.Popularity}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(PopularityText, popularityStr);
 
             // Update Academic Prestige
-            string academicStr = $"{_simulation.Score.AcademicPrestige}";
+            string academicColor = _simulation.Score.AcademicPrestige >= 0 ? "white" : "red";
+            string academicStr = $"<color={academicColor}>{_simulation.Score.AcademicPrestige}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(AcademicsText, academicStr);
 
             // Update Research Prestige
-            string researchStr = $"{_simulation.Score.ResearchPrestige}";
+            string researchColor = _simulation.Score.ResearchPrestige >= 0 ? "white" : "red";
+            string researchStr = $"<color={researchColor}>{_simulation.Score.ResearchPrestige}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(ResearchText, researchStr);
 
             // Update Campus Score

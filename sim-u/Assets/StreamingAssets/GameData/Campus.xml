@@ -82,6 +82,19 @@
       <Model>brick-large</Model>
       <Entry x="2" y="0" rotation="deg0" />
     </Building>
+
+    <Building name="Research Laboratory">
+      <ConstructionCost>250000</ConstructionCost>
+      <UtilitiesPerQuarter>3200</UtilitiesPerQuarter>
+      <Laboratories>1</Laboratories>
+      <Icon>modern-medium-picture</Icon>
+      <Description>A modern campus building with research laboratories. Faculty can uncover the future using the high-tech equiptment in the Research Laboratory.</Description>
+      <Model>modern-medium</Model>
+      <Entry x="1" y="0" rotation="deg0" />
+      <Entry x="0" y="1" rotation="deg90" />
+      <Entry x="1" y="2" rotation="deg180" />
+      <Entry x="2" y="1" rotation="deg270" />
+    </Building>
     
     <Building name="Test Building">
       <ConstructionCost>1000</ConstructionCost>

@@ -109,7 +109,7 @@ namespace UI
 @"Graduating Student Count: {0:n0} ({1:n0} Failed)
 Enrolling Student Count: {2:n0}
 New Total Student Count: {3:n0}
-Estimated Income per quarter: {4:n0}";
+Estimated Income per quarter: ${4:n0}";
 
             if (recalculating)
             {

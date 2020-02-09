@@ -10,12 +10,21 @@
 
   <UniversityAcademicScore min="0" max="1000000" default="0" />
   <UniversityResearchScore min="0" max="1000000" default="0" />
-  <AcademicPrestige min="0" max="100" default="10" />
-  <ResearchPrestige min="0" max="100" default="10" />
-  <Popularity min="0" max="100" default="10" />
+  
+  <!--
+    Note: The range of the Student Academic Score / the range of the Academic Prestige should be a nice deciaml the
+    computer can compute. If not, the default starting prestige may not map back cleanly, and turn 1 it will jump.
+    e.g.
+      Academic Prestige Range = 100 - 0 = 100
+      Student Academic Score Range = 110 - 60 = 50
+      Scaling Factor = 50 / 100 = 0.5
+  -->
+  <AcademicPrestige min="-25" max="100" default="0" />
+  <ResearchPrestige min="-25" max="100" default="0" />
+  <Popularity min="-10" max="100" default="0" />
   <StartingMoney>10000</StartingMoney>
   
-  <TuitionRange min="1000" max="50000" default="3000" />
+  <TuitionRange min="0" max="50000" default="3000" />
   <TuitionRangeExponentialFactor>2.1</TuitionRangeExponentialFactor>
 
   <StudentAcademicScore min="60" max="110" />
