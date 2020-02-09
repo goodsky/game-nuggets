@@ -3,6 +3,7 @@ using Faculty;
 using GameData;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UI;
 
@@ -379,17 +380,50 @@ namespace Simulation
         /// </summary>
         private void WeeklyAccounting()
         {
-            // Step 1: Update scores
-            int currentAcademicPrestige = _studentBody.GetCurrentAcademicPrestige(
-                _config.AcademicPrestigeLookBackYears,
-                _config.AcademicPrestigeLookBackStudentCount,
-                0 /* NB: Drop outs all count as a score of 0 - this may need to be a higher penalty */);
-
-            _score.AcademicPrestige = currentAcademicPrestige;
-
-            // Step 2: Update student education
+            // Step 1: Update student education
             StudentHistogram[] educationDelta = Accessor.Faculty.ExecuteTeachingStep();
             _studentBody.UpdateStudents(educationDelta);
+
+            // Step 2: Update Scores
+            //      A: Academic Prestige
+            (int currentAcademicPrestige, ScoreTrend currentAcademicPrestigeTrend)
+                = _studentBody.GetCurrentAcademicPrestige(
+                    _config.AcademicPrestigeLookBackYears,
+                    _config.AcademicPrestigeLookBackStudentCount,
+                    0 /* NB: Drop outs all count as a score of 0 - this may need to be a higher penalty */);
+
+            _score.AcademicPrestige = currentAcademicPrestige;
+            _score.AcademicPrestigeTrend = currentAcademicPrestigeTrend;
+
+            //      B: Research Prestige
+            //      This is a doodle on how research could work. Just playing around.
+            double researchDelta = Accessor.Faculty.NormalizedResearcherOutput;
+            double nextResearch = _score.ResearchPrestige + researchDelta;
+            double researchDrag = SimulationUtils.ExponentialMapping(
+                nextResearch,
+                _config.ResearchPrestige.MinValue,
+                _config.ResearchPrestige.MaxValue,
+                _config.ResearchDrag.MinValue,
+                _config.ResearchDrag.MaxValue,
+                _config.ResearchDragExponent);
+
+            researchDelta -= researchDrag;
+
+            double currentResearchPrestige = _score.ResearchPrestige + researchDelta;
+            currentResearchPrestige = Utils.Clamp(currentResearchPrestige, _config.ResearchPrestige.MinValue, _config.ResearchPrestige.MaxValue);
+
+            ScoreTrend researchTrend = ScoreTrend.Neutral;
+            if (researchDelta > 1e-4)
+            {
+                researchTrend = ScoreTrend.Up;
+            }
+            else if (researchDelta < -1e-4)
+            {
+                researchTrend = ScoreTrend.Down;
+            }
+
+            _score.ResearchPrestige = currentResearchPrestige;
+            _score.ResearchPrestigeTrend = researchTrend;
 
             // Step 3: Pay employees
             int facultySalaryDuePerYear = 0;

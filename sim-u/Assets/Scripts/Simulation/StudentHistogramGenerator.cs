@@ -152,7 +152,7 @@ namespace Simulation
         /// <returns>The optimal tuition / yr in dollars.</returns>
         public int CalculateTargetTuition(UniversityScore score, int bonus = 0)
         {
-            int tuitionScore = score.AcademicPrestige + score.ResearchPrestige + bonus;
+            int tuitionScore = score.AcademicPrestige + (int)Math.Round(score.ResearchPrestige) + bonus;
 
             int minTuitionScore = _config.AcademicPrestige.MinValue +
                                     _config.ResearchPrestige.MinValue;

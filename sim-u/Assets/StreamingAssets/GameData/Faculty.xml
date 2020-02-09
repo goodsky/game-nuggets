@@ -6,6 +6,9 @@
   <TeachingScore min="50" max="100" default="50" />
   <ResearchScore min="50" max="100" default="50" />
 
+  <!-- Factor of how much better "good" research scores are. -->
+  <ResearchExponentialFactor>2.0</ResearchExponentialFactor>
+  
   <!-- Data used to randomly generate faculty -->
   <FirstNamesMen>
     <Name>Skyler</Name>

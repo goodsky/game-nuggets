@@ -20,7 +20,7 @@
       Scaling Factor = 50 / 100 = 0.5
   -->
   <AcademicPrestige min="-25" max="100" default="0" />
-  <ResearchPrestige min="-25" max="100" default="0" />
+  <ResearchPrestige min="0" max="100" default="0" />
   <Popularity min="-10" max="100" default="0" />
   <StartingMoney>10000</StartingMoney>
   
@@ -43,6 +43,9 @@
   <AcademicPrestigeLookBackYears>10</AcademicPrestigeLookBackYears>
   <AcademicPrestigeLookBackStudentCount>1000</AcademicPrestigeLookBackStudentCount>
 
+  <ResearchDrag min="0" max="1" />
+  <ResearchDragExponent>1.2</ResearchDragExponent>
+  
   <!-- The graduation/dropout rates are set per bucket of student (year + academic score) -->
   <!-- Defaults to 0 if a bucket does not exist - until Senior2 when any remaining drop out -->
   <GraduationRateBucket year="Freshman" lowScore="60" highScore="70" graduationRate="0.00" dropoutRate="0.10" />

@@ -21,6 +21,7 @@ namespace Faculty
         private readonly Dictionary<int, HiredFaculty> _hiredFaculty = new Dictionary<int, HiredFaculty>();
         private readonly Dictionary<int, GeneratedFaculty> _generatedFaculty = new Dictionary<int, GeneratedFaculty>();
 
+        private FacultyData _config;
         private FacultyGenerator _generator;
         private HiredFaculty _nullFaculty;
 
@@ -83,6 +84,29 @@ namespace Faculty
             {
                 return HiredFaculty
                     .Sum(faculty => faculty.ResearchOutput);
+            }
+        }
+
+        /// <summary>
+        /// This is something that makes good researchers good,
+        /// and average researchers average. Exponential Output.
+        /// </summary>
+        public double NormalizedResearcherOutput
+        {
+            get
+            {
+                return HiredFaculty
+                    .Sum(faculty =>
+                    faculty.ResearchSlots == 0 ?
+                    0 :
+                    SimulationUtils.ExponentialMapping(
+                        faculty.ResearchOutput,
+                        _config.ResearchScore.MinValue,
+                        _config.ResearchScore.MaxValue,
+                        0,
+                        1,
+                        _config.ResearchExponentialFactor))
+                    / SimulationDate.WeeksPerQuarter;
             }
         }
 
@@ -404,6 +428,7 @@ namespace Faculty
 
         protected override void LoadData(FacultyData gameData)
         {
+            _config = gameData;
             _generator = new FacultyGenerator(gameData);
 
             // If a student can't fit in a classroom they are taught by the "Street".

@@ -201,6 +201,22 @@ namespace Simulation
         }
 
         /// <summary>
+        /// Get a copy of the histogram.
+        /// I need this because I added mutable operations.
+        /// </summary>
+        public StudentHistogram Clone()
+        {
+            int[] values = new int[HistogramLength];
+            for (int i = 0; i < HistogramLength; ++i)
+            {
+                int value = BucketValue(i);
+                values[i] = _scoreHistogram[i];
+            }
+
+            return new StudentHistogram(values, MinValue);
+        }
+
+        /// <summary>
         /// Take only the top scores that pass a cutoff in the population.
         /// </summary>
         /// <param name="minBound">The minimum (inclusive) value.</param>

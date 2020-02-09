@@ -29,6 +29,14 @@ namespace UI
         public Text ScoreText;
         public Text DateText;
 
+        [Header("Status Bar UpDown Arrows")]
+        public Image PopularityUpArrow;
+        public Image PopularityDownArrow;
+        public Image AcademicsUpArrow;
+        public Image AcademicsDownArrow;
+        public Image ResearchUpArrow;
+        public Image ResearchDownArrow;
+
         [Header("Selectables to update tool tip")]
         public Common.Selectable StudentCount;
 
@@ -104,15 +112,24 @@ $@"Student Status:
             string popularityStr = $"<color={popularityColor}>{_simulation.Score.Popularity}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(PopularityText, popularityStr);
 
+            PopularityUpArrow.gameObject.SetActive(_simulation.Score.PopularityTrend == ScoreTrend.Up);
+            PopularityDownArrow.gameObject.SetActive(_simulation.Score.PopularityTrend == ScoreTrend.Down);
+
             // Update Academic Prestige
             string academicColor = _simulation.Score.AcademicPrestige >= 0 ? "white" : "red";
             string academicStr = $"<color={academicColor}>{_simulation.Score.AcademicPrestige}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(AcademicsText, academicStr);
 
+            AcademicsUpArrow.gameObject.SetActive(_simulation.Score.AcademicPrestigeTrend == ScoreTrend.Up);
+            AcademicsDownArrow.gameObject.SetActive(_simulation.Score.AcademicPrestigeTrend == ScoreTrend.Down);
+
             // Update Research Prestige
             string researchColor = _simulation.Score.ResearchPrestige >= 0 ? "white" : "red";
-            string researchStr = $"<color={researchColor}>{_simulation.Score.ResearchPrestige}</color>";
+            string researchStr = $"<color={researchColor}>{_simulation.Score.ResearchPrestige:0}</color>";
             anyUpdate |= UpdateTextCheckIfChanged(ResearchText, researchStr);
+
+            ResearchUpArrow.gameObject.SetActive(_simulation.Score.ResearchPrestigeTrend == ScoreTrend.Up);
+            ResearchDownArrow.gameObject.SetActive(_simulation.Score.ResearchPrestigeTrend == ScoreTrend.Down);
 
             // Update Campus Score
             string scoreStr = $"{_simulation.Score.AcademicScore + _simulation.Score.ResearchScore}";

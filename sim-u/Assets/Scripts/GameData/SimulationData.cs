@@ -36,6 +36,16 @@ namespace GameData
         [XmlElement("ResearchPrestige")]
         public ScoreDefinition<int> ResearchPrestige { get; set; }
 
+        /// <summary>
+        /// This is a temporary modeling for research.
+        /// The more prestige you have, the more you need to maintain that level.
+        /// </summary>
+        [XmlElement("ResearchDrag")]
+        public ScoreDefinition<int> ResearchDrag { get; set; }
+        
+        [XmlElement("ResearchDragExponent")]
+        public double ResearchDragExponent { get; set; }
+
         [XmlElement("Popularity")]
         public ScoreDefinition<int> Popularity { get; set; }
 

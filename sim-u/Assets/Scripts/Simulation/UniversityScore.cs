@@ -3,6 +3,13 @@ using System;
 
 namespace Simulation
 {
+    public enum ScoreTrend
+    {
+        Neutral,
+        Up,
+        Down
+    }
+
     [Serializable]
     public class UniversityScore
     {
@@ -35,16 +42,31 @@ namespace Simulation
         public int AcademicPrestige { get; set; }
 
         /// <summary>
+        /// Direction that AP is trending
+        /// </summary>
+        public ScoreTrend AcademicPrestigeTrend { get; set; }
+
+        /// <summary>
         /// Indicator of current research performance.
         /// Value: [0, 100]
         /// </summary>
-        public int ResearchPrestige { get; set; }
+        public double ResearchPrestige { get; set; }
+
+        /// <summary>
+        /// Direction that RP is trending.
+        /// </summary>
+        public ScoreTrend ResearchPrestigeTrend { get; set; }
 
         /// <summary>
         /// Indicator of current university popularity.
         /// Value: [0, 100]
         /// </summary>
-        public int Popularity { get; set; }
+        public double Popularity { get; set; }
+
+        /// <summary>
+        /// Direction that popularity is trending.
+        /// </summary>
+        public ScoreTrend PopularityTrend { get; set; }
 
         /// <summary>
         /// Amount of money the University currently has.

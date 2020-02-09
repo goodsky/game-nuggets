@@ -22,6 +22,12 @@ namespace GameData
         [XmlElement("ResearchScore")]
         public ScoreDefinition<int> ResearchScore { get; set; }
 
+        /// <summary>
+        /// This factor says how much better good researchers are than average researchers.
+        /// </summary>
+        [XmlElement("ResearchExponentialFactor")]
+        public double ResearchExponentialFactor { get; set; }
+
         [XmlElement("AvailableFacultyCount")]
         public int AvailableFacultyCount { get; set; }
 

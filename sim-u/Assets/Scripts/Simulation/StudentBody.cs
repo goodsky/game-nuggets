@@ -95,36 +95,8 @@ namespace Simulation
             {
                 StudentHistogram students = _activeStudents[i];
 
-                StudentHistogram grads = _generator.GenerateEmpty();
-                StudentHistogram dropouts = _generator.GenerateEmpty();
-
-                foreach (GraduationRateBucket rateBucket in graduationRates[(StudentBodyYear)i])
-                {
-                    StudentHistogram studentBucket = students.Slice(rateBucket.LowerBoundAcademicScore, rateBucket.UpperBoundAcademicScore);
-
-                    int graduatingCount = (int)Math.Round(rateBucket.GraduationRate * studentBucket.TotalStudentCount);
-                    int dropoutCount = (int)Math.Round(rateBucket.DropoutRate * studentBucket.TotalStudentCount);
-
-                    if (graduatingCount + dropoutCount > studentBucket.TotalStudentCount)
-                    {
-                        GameLogger.Error("More students are graduating or dropping out than possible! Bucket: {0} - ({1}, {2}] - Grad: {3:0.00}% - Drop: {4:0.00}%; Students: {5}; Graduating: {6}; DropOuts: {7};",
-                            rateBucket.Year,
-                            rateBucket.LowerBoundAcademicScore,
-                            rateBucket.UpperBoundAcademicScore,
-                            rateBucket.GraduationRate,
-                            rateBucket.DropoutRate,
-                            studentBucket.TotalStudentCount,
-                            graduatingCount,
-                            dropoutCount);
-
-                        // NB: I'm erring on the side of allowing more graduations
-                        graduatingCount = Math.Min(graduatingCount, studentBucket.TotalStudentCount);
-                        dropoutCount = Math.Min(dropoutCount, studentBucket.TotalStudentCount - graduatingCount);
-                    }
-
-                    grads.Add(studentBucket.TakeTop(graduatingCount));
-                    dropouts.Add(studentBucket.TakeBottom(dropoutCount));
-                }
+                (StudentHistogram grads, StudentHistogram dropouts) =
+                    CalculateGraduationStep(students, (StudentBodyYear)i);
 
                 students.Subtract(grads);
                 students.Subtract(dropouts);
@@ -192,20 +164,20 @@ namespace Simulation
 
         /// <summary>
         /// This calculation takes into account the historic graduation results in addition
-        /// to the current student body to estimate the current "academic prestige".
+        /// to some of the current student body to estimate the current "academic prestige".
         /// </summary>
         /// <param name="minLookbackYears">Minimum number of years to look back for results</param>
         /// <param name="minHistoricStudents">Minimum number of students to look back</param>
         /// <param name="defaultAcademicScore">Default academic score for students.</param>
         /// <param name="dropOutAcademicScore">Academic score to use for drop outs.</param>
-        public int GetCurrentAcademicPrestige(
+        public (int currentAcademicPrestige, ScoreTrend trend) GetCurrentAcademicPrestige(
             int minLookbackYears,
             int minHistoricStudents,
             int dropOutAcademicScore)
         {
             long activeSum = 0;
             long activeCount = 0;
-            for (int i = 0; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
+            for (int i = (int)StudentBodyYear.Senior; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
             {
                 activeSum += _activeStudents[i].GetTotalSum();
                 activeCount += _activeStudents[i].TotalStudentCount; 
@@ -264,15 +236,103 @@ namespace Simulation
                 _config.AcademicPrestige.MinValue,
                 _config.AcademicPrestige.MaxValue);
 
-            GameLogger.Debug("Calculated Academic Prestige = {0}; Total Mean: {1:0.00}; Active Mean: {2:n0}; Active Count: {3:n0}; Historic Mean: {4:n0}; Historic Count: {5:n0}",
+            // Estimate the trend based on how the active student body looks
+            double activeMean = activeCount == 0 ? defaultAcademicScore : activeSum / (double)activeCount;
+            double historicMean = historicCount == 0 ? defaultAcademicScore : historicSum / (double)historicCount;
+
+            // Project the likely outcome of the students who are close to graduating
+            // Simulate the remaining years of every student.
+            long projectedSum = 0;
+            long projectedCount = 0;
+            for (int i = (int)StudentBodyYear.Freshman; i < (int)StudentBodyYear.MaxYearsToGraduate; ++i)
+            {
+                StudentHistogram students = _activeStudents[i].Clone();
+
+                for (int j = i; j < (int)StudentBodyYear.MaxYearsToGraduate; ++j)
+                {
+                    (StudentHistogram hypotheticalGrads, StudentHistogram hypotheticalDropouts) =
+                        CalculateGraduationStep(students, (StudentBodyYear)j);
+
+                    projectedSum += hypotheticalGrads.GetTotalSum();
+                    projectedSum += hypotheticalDropouts.TotalStudentCount * dropOutAcademicScore;
+
+                    projectedCount += hypotheticalGrads.TotalStudentCount + hypotheticalDropouts.TotalStudentCount;
+
+                    students.Subtract(hypotheticalGrads);
+                    students.Subtract(hypotheticalDropouts);
+                }
+            }
+
+            double projectedMean = projectedCount == 0 ? historicMean : projectedSum / (double)projectedCount;
+
+            ScoreTrend trend = ScoreTrend.Neutral;
+            double trendDelta = projectedMean - historicMean;
+            if (trendDelta >  1.0)
+            {
+                trend = ScoreTrend.Up;
+            }
+            else if (trendDelta < -1.0)
+            {
+                trend = ScoreTrend.Down;
+            }
+
+            GameLogger.Debug("Calculated Academic Prestige = {0}; Total Mean: {1:0.00}; Active Mean: {2:0.00}; Active Count: {3:n0}; Historic Mean: {4:0.00}; Historic Count: {5:n0}; Projected Mean: {6:0.00}",
                 academicPrestige,
                 totalMean,
-                activeCount == 0 ? 0 : activeSum / activeCount,
+                activeMean,
                 activeCount,
-                historicSum / historicCount,
-                historicCount);
+                historicMean,
+                historicCount,
+                projectedMean);
 
-            return academicPrestige;
+            return (academicPrestige, trend);
+        }
+
+        /// <summary>
+        /// Calculate what should happen to the student body.
+        /// </summary>
+        /// <param name="students">The student body to calculate graduation step.</param>
+        /// <param name="year">The year of this student body.</param>
+        /// <returns>The graduates and dropouts from the student body.</returns>
+        private (StudentHistogram grads, StudentHistogram dropouts) CalculateGraduationStep(StudentHistogram students, StudentBodyYear year)
+        {
+            Dictionary<StudentBodyYear, List<GraduationRateBucket>> graduationRates =
+                _config.GraduationRateBuckets
+                    .GroupBy(bucket => bucket.Year)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                StudentHistogram grads = _generator.GenerateEmpty();
+                StudentHistogram dropouts = _generator.GenerateEmpty();
+
+            foreach (GraduationRateBucket rateBucket in graduationRates[year])
+            {
+                StudentHistogram studentBucket = students.Slice(rateBucket.LowerBoundAcademicScore, rateBucket.UpperBoundAcademicScore);
+
+                int graduatingCount = (int)Math.Round(rateBucket.GraduationRate * studentBucket.TotalStudentCount);
+                int dropoutCount = (int)Math.Round(rateBucket.DropoutRate * studentBucket.TotalStudentCount);
+
+                if (graduatingCount + dropoutCount > studentBucket.TotalStudentCount)
+                {
+                    GameLogger.Error("More students are graduating or dropping out than possible! Bucket: {0} - ({1}, {2}] - Grad: {3:0.00}% - Drop: {4:0.00}%; Students: {5}; Graduating: {6}; DropOuts: {7};",
+                        rateBucket.Year,
+                        rateBucket.LowerBoundAcademicScore,
+                        rateBucket.UpperBoundAcademicScore,
+                        rateBucket.GraduationRate,
+                        rateBucket.DropoutRate,
+                        studentBucket.TotalStudentCount,
+                        graduatingCount,
+                        dropoutCount);
+
+                    // NB: I'm erring on the side of allowing more graduations
+                    graduatingCount = Math.Min(graduatingCount, studentBucket.TotalStudentCount);
+                    dropoutCount = Math.Min(dropoutCount, studentBucket.TotalStudentCount - graduatingCount);
+                }
+
+                grads.Add(studentBucket.TakeTop(graduatingCount));
+                dropouts.Add(studentBucket.TakeBottom(dropoutCount));
+            }
+
+            return (grads, dropouts);
         }
 
         public void LoadGameState(StudentBodySaveState state)
