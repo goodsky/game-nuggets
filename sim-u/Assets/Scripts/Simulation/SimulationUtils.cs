@@ -5,6 +5,9 @@ namespace Simulation
 {
     public static class SimulationUtils
     {
+        // Well... I already don't have any tests...
+        private static Random _rnd = new Random();
+
         /// <summary>
         /// Calculates the number of a population at a position along the bell-curve, given the mean, variance and size of the population.
         /// </summary>
@@ -80,6 +83,25 @@ namespace Simulation
             double minValue = -maxOutput;
             double sigmoidSlope = -inputFor90percentile / Math.Log((1 - percentile) / percentile);
             return range / (1 + Math.Exp(-value / sigmoidSlope)) + minValue;
+        }
+
+        /// <summary>
+        /// Generates a normally distributed random value.
+        /// </summary>
+        /// <param name="mean">The mean value for the distribution.</param>
+        /// <param name="stdDev">Standard deviation for the distribution.</param>
+        /// <returns>A normally distributed random value.</returns>
+        public static double GenerateNormal(double mean, double stdDev)
+        {
+            // Box Muller
+            // https://stackoverflow.com/questions/218060/random-gaussian-variables
+            lock (_rnd)
+            {
+                double u1 = 1.0 - _rnd.NextDouble();
+                double u2 = 1.0 - _rnd.NextDouble();
+                double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+                return mean + stdDev * randStdNormal;
+            }
         }
     }
 }

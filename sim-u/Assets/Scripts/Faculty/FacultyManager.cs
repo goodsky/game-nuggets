@@ -182,8 +182,8 @@ namespace Faculty
                     }
                 }
 
-                // Step 3: Randomly place students into classrooms.
-                //         Starting from seniors down. Freshman are the first to miss out on classrooms.
+                // Step 3: Place students into classrooms.
+                //         Starting from seniors down and highest grades down. Freshman are the first to miss out on classrooms.
                 var untaughtStudents = new StudentHistogram[(int)StudentBodyYear.MaxYearsToGraduate];
                 for (int i = 0; i < untaughtStudents.Length; ++i)
                 {
@@ -436,7 +436,7 @@ namespace Faculty
         protected override void LoadData(FacultyData gameData)
         {
             _config = gameData;
-            _generator = new FacultyGenerator(gameData);
+            _generator = new FacultyGenerator(Accessor, gameData);
 
             // If a student can't fit in a classroom they are taught by the "Street".
             _nullFaculty = new HiredFaculty(-1, "Street", 0, gameData.TeachingScore.DefaultValue, gameData.ResearchScore.DefaultValue, -1);

@@ -20,6 +20,8 @@ namespace UI
 
         public Text SalaryText;
 
+        public Text SlotsText;
+
         public Text TeachingText;
 
         public Text ResearchText;
@@ -33,6 +35,7 @@ namespace UI
             Headshot.sprite = headshot;
             NameText.text = faculty.Name;
             SalaryText.text = $"${faculty.SalaryPerYear:n0} /yr";
+            SlotsText.text = faculty.MaximumSlots.ToString();
             TeachingText.text = faculty.TeachingScore.ToString();
             ResearchText.text = faculty.ResearchScore.ToString();
 

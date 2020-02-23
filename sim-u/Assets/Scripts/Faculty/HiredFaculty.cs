@@ -26,6 +26,7 @@ namespace Faculty
             MaximumSlots = maximumSlots;
 
             // this is a hack to get teachers to teach over a random period of time...
+            // may have bugs during deserialization though buddy...
             _weeksSinceTaught = _rng.Next(20);
         }
 
