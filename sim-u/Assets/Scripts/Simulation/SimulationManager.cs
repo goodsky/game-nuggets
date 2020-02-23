@@ -397,7 +397,7 @@ namespace Simulation
 
             //      B: Research Prestige
             //      This is a doodle on how research could work. Just playing around.
-            double researchDelta = Accessor.Faculty.NormalizedResearcherOutput;
+            double researchDelta = Accessor.Faculty.WeeklyResearchDelta;
             double nextResearch = _score.ResearchPrestige + researchDelta;
             double researchDrag = SimulationUtils.ExponentialMapping(
                 nextResearch,

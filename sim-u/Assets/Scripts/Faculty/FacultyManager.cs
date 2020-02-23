@@ -88,25 +88,32 @@ namespace Faculty
         }
 
         /// <summary>
-        /// This is something that makes good researchers good,
-        /// and average researchers average. Exponential Output.
+        /// Calculate how much to increase the university research score by.
+        /// This uses an exponential mapping to make excellent researchers more rare.
         /// </summary>
-        public double NormalizedResearcherOutput
+        public double WeeklyResearchDelta
         {
             get
             {
-                return HiredFaculty
-                    .Sum(faculty =>
-                    faculty.ResearchSlots == 0 ?
-                    0 :
-                    SimulationUtils.ExponentialMapping(
-                        faculty.ResearchOutput,
-                        _config.ResearchScore.MinValue,
-                        _config.ResearchScore.MaxValue,
-                        0,
-                        1,
-                        _config.ResearchExponentialFactor))
-                    / SimulationDate.WeeksPerQuarter;
+                double thisWeeksResearchDelta = 0.0;
+                foreach (var hiredFaculty in HiredFaculty)
+                {
+                    for (int i = 0; i < hiredFaculty.ResearchSlots; ++i)
+                    {
+                        double researchOutputPerQuarter = SimulationUtils.ExponentialMapping(
+                            hiredFaculty.ResearchScore,
+                            _config.ResearchScore.MinValue,
+                            _config.ResearchScore.MaxValue,
+                            0,
+                            1,
+                            _config.ResearchExponentialFactor);
+
+                        double researchOutputPerWeek = researchOutputPerQuarter / SimulationDate.WeeksPerQuarter;
+                        thisWeeksResearchDelta += researchOutputPerWeek;
+                    }
+                }
+
+                return thisWeeksResearchDelta;
             }
         }
 
