@@ -41,6 +41,17 @@ namespace UI
         }
 
         /// <summary>
+        /// Gets the window that is currently open.
+        /// This may return null.
+        /// Be careful with race conditions here.
+        /// </summary>
+        /// <returns>The active open window, or null.</returns>
+        public Window GetCurrentOpenWindow()
+        {
+            return _windowManager.CurrentOpenWindow;
+        }
+
+        /// <summary>
         /// Opens a window on screen using GameDataStore data.
         /// </summary>
         /// <param name="name">Name of the window to open.</param>

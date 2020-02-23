@@ -371,6 +371,14 @@ namespace Simulation
             // Tuition Money
             int tuition = (_variables.TuitionPerYear / SimulationDate.QuartersPerYear) * _studentBody.TotalStudentCount;
 
+            // Refresh the available faculty
+            Accessor.Faculty.RefreshAvailableFaculty();
+            FacultyHiringWindow window = Accessor.UiManager.GetCurrentOpenWindow() as FacultyHiringWindow;
+            if (window != null)
+            {
+                window.UpdateList();
+            }
+
             GameLogger.Debug("[Quarterly {0}] Tuition: ${1:n0} for {2} students", Date, tuition, _studentBody.TotalStudentCount);
             UpdateMoney(tuition);
         }

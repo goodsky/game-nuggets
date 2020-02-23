@@ -16,7 +16,7 @@ namespace UI
         private Dictionary<string, Window> _windows = new Dictionary<string, Window>();
 
         /// <summary>The active window.</summary>
-        private Window _openWindow = null;
+        public Window CurrentOpenWindow { get; private set; }
 
         /// <summary>
         /// Try to load a window from the store.
@@ -68,7 +68,7 @@ namespace UI
                 return;
             }
 
-            if (window == _openWindow)
+            if (window == CurrentOpenWindow)
             {
                 // If you open the same window again, I assume you want to close it.
                 CloseWindow();
@@ -83,7 +83,7 @@ namespace UI
                 window.SelectionParent = selected;
             }
 
-            _openWindow = window;
+            CurrentOpenWindow = window;
 
             window.Open(data);
             window.gameObject.SetActive(true);
@@ -94,11 +94,11 @@ namespace UI
         /// </summary>
         public void CloseWindow()
         {
-            if (_openWindow != null)
+            if (CurrentOpenWindow != null)
             {
-                _openWindow.Close();
-                _openWindow.gameObject.SetActive(false);
-                _openWindow = null;
+                CurrentOpenWindow.Close();
+                CurrentOpenWindow.gameObject.SetActive(false);
+                CurrentOpenWindow = null;
             }
         }
     }

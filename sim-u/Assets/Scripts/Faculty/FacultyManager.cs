@@ -380,6 +380,27 @@ namespace Faculty
             }
         }
 
+        public void RefreshAvailableFaculty()
+        {
+            // One remaining faculty will swap out each quarter
+            int currentGenerated = _generatedFaculty.Count;
+            if (currentGenerated > 0)
+            {
+                int dropIndex = Random.Range(0, currentGenerated);
+                int dropId = _generatedFaculty.Keys.Skip(dropIndex).First();
+
+                _generatedFaculty.Remove(dropId);
+                GameLogger.Info("Dropped generated faculty {0}", dropId);
+            }
+
+            // Fill up the available faculty with new generated faculty
+            for (int i = _generatedFaculty.Count; i < _config.AvailableFacultyCount; ++i)
+            {
+                GeneratedFaculty newFaculty = _generator.GenerateNext();
+                _generatedFaculty.Add(newFaculty.Id, newFaculty);
+            }
+        }
+
         public Sprite GetHeadshotForFaculty(int id)
         {
             return _generator.GetHeadshotForFaculty(id);
