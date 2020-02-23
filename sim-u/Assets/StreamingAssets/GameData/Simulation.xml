@@ -5,8 +5,8 @@
       Default: TickRate: 1 second, Normal: 6 ticks, Fast: 1 ticks
     -->
   <TickRateInSeconds>0.1</TickRateInSeconds>
-  <NormalTicksPerWeek>60</NormalTicksPerWeek>
-  <FastSpeedTicksPerWeek>1</FastSpeedTicksPerWeek>
+  <NormalTicksPerWeek>30</NormalTicksPerWeek>
+  <FastSpeedTicksPerWeek>5</FastSpeedTicksPerWeek>
 
   <UniversityAcademicScore min="0" max="1000000" default="0" />
   <UniversityResearchScore min="0" max="1000000" default="0" />
@@ -22,7 +22,7 @@
   <AcademicPrestige min="-25" max="100" default="0" />
   <ResearchPrestige min="0" max="100" default="0" />
   <Popularity min="-10" max="100" default="0" />
-  <StartingMoney>10000</StartingMoney>
+  <StartingMoney>100000</StartingMoney>
   
   <TuitionRange min="0" max="50000" default="3000" />
   <TuitionRangeExponentialFactor>2.1</TuitionRangeExponentialFactor>

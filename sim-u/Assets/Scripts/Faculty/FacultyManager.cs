@@ -408,6 +408,13 @@ namespace Faculty
 
         public FacultySaveState SaveGameState()
         {
+            if (Accessor.Game.AdminMode)
+            {
+                // Don't save the faculty in admin mode
+                // This way there are new faculty every time you load a scenario
+                return null;
+            }
+
             lock (_facultyLock)
             {
                 return new FacultySaveState
