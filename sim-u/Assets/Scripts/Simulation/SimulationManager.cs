@@ -293,7 +293,7 @@ namespace Simulation
             {
                 GameLogger.Warning("No simulation state was loaded. Setting to default.");
                 SetSimulationSpeed(SimulationSpeed.Normal);
-                Date = new SimulationDate(year: 1, quarter: SimulationQuarter.Summer, week: 13);
+                Date = new SimulationDate(year: 0, quarter: SimulationQuarter.Summer, week: 13);
             }
         }
 

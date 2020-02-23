@@ -22,7 +22,7 @@ namespace Simulation
 
         public SimulationDate(int year, SimulationQuarter quarter, int week)
         {
-            if (year < 1)
+            if (year < 0)
                 throw new ArgumentException($"Invalid year. Value = {year}");
 
             if (week < 1 || week > WeeksPerQuarter)
