@@ -18,3 +18,4 @@ Repository for unpolished or half completed video games
 | sim-u-old            | 04/13/2014 - 01/13/2015 | GoodSky, DrDenn           | 'Sim-City' like University Sim using XNA                              |
 | robopoker            | 03/25/2015 - 04/12/2015 | GoodSky                   | Platform to write and compete Poker-Playing AI logic                  |
 | sim-u                | 02/03/2018 - xx/xx/xxxx | GoodSky                   | 'Sim-City' like University Sim using Unity                            |
+| minesweeper          | 07/19/2021 - 07/22/2021 | GoodSky                   | Minesweeper in the console                                            |
