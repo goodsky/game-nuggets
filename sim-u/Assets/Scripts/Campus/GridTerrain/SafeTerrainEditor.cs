@@ -1,7 +1,6 @@
 ﻿using Common;
 using System;
 using System.Collections.Generic;
-using UnityEngine.Assertions;
 
 namespace Campus.GridTerrain
 {
@@ -12,10 +11,6 @@ namespace Campus.GridTerrain
     /// </summary>
     public class SafeTerrainEditor
     {
-        // Shortcut for BFS
-        private readonly int[] dx = new[] { -1, 0, 1, 0 };
-        private readonly int[] dy = new[] { 0, -1, 0, 1 };
-
         private GridMesh _terrain;
         private bool[,] _gridAnchored;
         private bool[,] _vertexAnchored;
@@ -29,192 +24,81 @@ namespace Campus.GridTerrain
             _terrain = terrain;
 
             // Anchor all corners, otherwise start unanchored
+            _gridAnchored = new bool[_terrain.CountX, _terrain.CountZ];
             _vertexAnchored = new bool[_terrain.CountX + 1, _terrain.CountZ + 1];
             for (int i = 0; i <= _terrain.CountX; ++i)
                 for (int j = 0; j <= _terrain.CountZ; ++j)
-                    _vertexAnchored[i, j] = (i == 0 || j == 0 || i == _terrain.CountX - 1 || j == _terrain.CountZ - 1) ? true : false;
-
-            // All grid squares start unanchored
-            _gridAnchored = new bool[_terrain.CountX, _terrain.CountZ];
-            for (int i = 0; i < _terrain.CountX; ++i)
-                for (int j = 0; j < _terrain.CountZ; ++j)
-                    _gridAnchored[i, j] = false;
+                    _vertexAnchored[i, j] = (i == 0 || j == 0 || i == _terrain.CountX || j == _terrain.CountZ) ? true : false;
         }
 
-        /// <summary>
-        /// Check if the terrain is valid for construction.
-        /// i.e. flat and unanchored.
-        /// </summary>
-        /// <param name="xBase">Grid x position.</param>
-        /// <param name="zBase">Grid z position.</param>
-        /// <param name="xSize">Width of the area to check.</param>
-        /// <param name="zSize">Height of the area to check.</param>
-        /// <returns>Array of booleans representing valid or invalid squares.</returns>
-        public bool[,] CheckFlatAndFree(int xBase, int zBase, int xSize, int zSize)
+        /// <summary>Get and set anchor grids. Used for saving and loading games.</summary>
+        public bool[,] GridAnchored
         {
-            bool[,] check = new bool[xSize, zSize];
-
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    int gridX = xBase + x;
-                    int gridZ = zBase + z;
-
-                    // grid is valid if it is inside the terrain
-                    // and not anchored
-                    // and flat
-                    check[x, z] =
-                        gridX >= 0 &&
-                        gridX < _terrain.CountX &&
-                        gridZ >= 0 &&
-                        gridZ < _terrain.CountZ &&
-                        !_gridAnchored[gridX, gridZ] &&
-                        _terrain.IsGridFlat(gridX, gridZ);
-                }
-            }
-
-            return check;
+            get { return _gridAnchored; }
+            set { _gridAnchored = value; }
         }
 
-        /// <summary>
-        /// Check if the terrain is valid for pathing.
-        /// i.e. smooth and unanchored.
-        /// </summary>
-        /// <param name="xStart">Start x position.</param>
-        /// <param name="zStart">Start z position.</param>
-        /// <param name="xEnd">End x position.</param>
-        /// <param name="zEnd">End z position.</param>
-        /// <returns>Boolean array representing whether or not the square is smooth and free.</returns>
-        public bool[] CheckSmoothAndFree(int xStart, int zStart, int xEnd, int zEnd)
+        /// <summary>Get and set anchor vertices. Used for saving and loading games.</summary>
+        public bool[,] VertexAnchored
         {
-            if (xStart != xEnd && zStart != zEnd)
-                throw new InvalidOperationException("Smooth line is not axis aligned.");
-
-            if (xStart == xEnd && zStart == zEnd)
-            {
-                // Case: Checking a single square
-                return new bool[] {
-                    xStart >= 0 &&
-                    xStart < _terrain.CountX &&
-                    zStart >= 0 &&
-                    zStart < _terrain.CountZ &&
-                    !_gridAnchored[xStart, zStart] &&
-                    (
-                        (_terrain.GetVertexHeight(xStart, zStart) == _terrain.GetVertexHeight(xStart, zStart + 1) &&
-                        _terrain.GetVertexHeight(xStart + 1, zStart) == _terrain.GetVertexHeight(xStart + 1, zStart + 1)) ||
-                        (_terrain.GetVertexHeight(xStart, zStart) == _terrain.GetVertexHeight(xStart + 1, zStart) &&
-                        _terrain.GetVertexHeight(xStart, zStart + 1) == _terrain.GetVertexHeight(xStart + 1, zStart + 1))
-                    )
-                };
-            }
-            else if (xStart != xEnd)
-            {
-                // Case: Checking a line along the x-axis
-                int dx = xStart < xEnd ? 1 : -1;
-                int length = Math.Abs(xStart - xEnd) + 1;
-                bool[] isValid = new bool[length];
-
-                for (int x = 0; x < length; ++x)
-                {
-                    int gridX = xStart + x * dx;
-                    int gridZ = zStart;
-
-                    isValid[x] =
-                        gridX >= 0 &&
-                        gridX < _terrain.CountX &&
-                        gridZ >= 0 &&
-                        gridZ < _terrain.CountZ &&
-                        !_gridAnchored[gridX, gridZ] &&
-                        _terrain.GetVertexHeight(gridX, gridZ) == _terrain.GetVertexHeight(gridX, gridZ + 1) &&
-                        _terrain.GetVertexHeight(gridX + 1, gridZ) == _terrain.GetVertexHeight(gridX + 1, gridZ + 1);
-                }
-
-                return isValid;
-            }
-            else
-            {
-                // Case: Checking a line along the z-axis
-                int dz = zStart < zEnd ? 1 : -1;
-                int length = Math.Abs(zStart - zEnd) + 1;
-                bool[] isValid = new bool[length];
-
-                for (int z = 0; z < length; ++z)
-                {
-                    int gridX = xStart;
-                    int gridZ = zStart + z * dz;
-
-                    isValid[z] =
-                        gridX >= 0 &&
-                        gridX < _terrain.CountX &&
-                        gridZ >= 0 &&
-                        gridZ < _terrain.CountZ &&
-                        !_gridAnchored[gridX, gridZ] &&
-                        _terrain.GetVertexHeight(gridX, gridZ) == _terrain.GetVertexHeight(gridX + 1, gridZ) &&
-                        _terrain.GetVertexHeight(gridX, gridZ + 1) == _terrain.GetVertexHeight(gridX + 1, gridZ + 1);
-                }
-
-                return isValid;
-            }
+            get { return _vertexAnchored; }
+            set { _vertexAnchored = value; }
         }
 
         /// <summary>
-        /// Set the grid square to be anchored by construction.
+        /// Get if the queried vertex is anchored.
+        /// </summary>
+        /// <param name="x">The x vertex coordinate.</param>
+        /// <param name="z">The z vertex coordinate.</param>
+        public bool IsVertexAnchored(int x, int z)
+        {
+            if (!_terrain.VertexInBounds(x, z))
+                GameLogger.FatalError("Attempted to query anchored vertex outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
+
+            return _vertexAnchored[x, z];
+        }
+
+        /// <summary>
+        /// Set the grid square to be anchored.
+        /// The anchor will prevent additional construction and terrain editing.
         /// </summary>
         /// <param name="x">The x grid coordinate.</param>
         /// <param name="z">The z grid coordinate.</param>
         public void SetAnchored(int x, int z)
         {
-            if (x < 0 || x > _terrain.CountX || z < 0 || z > _terrain.CountZ)
+            if (!_terrain.GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to anchor grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
 
-            Assert.IsFalse(_gridAnchored[x, z], "Trying to anchor a grid that is already anchored!");
             _gridAnchored[x, z] = true;
             _vertexAnchored[x, z] = _vertexAnchored[x, z + 1] = _vertexAnchored[x + 1, z] = _vertexAnchored[x + 1, z + 1] = true;
         }
 
         /// <summary>
-        /// Set grid squares as anchored by construction.
-        /// </summary>
-        /// <param name="xBase">The starting x coordinate.</param>
-        /// <param name="zBase">The starting z coordinate.</param>
-        /// <param name="anchorGrid">Array of grid squares to set as anchored.</param>
-        public void SetAnchoredGrid(int xBase, int zBase, bool[,] anchorGrid)
-        {
-            int xSize = anchorGrid.GetLength(0);
-            int zSize = anchorGrid.GetLength(1);
-
-            if (xBase < 0 || xBase + xSize > _terrain.CountX || zBase < 0 || zBase + zSize > _terrain.CountZ)
-                GameLogger.FatalError("Attempted to anchor grid outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xSize, zSize, _terrain.CountX, _terrain.CountZ);
-
-            for (int x = 0; x < xSize; ++x)
-            {
-                for (int z = 0; z < zSize; ++z)
-                {
-                    int gridX = xBase + x;
-                    int gridZ = zBase + z;
-
-                    if (anchorGrid[x, z])
-                    {
-                        SetAnchored(gridX, gridZ);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set the grid square to be anchored by construction.
+        /// Remove the anchor from a grid square.
+        /// The anchor will prevent additional construction and terrain editing.
         /// </summary>
         /// <param name="x">The x grid coordinate.</param>
         /// <param name="z">The z grid coordinate.</param>
         public void RemoveAnchor(int x, int z)
         {
-            if (x < 0 || x > _terrain.CountX || z < 0 || z > _terrain.CountZ)
+            if (!_terrain.GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to remove anchor from grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
 
-            Assert.IsFalse(!_gridAnchored[x, z], "Trying to remove anchor from grid that is already free!");
             _gridAnchored[x, z] = false;
-            _vertexAnchored[x, z] = _vertexAnchored[x, z + 1] = _vertexAnchored[x + 1, z] = _vertexAnchored[x + 1, z + 1] = false;
+            for (int i = 0; i < 4; ++i)
+            {
+                int vertX = x + GridConverter.GridToVertexDx[i];
+                int vertZ = z + GridConverter.GridToVertexDz[i];
+                bool vertAnchored = false;
+                for (int j = 0; j < 4; ++j)
+                {
+                    int gridX = vertX + GridConverter.VertexToGridDx[j];
+                    int gridZ = vertZ + GridConverter.VertexToGridDz[j];
+                    vertAnchored = vertAnchored || (_terrain.GridInBounds(gridX, gridZ) && _gridAnchored[gridX, gridZ]);
+                }
+
+                _vertexAnchored[vertX, vertZ] = vertAnchored;
+            }
         }
 
         /// <summary>
@@ -228,7 +112,7 @@ namespace Campus.GridTerrain
             int xSize = freeGrids.GetLength(0);
             int zSize = freeGrids.GetLength(1);
 
-            if (xBase < 0 || xBase + xSize > _terrain.CountX || zBase < 0 || zBase + zSize > _terrain.CountZ)
+            if (!_terrain.GridInBounds(xBase, zBase) || !_terrain.GridInBounds(xBase + xSize - 1, zBase + zSize - 1))
                 GameLogger.FatalError("Attempted to remove anchor from outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xSize, zSize, _terrain.CountX, _terrain.CountZ);
 
             for (int x = 0; x < xSize; ++x)
@@ -256,6 +140,9 @@ namespace Campus.GridTerrain
         /// <returns>True if the set succeeded. False otherwise.</returns>
         public bool SafeSetHeight(int x, int z, int gridHeight)
         {
+            if (!_terrain.GridInBounds(x, z))
+                GameLogger.FatalError("Attempted to SafeSetHeight to grid outside of range! ({0},{1}) is outside of ({2},{3})", x, z, _terrain.CountX, _terrain.CountZ);
+
             var s = new Queue<Point2>();
             var visited = new HashSet<Point2>();
             var setHeights = new Dictionary<Point2, int>();
@@ -265,7 +152,7 @@ namespace Campus.GridTerrain
             var p3 = new Point2(x + 1, z);
             var p4 = new Point2(x + 1, z + 1);
 
-            if (_vertexAnchored[p1.x, p1.y] || _vertexAnchored[p2.x, p2.y] || _vertexAnchored[p3.x, p3.y] || _vertexAnchored[p4.x, p4.y])
+            if (_vertexAnchored[p1.x, p1.z] || _vertexAnchored[p2.x, p2.z] || _vertexAnchored[p3.x, p3.z] || _vertexAnchored[p4.x, p4.z])
                 return false;
 
             // bounding box around the changes
@@ -290,22 +177,24 @@ namespace Campus.GridTerrain
 
                 minX = Math.Min(minX, cur.x);
                 maxX = Math.Max(maxX, cur.x);
-                minY = Math.Min(minY, cur.y);
-                maxY = Math.Max(maxY, cur.y);
+                minY = Math.Min(minY, cur.z);
+                maxY = Math.Max(maxY, cur.z);
 
-                for (int i = 0; i < dx.Length; ++i)
+                for (int i = 0; i < 4; ++i)
                 {
-                    var test = new Point2(cur.x + dx[i], cur.y + dy[i]);
+                    int vertX = cur.x + GridConverter.AdjacentVertexDx[i];
+                    int vertZ = cur.z + GridConverter.AdjacentVertexDz[i];
+                    var test = new Point2(vertX, vertZ);
 
                     if (visited.Contains(test))
                         continue;
 
                     // we are okay with grid difference up to 1 step
-                    var heightDiff = _terrain.GetVertexHeight(test.x, test.y) - setHeights[cur];
+                    var heightDiff = _terrain.GetVertexHeight(test.x, test.z) - setHeights[cur];
 
                     if (heightDiff < -1)
                     {
-                        if (_vertexAnchored[test.x, test.y])
+                        if (_vertexAnchored[test.x, test.z])
                             return false;
 
                         setHeights[test] = setHeights[cur] - 1;
@@ -315,7 +204,7 @@ namespace Campus.GridTerrain
 
                     if (heightDiff > 1)
                     {
-                        if (_vertexAnchored[test.x, test.y])
+                        if (_vertexAnchored[test.x, test.z])
                             return false;
 
                         setHeights[test] = setHeights[cur] + 1;
@@ -339,20 +228,6 @@ namespace Campus.GridTerrain
 
             _terrain.SetVertexHeights(minX, minY, newGridHeights);
             return true;
-        }
-
-        /// <summary>
-        /// Write all heights to the Console.
-        /// </summary>
-        /// <param name="heights"></param>
-        public static void DumpHeights(int[,] heights)
-        {
-            for (int j = 0; j < heights.GetLength(1); ++j)
-            {
-                for (int i = 0; i < heights.GetLength(0); ++i)
-                    Console.Write(heights[i, j] + " ");
-                Console.WriteLine();
-            }
         }
     }
 }

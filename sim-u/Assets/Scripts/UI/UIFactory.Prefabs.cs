@@ -96,7 +96,7 @@ namespace UI
         /// <param name="margins">The left and right margins of the status bar compared to the screen.</param>
         /// <param name="background">The background color.</param>
         /// <returns>The status bar.</returns>
-        public static GameObject LoadStatusBar(GameObject parent, float margins, Color background)
+        public static GameObject LoadStatusBar(GameObject parent, float margins, UIConfig config)
         {
             string StatusBar = "StatusBar";
 
@@ -107,12 +107,21 @@ namespace UI
             rect.offsetMax = new Vector2(-margins, rect.offsetMax.y);
 
             var image = statusBar.GetComponent<Image>();
-            image.color = background;
+            image.color = config.MainMenuBackgroundColor;
 
-            // TODO: wire up the status bar with game state.
-            var statusBarInfo = statusBar.GetComponent<Statusbar>();
-            statusBarInfo.CurrentFunds = 123456;
-            statusBarInfo.CurrentDate = string.Format("{0}\n{1}", DateTime.Now.ToString("MM/dd/yyyy"), "Spring");
+            var statusBarBehavior = statusBar.GetComponent<Statusbar>();
+
+            statusBarBehavior.PauseActiveImage.color =
+                statusBarBehavior.PlayNormalActiveImage.color =
+                statusBarBehavior.PlayFastActiveImage.color = config.SpeedSelectionColor;
+
+            foreach (var button in statusBarBehavior.Buttons)
+            {
+                button.DefaultColor = config.SubMenuBackgroundColor;
+                button.SelectedColor = config.SubMenuSelectedColor;
+                button.MouseOverColor = config.SubMenuSelectedColor;
+                button.DisabledColor = config.SubMenuDisabledColor;
+            }
 
             return statusBar;
         }
@@ -173,6 +182,17 @@ namespace UI
         }
 
         /// <summary>
+        /// Instantiates a floating money textbox.
+        /// It pops up whenever money is spent to remind you of the lost dollars.
+        /// </summary>
+        public static GameObject LoadFloatingMoney(Transform parent)
+        {
+            string FloatingMoney = "FloatingMoney";
+
+            return InstantiatePrefab(FloatingMoney, FloatingMoney, parent);
+        }
+
+        /// <summary>
         /// Instantiates the small UI divider between buttons.
         /// It's entirely for looking pretty.
         /// </summary>
@@ -197,19 +217,23 @@ namespace UI
         /// </summary>
         /// <param name="prefabName">Name of the window prefab to load.</param>
         /// <param name="name">Name of the window game object.</param>
+        /// <param name="fullScreen">Boolean representing whether or not the window is full screen.</param>
         /// <param name="parent">The window parent transform.</param>
         /// <param name="config">UI Configuration to choose the colors and margins.</param>
         /// <returns>The window.</returns>
-        public static GameObject LoadWindow(string prefabName, string name, Transform parent, UIConfig config)
+        public static GameObject LoadWindow(string prefabName, string name, bool fullScreen, Transform parent, UIConfig config)
         {
             var window = InstantiatePrefab(prefabName, name, parent);
 
-            var rect = window.GetComponent<RectTransform>();
-            rect.offsetMin = new Vector2(config.HorizontalMargins, rect.offsetMin.y);
-            rect.offsetMax = new Vector2(-config.HorizontalMargins, rect.offsetMax.y);
+            if (!fullScreen)
+            {
+                var rect = window.GetComponent<RectTransform>();
+                rect.offsetMin = new Vector2(config.HorizontalMargins, rect.offsetMin.y);
+                rect.offsetMax = new Vector2(-config.HorizontalMargins, rect.offsetMax.y);
 
-            var image = window.GetComponent<Image>();
-            image.color = config.WindowBackgroundColor;
+                var image = window.GetComponent<Image>();
+                image.color = config.WindowBackgroundColor;
+            }
 
             var windowBehaviour = window.GetComponent<Window>();
 
@@ -218,6 +242,7 @@ namespace UI
                 button.DefaultColor = config.SubMenuBackgroundColor;
                 button.SelectedColor = config.SubMenuSelectedColor;
                 button.MouseOverColor = config.SubMenuSelectedColor;
+                button.DisabledColor = config.SubMenuDisabledColor;
             }
 
             window.SetActive(false);

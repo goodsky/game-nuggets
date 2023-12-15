@@ -1,5 +1,4 @@
 ﻿using Campus.GridTerrain;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,8 +12,14 @@ namespace Common
         /// <summary>The default game state. You are selecting your next state.</summary>
         Selecting,
 
-        /// <summary>Constructing a new entity on the campus.</summary>
-        PlacingConstruction,
+        /// <summary>Demolishing anchored features in the campus.</summary>
+        Demolishing,
+
+        /// <summary>Selecting campus terrain to modify.</summary>
+        SelectingTerrain,
+
+        /// <summary>Modifying the campus terrain.</summary>
+        EditingTerrain,
 
         /// <summary>Selecting the start position of the path.</summary>
         SelectingPath,
@@ -22,11 +27,29 @@ namespace Common
         /// <summary>Creating the path.</summary>
         PlacingPath,
 
-        /// <summary>Selecting campus terrain to modify.</summary>
-        SelectingTerrain,
+        /// <summary>Selecting the start position of the road.</summary>
+        SelectingRoad,
 
-        /// <summary>Modifying the campus terrain.</summary>
-        EditingTerrain,
+        /// <summary>Creating the road.</summary>
+        PlacingRoad,
+
+        /// <summary>Selecting the start position of the road.</summary>
+        SelectingParkingLot,
+
+        /// <summary>Creating the road.</summary>
+        PlacingParkingLot,
+
+        /// <summary>Constructing a new entity on the campus.</summary>
+        PlacingConstruction,
+
+        /// <summary>Saving the game state.</summary>
+        SavingGame,
+
+        /// <summary>Loading the game state.</summary>
+        LoadingGame,
+
+        /// <summary>Back to main menu state.</summary>
+        MainMenu,
     }
 
     /// <summary>
@@ -46,7 +69,8 @@ namespace Common
 
         private readonly object _setLock = new object();
 
-        private TerrainSelectionUpdateArgs _lastTerrainLocation = null;
+        private TerrainGridUpdateArgs _lastTerrainGridSelection = null;
+        private TerrainVertexUpdateArgs _lastTerrainVertexSelection = null;
 
         /// <summary>
         /// Unity start method.
@@ -54,6 +78,7 @@ namespace Common
         protected void Start()
         {
             Current = GameState.Selecting;
+            LoadControllers();
         }
 
         /// <summary>
@@ -68,34 +93,30 @@ namespace Common
         }
 
         /// <summary>
-        /// Register a new state controller with the state machine.
-        /// </summary>
-        /// <param name="state">The state to activate the controller for.</param>
-        /// <param name="controller">The controller to register.</param>
-        public void RegisterController(GameState state, Controller controller)
-        {
-            if (!_stateControllers.ContainsKey(state))
-            {
-                _stateControllers[state] = new List<Controller>();
-            }
-
-            _stateControllers[state].Add(controller);
-        }
-
-        /// <summary>
         /// Transition into a new initial state.
         /// If you pass me a non-initial state I'll scream.
         /// </summary>
         public void StartDoing(GameState newState, object context = null)
         {
-            if (newState != GameState.SelectingTerrain &&
-                newState != GameState.PlacingConstruction &&
-                newState != GameState.SelectingPath)
+            switch (newState)
             {
-                throw new InvalidOperationException(string.Format("Cannot start doing state! {0}", newState.ToString()));
-            }
+                case GameState.Selecting:
+                case GameState.SelectingTerrain:
+                case GameState.PlacingConstruction:
+                case GameState.SelectingPath:
+                case GameState.SelectingRoad:
+                case GameState.SelectingParkingLot:
+                case GameState.Demolishing:
+                case GameState.SavingGame:
+                case GameState.LoadingGame:
+                case GameState.MainMenu:
+                    Transition(newState, context);
+                    break;
 
-            Transition(newState, context);
+                default:
+                    GameLogger.FatalError("Cannot start doing state! {0}", newState.ToString());
+                    break;
+            }
         }
 
         /// <summary>
@@ -103,13 +124,15 @@ namespace Common
         /// </summary>
         public void StopDoing()
         {
-            if (Current == GameState.EditingTerrain)
+            switch (Current)
             {
-                Transition(GameState.SelectingTerrain);
-            }
-            else
-            {
-                Transition(GameState.Selecting);
+                case GameState.EditingTerrain:
+                    Transition(GameState.SelectingTerrain);
+                    break;
+
+                default:
+                    Transition(GameState.Selecting);
+                    break;
             }
         }
 
@@ -127,16 +150,41 @@ namespace Common
         }
 
         /// <summary>
-        /// The selection on the terrain was updated.
+        /// The grid selection on the terrain was updated.
         /// </summary>
         /// <param name="args"></param>
-        public void SelectionUpdateTerrain(TerrainSelectionUpdateArgs args)
+        public void UpdateTerrainGridSelection(TerrainGridUpdateArgs args)
         {
-            _lastTerrainLocation = args;
+            _lastTerrainGridSelection = args;
 
             foreach (var controller in _currentStateControllers)
             {
-                controller.TerrainSelectionUpdate(args);
+                controller.TerrainGridSelectionUpdate(args);
+            }
+        }
+
+        /// <summary>
+        /// Resend the last terrain grid selection. Used to force an update in the controller.
+        /// </summary>
+        public void PumpTerrainGridSelection()
+        {
+            foreach (var controller in _currentStateControllers)
+            {
+                controller.TerrainGridSelectionUpdate(_lastTerrainGridSelection);
+            }
+        }
+
+        /// <summary>
+        /// The grid selection on the terrain was updated.
+        /// </summary>
+        /// <param name="args"></param>
+        public void UpdateTerrainVertexSelection(TerrainVertexUpdateArgs args)
+        {
+            _lastTerrainVertexSelection = args;
+
+            foreach (var controller in _currentStateControllers)
+            {
+                controller.TerrainVertexSelectionUpdate(args);
             }
         }
 
@@ -169,12 +217,35 @@ namespace Common
                 {
                     controller.TransitionIn(context);
 
-                    // Primer events that the new state needs.
-                    if (_lastTerrainLocation != null)
+                    // Prime new states with the last relevant event arguments
+                    if (_lastTerrainGridSelection != null)
                     {
-                        controller.TerrainSelectionUpdate(_lastTerrainLocation);
+                        controller.TerrainGridSelectionUpdate(_lastTerrainGridSelection);
+                    }
+
+                    if (_lastTerrainVertexSelection != null)
+                    {
+                        controller.TerrainVertexSelectionUpdate(_lastTerrainVertexSelection);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Use reflection to find controllers with the <see cref="StateControllerAttribute"/>.
+        /// Register them into the state machine.
+        /// </summary>
+        private void LoadControllers()
+        {
+            foreach ((GameState state, Controller controller) in StateControllerLoader.LoadControllers())
+            {
+                if (!_stateControllers.ContainsKey(state))
+                {
+                    _stateControllers[state] = new List<Controller>();
+                }
+
+                GameLogger.Debug("Registered StateController {0} for state {1}", controller.GetType().Name, state.ToString());
+                _stateControllers[state].Add(controller);
             }
         }
     }

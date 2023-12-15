@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingTerrain game state.
     /// </summary>
+    [StateController(HandledState = GameState.SelectingTerrain)]
     internal class SelectingTerrainController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -16,14 +17,12 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to edit.</param>
-        public SelectingTerrainController(GridMesh terrain)
+        public SelectingTerrainController()
         {
-            _terrain = terrain;
-            _cursor = GridCursor.Create(terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain"));
-            _cursor.Deactivate();
+            _terrain = Accessor.Terrain;
+            _cursor = GridCursor.Create(_terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain"));
 
-            OnTerrainSelectionUpdate += SelectionUpdate;
+            OnTerrainGridSelectionUpdate += SelectionUpdate;
             OnTerrainClicked += Clicked;
         }
 
@@ -34,7 +33,7 @@ namespace Campus
         public override void TransitionIn(object context)
         {
             _cursor.Activate();
-            _cursor.Place(_cursor.Position.x, _cursor.Position.y);
+            _cursor.Place(_cursor.Position);
         }
 
         /// <summary>
@@ -58,14 +57,14 @@ namespace Campus
         /// </summary>
         /// <param name="sender">Not used.</param>
         /// <param name="args">The terrain selection arguments.</param>
-        private void SelectionUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void SelectionUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
-                _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
+                _cursor.Place(args.GridSelection);
             }
             else
             {
@@ -83,23 +82,25 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                Transition(GameState.EditingTerrain, args);
+                if (_cursor.IsActive)
+                {
+                    Transition(GameState.EditingTerrain, args);
+                }
             }
 
-            if (Application.isEditor)
+            // DEBUGGING:
+            if (args.Button == MouseButton.Right && args.GridSelection != Point3.Null)
             {
-                GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4})",
-                       args.ClickLocation,
-                       _terrain.GetVertexHeight(args.ClickLocation.x, args.ClickLocation.z),
-                       _terrain.GetVertexHeight(args.ClickLocation.x + 1, args.ClickLocation.z),
-                       _terrain.GetVertexHeight(args.ClickLocation.x, args.ClickLocation.z + 1),
-                       _terrain.GetVertexHeight(args.ClickLocation.x + 1, args.ClickLocation.z + 1));
-
-                if (Input.GetKey(KeyCode.LeftControl))
-                {
-                    int submaterial = _terrain.GetSubmaterial(args.ClickLocation.x, args.ClickLocation.z);
-                    _terrain.SetSubmaterial(args.ClickLocation.x, args.ClickLocation.z, (submaterial + 1) % _terrain.SubmaterialCount, Rotation.deg270);
-                }
+                GameLogger.Info("Selected ({0}); Point Heights ({1}, {2}, {3}, {4}); Anchored ({5}, {6}, {7}, {8})",
+                       args.GridSelection,
+                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z + 1),
+                       _terrain.GetVertexHeight(args.GridSelection.x + 1, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.GetVertexHeight(args.GridSelection.x, args.GridSelection.z + 1),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z + 1),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x + 1, args.GridSelection.z),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z),
+                       _terrain.Editor.IsVertexAnchored(args.GridSelection.x, args.GridSelection.z + 1));
             }
         }
     }

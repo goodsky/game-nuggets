@@ -8,6 +8,7 @@ namespace Campus
     /// <summary>
     /// Game controller that runs during the SelectingTerrain game state.
     /// </summary>
+    [StateController(HandledState = GameState.EditingTerrain)]
     internal class EditingTerrainController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
@@ -20,12 +21,10 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to edit.</param>
-        public EditingTerrainController(GridMesh terrain)
+        public EditingTerrainController()
         {
-            _terrain = terrain;
-            _cursor = GridCursor.Create(terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain2"));
-            _cursor.Deactivate();
+            _terrain = Accessor.Terrain;
+            _cursor = GridCursor.Create(_terrain, ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_terrain2"));
         }
 
         /// <summary>
@@ -38,10 +37,10 @@ namespace Campus
             if (args == null)
                 GameLogger.FatalError("EditingTerrainController was given incorrect context.");
 
-            _editingGridLocation = args.ClickLocation;
+            _editingGridLocation = args.GridSelection;
 
             _cursor.Activate();
-            _cursor.Place(_editingGridLocation.x, _editingGridLocation.z);
+            _cursor.Place(_editingGridLocation);
 
             _mouseDragStartY = Input.mousePosition.y;
             _mouseDragHeightChange = 0;
@@ -52,10 +51,7 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
-            if (_cursor != null)
-            {
-                _cursor.Deactivate();
-            }
+            _cursor.Deactivate();
         }
 
         /// <summary>
@@ -65,7 +61,7 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                Game.State.StopDoing();
+                Accessor.StateMachine.StopDoing();
                 return;
             }
 
@@ -78,7 +74,7 @@ namespace Campus
 
                 if (_terrain.Editor.SafeSetHeight(_editingGridLocation.x, _editingGridLocation.z, gridHeight))
                 {
-                    _cursor.Place(_editingGridLocation.x, _editingGridLocation.z);
+                    _cursor.Place(_editingGridLocation);
                 }
             }
         }

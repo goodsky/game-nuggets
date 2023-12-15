@@ -1,7 +1,8 @@
-﻿using Campus.GridTerrain;
+﻿ using Campus.GridTerrain;
+using Common;
+using GameData;
 using System;
-using UnityEngine;
-using UnityEngine.Assertions;
+using System.Collections.Generic;
 
 namespace Campus
 {
@@ -10,95 +11,106 @@ namespace Campus
     /// </summary>
     public class CampusPaths
     {
-        private GridMesh _terrain;
-        private bool[,] _path;
+        private readonly CampusManager _campusManager;
+        private readonly GridMesh _terrain;
+        private readonly PathsData _data;
+        private readonly bool[,] _path;
 
-        public CampusPaths(GridMesh terrain)
+        private readonly int _startIndex;
+        private readonly int _invalidIndex;
+        private readonly int _emptyIndex;
+
+        public CampusPaths(CampusData campusData, GameAccessor accessor)
         {
-            _terrain = terrain;
-            _path = new bool[_terrain.CountX, _terrain.CountZ];
+            _campusManager = accessor.CampusManager;
+            _terrain = accessor.Terrain;
+            _data = campusData.Paths;
+
             SetupPathMapping();
+
+            _startIndex = campusData.Terrain.SubmaterialPathsIndex;
+            _invalidIndex = campusData.Terrain.SubmaterialInvalidIndex;
+            _emptyIndex = campusData.Terrain.SubmaterialEmptyGrassIndex;
+
+            _path = new bool[_terrain.CountX, _terrain.CountZ];
+        }
+
+        public int CostPerSquare => _data.CostPerSquare;
+
+        /// <summary>
+        /// Gets the internal save state for campus paths.
+        /// </summary>
+        public bool[,] SaveGameState()
+        {
+            return _path;
+        }
+
+        /// <summary>
+        /// Load the save game state.
+        /// </summary>
+        public void LoadGameState(bool[,] savedPathData)
+        {
+            Utils.CopyArray(savedPathData, _path);
         }
 
         /// <summary>
         /// Gets a value representing whether or not there is a path at grid position.
         /// </summary>
-        /// <param name="posx">The x position to check.</param>
-        /// <param name="posz">The z position to check.</param>
+        /// <param name="pos">Grid position to query.</param>
         /// <returns>True if there is a path, false otherwise.</returns>
-        public bool IsPath(int posx, int posz)
+        public bool PathAtPosition(Point2 pos)
         {
-            return
-                posx >= 0 && posx < _terrain.CountX &&
-                posz >= 0 && posz < _terrain.CountZ &&
-                _path[posx, posz];
+            return _path[pos.x, pos.z];
         }
 
         /// <summary>
-        /// Build a path between two points.
-        /// The path must be in a straight line.
+        /// Build a path at the position.
         /// </summary>
-        /// <param name="start">Starting location of the line.</param>
-        /// <param name="end">Ending location of the line.</param>
-        public void BuildPath(Point3 start, Point3 end)
+        /// <param name="line">The line to construct along.</param>
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> ConstructPath(AxisAlignedLine line)
         {
-            if (Application.isEditor)
+            foreach ((int lineIndex, Point2 point) in line.GetPointsAlongLine())
             {
-                Assert.IsFalse(start.x != end.x && start.z != end.z, "Placing path in invalid location!");
-            }
-
-            int dx = 0;
-            int dz = 0;
-            int length = 1;
-
-            if (start.x == end.x && start.z == end.z)
-            {
-                // Case: Building a single square
-            }
-            else if (start.x != end.x)
-            {
-                // Case: Building a line along the x-axis
-                dx = start.x < end.x ? 1 : -1;
-                length = Math.Abs(start.x - end.x) + 1;
-            }
-            else
-            {
-                // Case: Building a line along the z-axis
-                dz = start.z < end.z ? 1 : -1;
-                length = Math.Abs(start.z - end.z) + 1;
-            }
-
-            // Set the paths
-            for (int i = 0; i < length; ++i)
-            {
-                int gridX = start.x + i * dx;
-                int gridZ = start.z + i * dz;
-
-                if (!_path[gridX, gridZ])
+                if (!_path[point.x, point.z])
                 {
-                    _path[gridX, gridZ] = true;
-                    _terrain.Editor.SetAnchored(gridX, gridZ);
+                    _path[point.x, point.z] = true;
                 }
             }
 
             // Set the updated materials
-            for (int scanX = Math.Min(start.x, end.x) - 1; scanX <= Math.Max(start.x, end.x) + 1; ++scanX)
-                for (int scanZ = Math.Min(start.z, end.z) - 1; scanZ <= Math.Max(start.z, end.z) + 1; ++scanZ)
-                    if (scanX >= 0 && scanX < _terrain.CountX &&
-                        scanZ >= 0 && scanZ < _terrain.CountZ)
-                        SetPathMaterial(scanX, scanZ);
+            for (int scanX = Math.Min(line.Start.x, line.End.x) - 1; scanX <= Math.Max(line.Start.x, line.End.x) + 1; ++scanX)
+                for (int scanZ = Math.Min(line.Start.z, line.End.z) - 1; scanZ <= Math.Max(line.Start.z, line.End.z) + 1; ++scanZ)
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
+        }
+
+        /// <summary>
+        /// Remove a path at the position.
+        /// </summary>
+        /// <param name="pos">The position to remove the path at.</param>
+        /// <returns>The points on the terrain that have been modified.</returns>
+        public IEnumerable<Point2> DestroyPathAt(Point2 pos)
+        {
+            if (_path[pos.x, pos.z])
+            {
+                _path[pos.x, pos.z] = false;
+            }
+
+            for (int scanX = pos.x - 1; scanX <= pos.x + 1; ++scanX)
+                for (int scanZ = pos.z - 1; scanZ <= pos.z + 1; ++scanZ)
+                    if (_terrain.GridInBounds(scanX, scanZ))
+                        yield return new Point2(scanX, scanZ);
         }
 
         /// <summary>
         /// Update the material of the grid to look like the path.
         /// </summary>
-        readonly int[] dx = new[] { 0, 1, 0, -1 };
-        readonly int[] dz = new[] { 1, 0, -1, 0 };
-        private void SetPathMaterial(int x, int z)
+        public (int submaterialIndex, SubmaterialRotation rotation, SubmaterialInversion inversion) GetPathMaterial(Point2 pos)
         {
-            if (!_path[x, z])
+            if (!_path[pos.x, pos.z])
             {
-                _terrain.SetSubmaterial(x, z, 0);
+                return (_emptyIndex, SubmaterialRotation.deg0, SubmaterialInversion.None);
             }
             else
             {
@@ -106,92 +118,124 @@ namespace Campus
                 int[] adj = new int[4];
                 for (int i = 0; i < 4; ++i)
                 {
-                    int checkX = x + dx[i];
-                    int checkZ = z + dz[i];
+                    int checkX = pos.x + GridConverter.AdjacentGridDx[i];
+                    int checkZ = pos.z + GridConverter.AdjacentGridDz[i];
                     adj[i] =
-                        (checkX > 0 && checkX < _terrain.CountX &&
-                         checkZ > 0 && checkZ < _terrain.CountZ &&
-                         _path[checkX, checkZ])
+                        (!_terrain.GridInBounds(checkX, checkZ) || /* NB: The edge of the map connects to the edge. This is a path source. */
+                        _campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Path) ||
+                            (_campusManager.GetGridUse(new Point2(checkX, checkZ)).HasFlag(CampusGridUse.Building) &&
+                             _campusManager.CanEnterBuildingFrom(new Point2(checkX, checkZ), pos)))
                          ? 1 : 0;
                 }
 
-                _terrain.SetSubmaterial(
-                    x, 
-                    z, 
-                    _subMaterial[adj[0], adj[1], adj[2], adj[3]],
-                    _rotation[adj[0], adj[1], adj[2], adj[3]]);
+                PathSubmaterialIndex submaterial = _mat[adj[0], adj[1], adj[2], adj[3]];
+
+                int submaterialIndex;
+                if (submaterial == PathSubmaterialIndex.Invalid)
+                {
+                    submaterialIndex = _invalidIndex;
+                }
+                else
+                {
+                    submaterialIndex = _startIndex + (int)submaterial;
+                }
+
+                return (submaterialIndex, _rot[adj[0], adj[1], adj[2], adj[3]], SubmaterialInversion.None);
             }
         }
 
         // mapping from adjacent paths to the material + rotation
         // [top, right, bottom, left]
-        private int[,,,] _subMaterial;
-        private Rotation[,,,] _rotation;
+        //  |A |
+        //--+--+--
+        // D|  |B
+        //--+--+--
+        //  |C |
+        private PathSubmaterialIndex[,,,] _mat;
+        private SubmaterialRotation[,,,] _rot;
         private void SetupPathMapping()
         {
-            // This is fun! Seemed like the best way to do it at the time. 
-            // Future people: let me know if I'm an idiot.
+            _mat = new PathSubmaterialIndex[2, 2, 2, 2];
+            _rot = new SubmaterialRotation[2, 2, 2, 2];
 
-            _subMaterial = new int[2, 2, 2, 2];
-            _rotation = new Rotation[2, 2, 2, 2];
+            // initialize with invalid material
+            for (int i0 = 0; i0 < 2; ++i0)
+                for (int i1 = 0; i1 < 2; ++i1)
+                    for (int i2 = 0; i2 < 2; ++i2)
+                        for (int i3 = 0; i3 < 2; ++i3)
+                            _mat[i0, i1, i2, i3] = PathSubmaterialIndex.Invalid;
 
             // no adjacent ---
-            _subMaterial[0, 0, 0, 0] = 1;
-            _rotation   [0, 0, 0, 0] = Rotation.deg0;
+            _mat[0, 0, 0, 0] = PathSubmaterialIndex.NoAdjacent;
+            _rot[0, 0, 0, 0] = SubmaterialRotation.deg0;
 
             // one adjacent ---
             // top
-            _subMaterial[1, 0, 0, 0] = 2;
-            _rotation   [1, 0, 0, 0] = Rotation.deg0;
+            _mat[1, 0, 0, 0] = PathSubmaterialIndex.OneAdjacent;
+            _rot[1, 0, 0, 0] = SubmaterialRotation.deg0;
             // right
-            _subMaterial[0, 1, 0, 0] = 2;
-            _rotation   [0, 1, 0, 0] = Rotation.deg90;
+            _mat[0, 1, 0, 0] = PathSubmaterialIndex.OneAdjacent;
+            _rot[0, 1, 0, 0] = SubmaterialRotation.deg90;
             // bottom
-            _subMaterial[0, 0, 1, 0] = 2;
-            _rotation   [0, 0, 1, 0] = Rotation.deg180;
+            _mat[0, 0, 1, 0] = PathSubmaterialIndex.OneAdjacent;
+            _rot[0, 0, 1, 0] = SubmaterialRotation.deg180;
             // left
-            _subMaterial[0, 0, 0, 1] = 2;
-            _rotation   [0, 0, 0, 1] = Rotation.deg270;
+            _mat[0, 0, 0, 1] = PathSubmaterialIndex.OneAdjacent;
+            _rot[0, 0, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent (angled) ---
             // top & right
-            _subMaterial[1, 1, 0, 0] = 3;
-            _rotation   [1, 1, 0, 0] = Rotation.deg0;
+            _mat[1, 1, 0, 0] = PathSubmaterialIndex.TwoAdjacentAngled;
+            _rot[1, 1, 0, 0] = SubmaterialRotation.deg0;
             // right & bottom
-            _subMaterial[0, 1, 1, 0] = 3;
-            _rotation   [0, 1, 1, 0] = Rotation.deg90;
+            _mat[0, 1, 1, 0] = PathSubmaterialIndex.TwoAdjacentAngled;
+            _rot[0, 1, 1, 0] = SubmaterialRotation.deg90;
             // bottom & left
-            _subMaterial[0, 0, 1, 1] = 3;
-            _rotation   [0, 0, 1, 1] = Rotation.deg180;
+            _mat[0, 0, 1, 1] = PathSubmaterialIndex.TwoAdjacentAngled;
+            _rot[0, 0, 1, 1] = SubmaterialRotation.deg180;
             // left & top
-            _subMaterial[1, 0, 0, 1] = 3;
-            _rotation   [1, 0, 0, 1] = Rotation.deg270;
+            _mat[1, 0, 0, 1] = PathSubmaterialIndex.TwoAdjacentAngled;
+            _rot[1, 0, 0, 1] = SubmaterialRotation.deg270;
 
             // two adjacent (straight) ---
             // top & bottom
-            _subMaterial[1, 0, 1, 0] = 4;
-            _rotation   [1, 0, 1, 0] = Rotation.deg0;
+            _mat[1, 0, 1, 0] = PathSubmaterialIndex.TwoAdjacentStraight;
+            _rot[1, 0, 1, 0] = SubmaterialRotation.deg0;
             // right & left
-            _subMaterial[0, 1, 0, 1] = 4;
-            _rotation   [0, 1, 0, 1] = Rotation.deg90;
+            _mat[0, 1, 0, 1] = PathSubmaterialIndex.TwoAdjacentStraight;
+            _rot[0, 1, 0, 1] = SubmaterialRotation.deg90;
 
             // three adjacent ---
             // not left
-            _subMaterial[1, 1, 1, 0] = 5;
-            _rotation   [1, 1, 1, 0] = Rotation.deg0;
+            _mat[1, 1, 1, 0] = PathSubmaterialIndex.ThreeAdjacent;
+            _rot[1, 1, 1, 0] = SubmaterialRotation.deg0;
             // not top
-            _subMaterial[0, 1, 1, 1] = 5;
-            _rotation   [0, 1, 1, 1] = Rotation.deg90;
+            _mat[0, 1, 1, 1] = PathSubmaterialIndex.ThreeAdjacent;
+            _rot[0, 1, 1, 1] = SubmaterialRotation.deg90;
             // not right
-            _subMaterial[1, 0, 1, 1] = 5;
-            _rotation   [1, 0, 1, 1] = Rotation.deg180;
+            _mat[1, 0, 1, 1] = PathSubmaterialIndex.ThreeAdjacent;
+            _rot[1, 0, 1, 1] = SubmaterialRotation.deg180;
             // not bottom
-            _subMaterial[1, 1, 0, 1] = 5;
-            _rotation   [1, 1, 0, 1] = Rotation.deg270;
+            _mat[1, 1, 0, 1] = PathSubmaterialIndex.ThreeAdjacent;
+            _rot[1, 1, 0, 1] = SubmaterialRotation.deg270;
 
             // four adjacent ---
-            _subMaterial[1, 1, 1, 1] = 6;
-            _rotation   [1, 1, 1, 1] = Rotation.deg0;
+            _mat[1, 1, 1, 1] = PathSubmaterialIndex.FourAdjacent;
+            _rot[1, 1, 1, 1] = SubmaterialRotation.deg0;
+        }
+
+        /// <summary>
+        /// This enum encodes the expected order of submaterials on the paths/roads sprite sheet.
+        /// </summary>
+        private enum PathSubmaterialIndex
+        {
+            NoAdjacent = 0,
+            OneAdjacent = 1,
+            TwoAdjacentAngled = 2,
+            TwoAdjacentStraight = 3,
+            ThreeAdjacent = 4,
+            FourAdjacent = 5,
+            Invalid
         }
     }
 }

@@ -36,7 +36,11 @@ namespace UI
         public void OpenSubMenu(ButtonGroup buttonGroup)
         {
             if (buttonGroup == _subMenuButtonGroup)
+            {
+                // If you click on the same button group again, I assume you want to close it.
+                CloseSubMenu();
                 return;
+            }
 
             CloseSubMenu();
 

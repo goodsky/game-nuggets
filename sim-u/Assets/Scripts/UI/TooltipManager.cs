@@ -33,7 +33,18 @@ namespace UI
             textComponent.text = text;
 
             var rectComponent = Tooltip.GetComponent<RectTransform>();
-            rectComponent.anchoredPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y - 20);
+
+            int deltaY;
+            if (Input.mousePosition.y < Screen.height / 2)
+            {
+                deltaY = 25;
+            }
+            else
+            {
+                deltaY = -20;
+            }
+
+            rectComponent.anchoredPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y + deltaY);
 
             Tooltip.transform.SetAsLastSibling();
 

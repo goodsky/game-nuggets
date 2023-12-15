@@ -9,10 +9,13 @@ namespace Campus.GridTerrain
     /// </summary>
     public class SelectableTerrain : Selectable
     {
+        private GameAccessor _accessor = new GameAccessor();
+
         public GridMesh Terrain;
 
         private Vector3 _mousePosition;
         private Point3 _mouseGridLocation;
+        private Point2 _mouseVertexLocation;
 
         /// <summary>
         /// Unity's start method.
@@ -23,6 +26,7 @@ namespace Campus.GridTerrain
 
             _mousePosition = Vector3.zero;
             _mouseGridLocation = Point3.Null;
+            _mouseVertexLocation = Point2.Null;
 
             OnMouseDown = Clicked;
         }
@@ -32,33 +36,38 @@ namespace Campus.GridTerrain
         /// </summary>
         protected override void Update()
         {
-            //if (_mousePosition.Equals(Input.mousePosition))
-            //    return;
-
             _mousePosition = Input.mousePosition;
             var mouseRay = UnityEngine.Camera.main.ScreenPointToRay(_mousePosition);
+
+            Point3 currentGridSelection;
+            Point2 currentVertexSelection;
 
             RaycastHit hit;
             if (Terrain.Collider.Raycast(mouseRay, out hit, float.MaxValue))
             {
-                var newMouseLocation = Terrain.Convert.WorldToGrid(hit.point);
-                if (newMouseLocation != _mouseGridLocation)
-                {
-                    _mouseGridLocation = newMouseLocation;
-
-                    var args = new TerrainSelectionUpdateArgs(_mouseGridLocation);
-                    Game.State.SelectionUpdateTerrain(args);
-                }
+                currentGridSelection = Terrain.Convert.WorldToGrid(hit.point);
+                currentVertexSelection = Terrain.Convert.WorldToGridVertex(hit.point);
             }
             else
             {
-                if (_mouseGridLocation != Point3.Null)
-                {
-                    _mouseGridLocation = Point3.Null;
+                currentGridSelection = Point3.Null;
+                currentVertexSelection = Point2.Null;
+            }
 
-                    var args = new TerrainSelectionUpdateArgs(_mouseGridLocation);
-                    Game.State.SelectionUpdateTerrain(args);
-                }
+            if (currentGridSelection != _mouseGridLocation)
+            {
+                _mouseGridLocation = currentGridSelection;
+
+                var args = new TerrainGridUpdateArgs(_mouseGridLocation);
+                _accessor.StateMachine.UpdateTerrainGridSelection(args);
+            }
+
+            if (currentVertexSelection != _mouseVertexLocation)
+            {
+                _mouseVertexLocation = currentVertexSelection;
+
+                var args = new TerrainVertexUpdateArgs(_mouseVertexLocation);
+                _accessor.StateMachine.UpdateTerrainVertexSelection(args);
             }
         }
 
@@ -68,21 +77,34 @@ namespace Campus.GridTerrain
         /// <param name="mouse">The mouse button that was clicked.</param>
         private void Clicked(MouseButton mouse)
         {
-            var args = new TerrainClickedArgs(mouse, _mouseGridLocation);
-            Game.State.ClickedTerrain(args);
+            var args = new TerrainClickedArgs(mouse, _mouseGridLocation, _mouseVertexLocation);
+            _accessor.StateMachine.ClickedTerrain(args);
         }
     }
 
     /// <summary>
     /// Terrain selection update event argument.
     /// </summary>
-    public class TerrainSelectionUpdateArgs : EventArgs
+    public class TerrainGridUpdateArgs : EventArgs
     {
-        public Point3 SelectionLocation { get; private set; }
+        public Point3 GridSelection { get; private set; }
 
-        public TerrainSelectionUpdateArgs(Point3 selectionLocation)
+        internal TerrainGridUpdateArgs(Point3 gridSelection)
         {
-            SelectionLocation = selectionLocation;
+            GridSelection = gridSelection;
+        }
+    }
+
+    /// <summary>
+    /// Terrain vertex selection update event argument.
+    /// </summary>
+    public class TerrainVertexUpdateArgs : EventArgs
+    {
+        public Point2 VertexSelection { get; private set; }
+
+        internal TerrainVertexUpdateArgs(Point2 vertexSelection)
+        {
+            VertexSelection = vertexSelection;
         }
     }
 
@@ -92,12 +114,14 @@ namespace Campus.GridTerrain
     public class TerrainClickedArgs : EventArgs
     {
         public MouseButton Button { get; private set; }
-        public Point3 ClickLocation { get; private set; }
+        public Point3 GridSelection { get; private set; }
+        public Point2 VertexSelection { get; private set; }
 
-        public TerrainClickedArgs(MouseButton button, Point3 clickLocation)
+        internal TerrainClickedArgs(MouseButton button, Point3 gridSelection, Point2 vertexSelection)
         {
             Button = button;
-            ClickLocation = clickLocation;
+            GridSelection = gridSelection;
+            VertexSelection = vertexSelection;
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Common
 {
     internal enum LogLevel
     {
-        Info = 0,       // Verbose information
+        Debug = 0,      // Verbose information
+        Info,           // Standard information
         Warning,        // Abnormal behavior
         Error,          // Critical errors
                         // It is important to order these enums from most verbose to least verbose!
@@ -18,7 +18,7 @@ namespace Common
     /// Class to write logs out to a file or the Unity editor.
     /// Based on the setup configuration, the logs will be swallowed, printed to console, or printed to different files.
     /// </summary>
-    static class GameLogger
+    internal class GameLogger : MonoBehaviour
     {
         private static readonly int NumberOfFilesToKeepInMyDocuments = 10;
         private static readonly string LogsFolder = "SimU";
@@ -27,11 +27,50 @@ namespace Common
         private static string[] LogLevelStrings = Enum.GetNames(typeof(LogLevel));
 
         /// <summary>
-        /// Hook up with Unity at startup.
+        /// Ensure the singleton game logger gameobject exists.
         /// </summary>
-        static GameLogger()
+        public static void EnsureSingletonExists()
+        {
+            GameLogger[] existingLoggers = FindObjectsOfType<GameLogger>();
+
+            if (existingLoggers.Length == 0)
+            {
+                // Create the singleton GameLogger.
+                var logger = new GameObject(nameof(GameLogger));
+                logger.AddComponent<GameLogger>();
+
+                if (Application.isEditor)
+                {
+                    GameLogger.CreateUnityLogger(LogLevel.Debug);
+                }
+                GameLogger.CreateMyDocumentsStream("debug", LogLevel.Debug);
+            }
+            else if (existingLoggers.Length == 1)
+            {
+                GameLogger.Info("GameLogger already exists in scene.");
+            }
+            else if (existingLoggers.Length > 1)
+            {
+                GameLogger.FatalError("More than one GameLogger exists in the scene!");
+            }
+        }
+
+        /// <summary>
+        /// Unity ctor (kindof)
+        /// </summary>
+        protected void Awake()
         {
             Application.logMessageReceived += HandleUnityLog;
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        /// <summary>
+        /// Unity dtor (kindof)
+        /// </summary>
+        protected void OnApplicationQuit()
+        {
+            GameLogger.Info("Application is quiting.");
+            GameLogger.Close();
         }
 
         /// <summary>
@@ -116,6 +155,16 @@ namespace Common
         }
 
         /// <summary>
+        /// Write a log message at Debug level.
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="args">The arguments to the message</param>
+        public static void Debug(string message, params object[] args)
+        {
+            Log(LogLevel.Debug, message, args);
+        }
+
+        /// <summary>
         /// Write a log message at Info level.
         /// </summary>
         /// <param name="message">The message to log</param>
@@ -157,10 +206,9 @@ namespace Common
 
             Application.Quit();
 
-            if (Application.isEditor)
-            {
-                UnityEditor.EditorApplication.isPaused = true;
-            }
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+#endif
         }
 
         /// <summary>
@@ -213,6 +261,7 @@ namespace Common
                 if (_stream != null)
                 {
                     _stream.Close();
+                    _stream = null;
                 }
             }
 
@@ -227,14 +276,15 @@ namespace Common
                 {
                     switch (level)
                     {
+                        case LogLevel.Debug:
                         case LogLevel.Info:
-                            Debug.LogFormat(message, args);
+                            UnityEngine.Debug.LogFormat(message, args);
                             break;
                         case LogLevel.Warning:
-                            Debug.LogWarningFormat(message, args);
+                            UnityEngine.Debug.LogWarningFormat(message, args);
                             break;
                         case LogLevel.Error:
-                            Debug.LogErrorFormat(message, args);
+                            UnityEngine.Debug.LogErrorFormat(message, args);
                             break;
                     }
                 }

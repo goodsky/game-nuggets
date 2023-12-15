@@ -1,0 +1,74 @@
+﻿<FacultyData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+
+  <DefaultHeadshot>DefaultIcon</DefaultHeadshot>
+  <AvailableFacultyCount>5</AvailableFacultyCount>
+
+  <!-- Untaught students are taught by "Street" which has the Default teaching score-->
+  <TeachingScore min="50" max="100" default="50" />
+  <ResearchScore min="50" max="100" default="50" />
+  <FacultySlots min="2" max="4" default="2" />
+
+  <MinimumBaseSalary>10000</MinimumBaseSalary>
+  <AverageDollarsPerTeachingPoint>700</AverageDollarsPerTeachingPoint>
+  <AverageDollarsPerResearchPoint>700</AverageDollarsPerResearchPoint>
+  
+  <TeachingScoreStdDev>7.5</TeachingScoreStdDev>
+  <ResearchScoreStdDev>5</ResearchScoreStdDev>
+  
+  <!-- The default median of teacher distributions. Linearly scales to score max. -->
+  <MinDefaultTeachingScore>70</MinDefaultTeachingScore>
+  <MinDefaultResearchScore>50</MinDefaultResearchScore>
+
+  <!-- The amount that research or teaching impacts hiring professors with the opposite skill [0, 1] -->
+  <ResearchPrestigeImpactOnTeachingScore>0.1</ResearchPrestigeImpactOnTeachingScore>
+  <TeachingPrestigeImpactOnResearchScore>0.1</TeachingPrestigeImpactOnResearchScore>
+
+  <!-- Faculty that are above your current median cost a premium to hire -->
+  <FacultyOverTheMeanPremiumMaxDollars>30000</FacultyOverTheMeanPremiumMaxDollars>
+  <FacultyOverTheMeanPremiumExponentialFactor>1.2</FacultyOverTheMeanPremiumExponentialFactor>
+  
+  <!-- Factor of how much better "good" research scores are. -->
+  <ResearchExponentialFactor>2.0</ResearchExponentialFactor>
+  
+  <!-- Data used to randomly generate faculty -->
+  <FirstNamesMen>
+    <Name>Skyler</Name>
+    <Name>Brandon</Name>
+    <Name>Chris</Name>
+    <Name>Christopher</Name>
+    <Name>David</Name>
+    <Name>James</Name>
+    <Name>Nick</Name>
+    <Name>Patrick</Name>
+  </FirstNamesMen>
+  
+  <FirstNamesWomen>
+    <Name>Kristin</Name>
+    <Name>Emily</Name>
+    <Name>Anna</Name>
+    <Name>Megan</Name>
+    <Name>Allison</Name>
+    <Name>Katherine</Name>
+    <Name>Abby</Name>
+    <Name>Victoria</Name>
+  </FirstNamesWomen>
+
+  <LastNames>
+    <Name>Smith</Name>
+    <Name>Green</Name>
+    <Name>Johnson</Name>
+    <Name>Williams</Name>
+    <Name>Jones</Name>
+    <Name>Brown</Name>
+    <Name>Davis</Name>
+    <Name>Miller</Name>
+    <Name>Wilson</Name>
+    <Name>Anderson</Name>
+    <Name>Jackson</Name>
+    <Name>Rodriguez</Name>
+    <Name>Hall</Name>
+    <Name>Hawkins</Name>
+    <Name>Moore</Name>
+  </LastNames>
+  
+</FacultyData>

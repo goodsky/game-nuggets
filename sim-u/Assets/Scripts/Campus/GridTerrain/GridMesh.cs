@@ -1,4 +1,5 @@
 ﻿using Common;
+using GameData;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,38 +12,44 @@ namespace Campus.GridTerrain
     public class GridMeshArgs
     {
         /// <summary>Size of each square in Unity world units.</summary>
-        public float GridSquareSize = 1.0f;
+        public float GridSquareSize;
 
         /// <summary>Size of each vertical step in the grid in Unity world units.</summary>
-        public float GridStepSize = 0.4f;
-
-        /// <summary>Number of grid squares along the x-axis.</summary>
-        public int CountX = 16;
-
-        /// <summary>Number of grid steps along the y-axis.</summary>
-        public int CountY = 8;
-
-        /// <summary>Number of grid squares along the z-axis.</summary>
-        public int CountZ = 16;
-
-        /// <summary>The starting grid height of the mesh.</summary>
-        public int StartingHeight = 3;
-
-        /// <summary>Material to use on the grid.</summary>
-        public Material GridMaterial = null;
-
-        /// <summary>Prefab to wrap around the grid mesh.</summary>
-        public GameObject SkirtPrefab = null;
+        public float GridStepSize;
 
         /// <summary>The size of the grid squares on the material.</summary>
-        public int SubmaterialSize = 64;
+        public int SubmaterialSize;
+
+        /// <summary>Material to use on the grid.</summary>
+        public Material GridMaterial;
+
+        /// <summary>Number of grid squares along the x-axis.</summary>
+        public int CountX;
+
+        /// <summary>Number of grid steps along the y-axis.</summary>
+        public int CountY;
+
+        /// <summary>Number of grid squares along the z-axis.</summary>
+        public int CountZ;
+
+        /// <summary>The maximum number of grid steps down you can move the terrain.</summary>
+        public int MaxDepth;
+
+        /// <summary>The starting grid height of the mesh.</summary>
+        public int[,] VertexHeights;
+
+        /// <summary>The starting grid state of the mesh.</summary>
+        public GridData[,] GridData;
+
+        /// <summary>The starting anchored state of the mesh. (For safe terrain editor).</summary>
+        public bool[,] GridAnchored;
     }
 
     /// <summary>
     /// A mesh created of square grids. Wraps around Unity's mesh behaviours.
     /// Supports setting the material on individual grids using dynamic submeshes.
     /// </summary>
-    public class GridMesh : IDisposable
+    public class GridMesh : MonoBehaviour
     {
         /// <summary>Gets the length of the sides of a grid square in Unity world units.</summary>
         public float GridSquareSize { get; private set; }
@@ -59,6 +66,9 @@ namespace Campus.GridTerrain
         /// <summary>Gets the number of grid squares along the y-axis.</summary>
         public int CountY { get; private set; }
 
+        /// <summary>The maximum depth that the terrain can go down.</summary>
+        public int MaxDepth { get; private set; }
+
         /// <summary>The size of submaterial squares.</summary>
         public int SubmaterialSize { get; private set; }
 
@@ -74,23 +84,8 @@ namespace Campus.GridTerrain
         /// <summary>Gets the Unity collider for the terrain.</summary>
         public Collider Collider { get { return _collider; } }
 
-        /// <summary>Gets the Unity game object that the mesh behaviours are attached to.</summary>
-        public GameObject GameObject { get; private set; }
-
         /// <summary>Gets the selectable component of the grid. (Note: set after the constructor)</summary>
         public Selectable Selectable { get; set; }
-
-        /// <summary>
-        /// Stores pointers into the mesh to locate a grid square.
-        /// </summary>
-        private class GridData
-        {
-            /// <summary>Index to the start of the grid in the vertices array.</summary>
-            public int VertexIndex;
-
-            /// <summary>Current submaterial.</summary>
-            public int SubmaterialIndex;
-        }
 
         // Stores information about the grid square at [X, Z]
         private GridData[,] _gridData;
@@ -119,46 +114,38 @@ namespace Campus.GridTerrain
         /// <param name="collider">The Unity MeshCollider behavior.</param>
         /// <param name="renderer">The Unity MeshRenderer behavior.</param>
         /// <param name="args">The arguments used to create the GridMesh.</param>
-        public GridMesh(Mesh mesh, MeshCollider collider, MeshRenderer renderer, GridMeshArgs args)
+        public void InitializeGridMesh(GridMeshArgs args)
         {
-            if (mesh == null)
-                throw new ArgumentNullException("mesh");
-
-            if (collider == null)
-                throw new ArgumentNullException("collider");
-
-            if (renderer == null)
-                throw new ArgumentNullException("renderer");
-
             if (args == null)
                 throw new ArgumentNullException("args");
 
-            GameLogger.Info("Generating GridMesh. {0}x{1} squares @ {2:0.00f}; Starting height {3} of {4} @ {5:0.00f}; Material '{6}';",
-                args.CountX, 
+            GameLogger.Info("Grid Mesh is loaded. Grid Count=({0}x{1}x{2}); Grid Size=({3:0.00f}x{4:0.00f}x{3:0.00f}); Material='{5}'; Submaterial Size={6}",
+                args.CountX,
+                args.CountY,
                 args.CountZ,
-                args.GridSquareSize, 
-                args.StartingHeight, 
-                args.CountY, 
+                args.GridSquareSize,
                 args.GridStepSize,
-                args.GridMaterial == null ? "NULL" : args.GridMaterial.name);
+                args.GridMaterial == null ? "NULL" : args.GridMaterial.name,
+                args.SubmaterialSize);
 
-            _mesh = mesh;
-            _collider = collider;
-            _renderer = renderer;
-            GameObject = renderer.gameObject;
+            _mesh = GetComponent<MeshFilter>()?.mesh ?? throw new InvalidOperationException("GridMesh must have a Mesh");
+            _collider = GetComponent<MeshCollider>() ?? throw new InvalidOperationException("GridMesh must have a MeshCollider");
+            _renderer = GetComponent<MeshRenderer>() ?? throw new InvalidOperationException("GridMesh must have a MeshRenderer");
 
             GridSquareSize = args.GridSquareSize;
             GridStepSize = args.GridStepSize;
+            SubmaterialSize = args.SubmaterialSize;
+
             CountX = args.CountX;
             CountZ = args.CountZ;
             CountY = args.CountY;
-            SubmaterialSize = args.SubmaterialSize;
+            MaxDepth = args.MaxDepth;
 
             if (args.GridMaterial.mainTexture.width % SubmaterialSize != 0 ||
                 args.GridMaterial.mainTexture.height % SubmaterialSize != 0)
             {
                 throw new InvalidOperationException(string.Format("GridMesh material '{0}' is not a {1}x{1} grid sheet. [{2}x{3}]",
-                    args.GridMaterial.name, 
+                    args.GridMaterial.name,
                     SubmaterialSize,
                     args.GridMaterial.mainTexture.width,
                     args.GridMaterial.mainTexture.height));
@@ -175,23 +162,44 @@ namespace Campus.GridTerrain
             Convert = new GridConverter(
                 gridSize: GridSquareSize,
                 gridStepSize: GridStepSize,
-                minTerrainX: GameObject.transform.position.x,
-                minTerrainZ: GameObject.transform.position.z,
-                minTerrainY: args.StartingHeight * -GridStepSize);
+                minTerrainX: gameObject.transform.position.x,
+                minTerrainZ: gameObject.transform.position.z,
+                minTerrainY: MaxDepth * -GridStepSize);
 
             Editor = new SafeTerrainEditor(this);
 
-            if (args.SkirtPrefab != null)
-            {
-                var skirtObject = UnityEngine.Object.Instantiate(args.SkirtPrefab);
-                skirtObject.transform.parent = GameObject.transform;
-
-                // the skirt prefab is rotated 90 degrees, so scale y-axis instead of z
-                skirtObject.transform.localScale = new Vector3(CountX * GridSquareSize, CountZ * GridSquareSize, 1.0f);
-            }
-
+            // NB: Always flatten after generating the mesh
             GenerateMesh();
-            Flatten(args.StartingHeight);
+            Flatten(MaxDepth);
+            LoadDefaultValues(args);
+        }
+
+        /// <summary>
+        /// Check if a grid point is valid on this grid mesh.
+        /// </summary>
+        /// <param name="x">X coordinate of the grid square.</param>
+        /// <param name="z">Z coordinate of the grid square</param>
+        /// <returns>True if the grid point is in the bounds of the mesh.</returns>
+        public bool GridInBounds(int x, int z)
+        {
+            return  x >= 0 &&
+                    x < CountX &&
+                    z >= 0 &&
+                    z < CountZ;
+        }
+
+        /// <summary>
+        /// Check if a vertex point is valid on this grid mesh.
+        /// </summary>
+        /// <param name="x">X coordinate of the grid vertex.</param>
+        /// <param name="z">Z coordinate of the grid vertex</param>
+        /// <returns>True if the vertex point is in the bounds of the mesh.</returns>
+        public bool VertexInBounds(int x, int z)
+        {
+            return  x >= 0 &&
+                    x <= CountX &&
+                    z >= 0 &&
+                    z <= CountZ;
         }
 
         /// <summary>
@@ -202,7 +210,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the grid square in grid steps.</returns>
         public int GetSquareHeight(int x, int z, int corner = Vertex.Center)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetSquareHeight out of range. ({0},{1})", x, z);
 
             int centerIndex = _gridData[x, z].VertexIndex + corner;
@@ -217,7 +225,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the grid square in Unity world units.</returns>
         public float GetSquareWorldHeight(int x, int z, int corner = Vertex.Center)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetSquareWorldHeight out of range. ({0},{1})", x, z);
 
             int centerIndex = _gridData[x, z].VertexIndex + corner;
@@ -233,7 +241,7 @@ namespace Campus.GridTerrain
         /// <returns>The height of the vertex in grid steps.</returns>
         public int GetVertexHeight(int x, int z)
         {
-            if (x < 0 || x > CountX || z < 0 || z > CountZ)
+            if (!VertexInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetVertexHeight out of range. ({0},{1})", x, z);
 
             return _vertexHeight[x, z];
@@ -248,26 +256,62 @@ namespace Campus.GridTerrain
         /// <returns>The height of the vertex in Unity world units.</returns>
         public float GetVertexWorldHeight(int x, int z)
         {
-            if (x < 0 || x > CountX || z < 0 || z > CountZ)
+            if (!VertexInBounds(x, z))
                 GameLogger.FatalError("Attempted to GetVertexWorldHeight out of range. ({0},{1})", x, z);
 
             return Convert.GridHeightToWorld(_vertexHeight[x, z]);
         }
 
         /// <summary>
-        /// Gets if the grid square is flat or not.
+        /// Checks if the grid square is flat or not.
         /// </summary>
         /// <param name="x">X coordinates of the grid square.</param>
         /// <param name="z">Z coorindates of the grid square.</param>
         /// <returns>True if the square is flat, false otherwise.</returns>
         public bool IsGridFlat(int x, int z)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to get IsGridFlat out of range. ({0},{1})", x, z);
 
             return _vertexHeight[x, z] == _vertexHeight[x + 1, z] &&
                 _vertexHeight[x, z] == _vertexHeight[x, z + 1] &&
                 _vertexHeight[x, z] == _vertexHeight[x + 1, z + 1];
+        }
+
+        /// <summary>
+        /// Check if the grid square is smooth along a specified axis alignment.
+        /// </summary>
+        /// <param name="x">X coordinates of the grid square.</param>
+        /// <param name="z">Z coorindates of the grid square.</param>
+        /// <param name="alignment">The direction to check for smoothness.</param>
+        /// <returns>True if the grid is smooth, false otherwise.</returns>
+        public bool IsGridSmooth(int x, int z, AxisAlignment alignment)
+        {
+            if (!GridInBounds(x, z))
+                GameLogger.FatalError("Attempted to get IsGridSmooth out of range. ({0},{1})", x, z);
+
+            switch (alignment)
+            {
+                case AxisAlignment.None:
+                    return
+                        (GetVertexHeight(x, z) == GetVertexHeight(x, z + 1) &&
+                         GetVertexHeight(x + 1, z) == GetVertexHeight(x + 1, z + 1)) ||
+                        (GetVertexHeight(x, z) == GetVertexHeight(x + 1, z) &&
+                         GetVertexHeight(x, z + 1) == GetVertexHeight(x + 1, z + 1));
+
+                case AxisAlignment.XAxis:
+                    return
+                        GetVertexHeight(x, z) == GetVertexHeight(x, z + 1) &&
+                        GetVertexHeight(x + 1, z) == GetVertexHeight(x + 1, z + 1);
+
+                case AxisAlignment.ZAxis:
+                    return
+                        GetVertexHeight(x, z) == GetVertexHeight(x + 1, z) &&
+                        GetVertexHeight(x, z + 1) == GetVertexHeight(x + 1, z + 1);
+
+                default:
+                    throw new ArgumentException($"Unknown AxisAlignment {alignment}.");
+            }
         }
 
         /// <summary>
@@ -278,7 +322,7 @@ namespace Campus.GridTerrain
         /// <param name="height">The square height in grid steps.</param>
         public void SetSquareHeight(int x, int z, int gridHeight)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to set square height outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             SetVertexHeights(x, z, new int[,] { { gridHeight, gridHeight }, { gridHeight, gridHeight } });
@@ -297,7 +341,7 @@ namespace Campus.GridTerrain
             int xLength = gridHeights.GetLength(0);
             int zLength = gridHeights.GetLength(1);
 
-            if (xBase < 0 || xBase + xLength > CountX + 1 || zBase < 0 || zBase + zLength > CountZ + 1)
+            if (!VertexInBounds(xBase, zBase) || !VertexInBounds(xBase + xLength - 1, zBase + zLength - 1))
                 GameLogger.FatalError("Attempted to set vertex height outside of range! ({0},{1}) + ({2},{3}) is outside of ({4},{5})", xBase, zBase, xLength, zLength, CountX + 1, CountZ + 1);
 
             // 1st pass: set the corner vertices
@@ -388,7 +432,7 @@ namespace Campus.GridTerrain
         /// <returns>Id of the submaterial used at the grid square.</returns>
         public int GetSubmaterial(int x, int z)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to get square submaterial outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             return _gridData[x, z].SubmaterialIndex;
@@ -400,9 +444,11 @@ namespace Campus.GridTerrain
         /// <param name="x">X coordinate of the grid square.</param>
         /// <param name="z">Z coordinate of the grid square.</param>
         /// <param name="submaterialId">The id of the submaterial (the gridsheet on the material from left->right, top->bottom).</param>
-        public void SetSubmaterial(int x, int z, int submaterialId, Rotation rotation = Rotation.deg0)
+        /// <param name="rotation">Value to rotate the submaterial by. (Applied before inversion)</param>
+        /// <param name="inversion">Whether or not to flip the submaterial. (Applied after rotation)</param>
+        public void SetSubmaterial(int x, int z, int submaterialId, SubmaterialRotation rotation = SubmaterialRotation.deg0, SubmaterialInversion inversion = SubmaterialInversion.None)
         {
-            if (x < 0 || x >= CountX || z < 0 || z >= CountZ)
+            if (!GridInBounds(x, z))
                 GameLogger.FatalError("Attempted to set square material outside of range! ({0},{1}) is outside of ({2},{3})", x, z, CountX, CountZ);
 
             int submaterialOffsetX = submaterialId % _submaterialCountX;
@@ -419,28 +465,70 @@ namespace Campus.GridTerrain
             int rotationOffset = 0;
             switch (rotation)
             {
-                case Rotation.deg90:
+                case SubmaterialRotation.deg90:
                     rotationOffset = 3;
                     break;
-                case Rotation.deg180:
+                case SubmaterialRotation.deg180:
                     rotationOffset = 2;
                     break;
-                case Rotation.deg270:
+                case SubmaterialRotation.deg270:
                     rotationOffset = 1;
                     break;
             }
 
             var grid = _gridData[x, z];
+            grid.SubmaterialIndex = submaterialId;
+            grid.Rotation = rotation;
+            grid.Inversion = inversion;
+
             _uv[grid.VertexIndex + (Vertex.BottomLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.BottomRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - (submaterialOffsetZ + 1) * stepZ + Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.TopRight + rotationOffset) % 4] = new Vector2((submaterialOffsetX + 1) * stepX - Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
             _uv[grid.VertexIndex + (Vertex.TopLeft + rotationOffset) % 4] = new Vector2(submaterialOffsetX * stepX + Constant.uvEpsilon, 1.0f - submaterialOffsetZ * stepZ - Constant.uvEpsilon);
             _uv[grid.VertexIndex + Vertex.Center] = new Vector2(submaterialOffsetX * stepX + (stepX / 2), 1.0f - submaterialOffsetZ * stepZ - (stepZ / 2));
-            grid.SubmaterialIndex = submaterialId;
+
+            if ((inversion & SubmaterialInversion.InvertX) == SubmaterialInversion.InvertX)
+            {
+                Vector2 swapTop = _uv[grid.VertexIndex + Vertex.TopRight];
+                _uv[grid.VertexIndex + Vertex.TopRight] = _uv[grid.VertexIndex + Vertex.TopLeft];
+                _uv[grid.VertexIndex + Vertex.TopLeft] = swapTop;
+
+                Vector2 swapBottom = _uv[grid.VertexIndex + Vertex.BottomRight];
+                _uv[grid.VertexIndex + Vertex.BottomRight] = _uv[grid.VertexIndex + Vertex.BottomLeft];
+                _uv[grid.VertexIndex + Vertex.BottomLeft] = swapBottom;
+            }
+
+            if ((inversion & SubmaterialInversion.InvertZ) == SubmaterialInversion.InvertZ)
+            {
+                Vector2 swapLeft = _uv[grid.VertexIndex + Vertex.TopLeft];
+                _uv[grid.VertexIndex + Vertex.TopLeft] = _uv[grid.VertexIndex + Vertex.BottomLeft];
+                _uv[grid.VertexIndex + Vertex.BottomLeft] = swapLeft;
+
+                Vector2 swapRight = _uv[grid.VertexIndex + Vertex.TopRight];
+                _uv[grid.VertexIndex + Vertex.TopRight] = _uv[grid.VertexIndex + Vertex.BottomRight];
+                _uv[grid.VertexIndex + Vertex.BottomRight] = swapRight;
+            }
 
             _mesh.uv = _uv;
         }
 
+        /// <summary>
+        /// Save a snapshot of the grid mesh for game saving.
+        /// </summary>
+        /// <returns></returns>
+        public TerrainSaveState SaveGameState()
+        {
+            return new TerrainSaveState
+            {
+                CountX = CountX,
+                CountY = CountY,
+                CountZ = CountZ,
+                MaxDepth = MaxDepth,
+                VertexHeight = _vertexHeight,
+                GridData = _gridData,
+                GridAnchored = Editor.GridAnchored,
+            };
+        }
         /// <summary>
         /// Generate the mesh based on the arguments set on the instance.
         /// </summary>
@@ -498,6 +586,80 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
+        /// Set default values for the terrain.
+        /// </summary>
+        /// <param name="args"></param>
+        private void LoadDefaultValues(GridMeshArgs args)
+        {
+            if (args.VertexHeights != null)
+            {
+                if (args.VertexHeights.GetLength(0) != _vertexHeight.GetLength(0) ||
+                    args.VertexHeights.GetLength(1) != _vertexHeight.GetLength(1))
+                {
+                    GameLogger.FatalError("Attempting to load vertex heights from invalid array! Required = {0}x{1}; Given = ({2}x{3})",
+                        _vertexHeight.GetLength(0),
+                        _vertexHeight.GetLength(1),
+                        args.VertexHeights.GetLength(0),
+                        args.VertexHeights.GetLength(1));
+                }
+                else
+                {
+                    SetVertexHeights(0, 0, args.VertexHeights);
+                }
+            }
+
+            if (args.GridData != null)
+            {
+                if (args.GridData.GetLength(0) != _gridData.GetLength(0) ||
+                    args.GridData.GetLength(1) != _gridData.GetLength(1))
+                {
+                    GameLogger.FatalError("Attempting to load grid data from invalid array! Required = {0}x{1}; Given = ({2}x{3})",
+                        _gridData.GetLength(0),
+                        _gridData.GetLength(1),
+                        args.GridData.GetLength(0),
+                        args.GridData.GetLength(1));
+                }
+                else
+                {
+                    for (int x = 0; x < args.GridData.GetLength(0); ++x)
+                    {
+                        for (int z = 0; z < args.GridData.GetLength(1); ++z)
+                        {
+                            GridData dataToCopy = args.GridData[x, z];
+                            SetSubmaterial(x, z, dataToCopy.SubmaterialIndex, dataToCopy.Rotation, dataToCopy.Inversion);
+                        }
+                    }
+                }
+            }
+
+            if (args.GridAnchored != null)
+            {
+                if (args.GridAnchored.GetLength(0) != _gridData.GetLength(0) ||
+                    args.GridAnchored.GetLength(1) != _gridData.GetLength(1))
+                {
+                    GameLogger.FatalError("Attempting to load grid anchor data from invalid array! Required = {0}x{1}; Given = ({2}x{3})",
+                        _gridData.GetLength(0),
+                        _gridData.GetLength(1),
+                        args.GridAnchored.GetLength(0),
+                        args.GridAnchored.GetLength(1));
+                }
+                else
+                {
+                    for (int x = 0; x < args.GridAnchored.GetLength(0); ++x)
+                    {
+                        for (int z = 0; z < args.GridAnchored.GetLength(1); ++z)
+                        {
+                            if (args.GridAnchored[x, z])
+                            {
+                                Editor.SetAnchored(x, z);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Update the dynamic mesh with the new vertices, uvs and triangles.
         /// Update the normals, bounds and collider.
         /// </summary>
@@ -516,17 +678,6 @@ namespace Campus.GridTerrain
         }
 
         /// <summary>
-        /// Dispose dynamic resources.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_mesh != null)
-            {
-                _mesh.Clear();
-            }
-        }
-
-        /// <summary>
         /// Helper to access vertices in a square.
         /// </summary>
         private static class Vertex
@@ -540,14 +691,5 @@ namespace Campus.GridTerrain
             public const int CountPerSquare = 5;
             public const int TrianglesPerSquare = 4;
         }
-    }
-
-    // Rotation of a submaterial
-    public enum Rotation
-    {
-        deg0,
-        deg90,
-        deg180,
-        deg270
     }
 }

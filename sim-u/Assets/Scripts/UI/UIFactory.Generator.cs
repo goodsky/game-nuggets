@@ -14,7 +14,7 @@ namespace UI
         // These properties must always be set
         public string Name = "default";
         public string Tooltip = null;
-        public bool Toggleable = true;
+        public bool RetainsFocus = true;
         public Sprite IconImage = null; // can be null
         public Action OnSelect = null; // can be null
         public Action OnDeselect = null; // can be null
@@ -30,6 +30,7 @@ namespace UI
         public Color DefaultColor;
         public Color MouseOverColor;
         public Color SelectedColor;
+        public Color DisabledColor;
     }
 
     /// <summary>
@@ -50,6 +51,7 @@ namespace UI
         public Color ButtonsDefaultColor;
         public Color ButtonsMouseOverColor;
         public Color ButtonsSelectedColor;
+        public Color ButtonsDisabledColor;
 
         public float Left;
         public float Right;
@@ -97,6 +99,22 @@ namespace UI
         }
 
         /// <summary>
+        /// Instantiates a UI game object with a filter effect to fade out the entire screen.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static GameObject GenerateFullScreenFade(string name, Transform parent)
+        {
+            var fade = GenerateEmptyUI(name, parent);
+
+            var image = fade.AddComponent<Image>();
+            image.color = new Color32(0, 0, 0, 128);
+
+            return fade;
+        }
+
+        /// <summary>
         /// Instantiates a button.
         /// </summary>
         /// <param name="name">The name of the button.</param>
@@ -116,10 +134,11 @@ namespace UI
             rect.anchoredPosition = args.Position;
 
             var script = button.AddComponent<Button>();
-            script.Toggleable = args.Toggleable;
+            script.RetainsFocus = args.RetainsFocus;
             script.DefaultColor = args.DefaultColor;
             script.MouseOverColor = args.MouseOverColor;
             script.SelectedColor = args.SelectedColor;
+            script.DisabledColor = args.DisabledColor;
             script.OnSelect = args.OnSelect;
             script.OnDeselect = args.OnDeselect;
             script.Tooltip = args.Tooltip;
@@ -173,7 +192,7 @@ namespace UI
                 new ButtonArgs()
                 {
                     Name = "LeftButton",
-                    Toggleable = false,
+                    RetainsFocus = false,
                     Position = new Vector2(0, 0),
                     Size = args.ButtonSize,
                     Pivot = new Vector2(1, 0.5f),
@@ -182,6 +201,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
+                    DisabledColor = args.ButtonsDisabledColor,
                     IconImage = args.ArrowLeft,
                 });
 
@@ -191,7 +211,7 @@ namespace UI
                 new ButtonArgs()
                 {
                     Name = "RightButton",
-                    Toggleable = false,
+                    RetainsFocus = false,
                     Position = new Vector2(0, 0),
                     Size = args.ButtonSize,
                     Pivot = new Vector2(0, 0.5f),
@@ -200,6 +220,7 @@ namespace UI
                     DefaultColor = args.ButtonsDefaultColor,
                     MouseOverColor = args.ButtonsMouseOverColor,
                     SelectedColor = args.ButtonsSelectedColor,
+                    DisabledColor = args.ButtonsDisabledColor,
                     IconImage = args.ArrowRight,
                 });
 
@@ -243,6 +264,7 @@ namespace UI
                 button.DefaultColor = args.ButtonsDefaultColor;
                 button.MouseOverColor = args.ButtonsMouseOverColor;
                 button.SelectedColor = args.ButtonsSelectedColor;
+                button.DisabledColor = args.ButtonsDisabledColor;
 
                 var buttonObject = GenerateButton(content.transform, button);
                 buttons.Add(buttonObject.GetComponent<Button>());

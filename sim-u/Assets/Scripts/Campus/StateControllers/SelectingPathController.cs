@@ -1,16 +1,24 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class SelectingPathContext
+    {
+        public PathsWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingPath game state.
     /// </summary>
+    [StateController(HandledState = GameState.SelectingPath)]
     internal class SelectingPathController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
+        private PathsWindow _window;
 
         private Material _validMaterial;
         private Material _invalidMaterial;
@@ -19,27 +27,32 @@ namespace Campus
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public SelectingPathController(GridMesh terrain)
+        public SelectingPathController()
         {
-            _terrain = terrain;
+            _terrain = Accessor.Terrain;
 
             _validMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid");
             _invalidMaterial = ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid");
-            _cursor = GridCursor.Create(terrain, _validMaterial);
+            _cursor = GridCursor.Create(_terrain, _validMaterial);
 
-            OnTerrainSelectionUpdate += PlacementUpdate;
+            OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;
         }
 
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="context">The construction to place.</param>
         public override void TransitionIn(object context)
         {
+            var pathsContext = context as SelectingPathContext;
+            if (pathsContext == null)
+                GameLogger.FatalError("SelectingPathController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
+
+            _window = pathsContext.Window;
+            _window.UpdateInfo(0, 0);
+
             _cursor.Activate();
-            _cursor.Place(_cursor.Position.x, _cursor.Position.y);
+            _cursor.Place(_cursor.Position);
         }
 
         /// <summary>
@@ -47,10 +60,7 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
-            if (_cursor != null)
-            {
-                _cursor.Deactivate();
-            }
+            _cursor.Deactivate();
         }
 
         /// <summary>
@@ -63,16 +73,17 @@ namespace Campus
         /// </summary>
         /// <param name="sender">not used.</param>
         /// <param name="args">The terrain selection update args.</param>
-        private void PlacementUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void PlacementUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
                 if (!_cursor.IsActive)
                     _cursor.Activate();
 
-                _cursor.Place(args.SelectionLocation.x, args.SelectionLocation.z);
+                bool isValid = Accessor.CampusManager.IsValidForPath(new AxisAlignedLine(args.GridSelection), out bool[] _);
+                _cursor.Place(args.GridSelection);
                 _cursor.SetMaterial(
-                    IsValidTerrain() ?
+                    isValid ?
                         _validMaterial :
                         _invalidMaterial);
             }
@@ -92,31 +103,21 @@ namespace Campus
         {
             if (args.Button == MouseButton.Left)
             {
-                if (IsValidTerrain())
+                if (Accessor.CampusManager.IsValidForPath(new AxisAlignedLine(_cursor.Position), out bool[] _))
                 {
-                    Transition(GameState.PlacingPath, args);
+                    Transition(
+                        GameState.PlacingPath,
+                        new PlacingPathContext
+                        {
+                            ClickedArgs = args,
+                            Window = _window,
+                        });
                 }
             }
-
-            // DEBUGGING:
-            if (args.Button == MouseButton.Right)
+            else if (args.Button == MouseButton.Right)
             {
-                GameLogger.Info("IsValidTerrain: {0}; IsSmoothAndFree: {1}; IsPath: {2}", 
-                    IsValidTerrain(), 
-                    _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0],
-                    Game.Campus.Paths.IsPath(_cursor.Position.x, _cursor.Position.y));
+                GameLogger.Info("SelectingPathCheck: {0} = {1}", _cursor.Position, Accessor.CampusManager.GetGridUse(_cursor.Position));
             }
-        }
-
-        /// <summary>
-        /// Gets a value representing whether or not the grid under the cursor is valid for path.
-        /// </summary>
-        /// <returns>True if the grid is valid, false otherwise.</returns>
-        private bool IsValidTerrain()
-        {
-            return
-                _terrain.Editor.CheckSmoothAndFree(_cursor.Position.x, _cursor.Position.y, _cursor.Position.x, _cursor.Position.y)[0] ||
-                Game.Campus.Paths.IsPath(_cursor.Position.x, _cursor.Position.y);
         }
     }
 }

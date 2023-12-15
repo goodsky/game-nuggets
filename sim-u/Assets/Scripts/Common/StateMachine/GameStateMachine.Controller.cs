@@ -11,6 +11,11 @@ namespace Common
         public abstract class Controller
         {
             /// <summary>
+            /// Accessor for game components.
+            /// </summary>
+            protected GameAccessor Accessor = new GameAccessor();
+
+            /// <summary>
             /// Called each game step while this state is active.
             /// </summary>
             public abstract void Update();
@@ -36,13 +41,23 @@ namespace Common
                 }
             }
 
-            /// <summary>Event handler for terrain selection moved events that don't transition the state.</summary>
-            protected event EventHandler<TerrainSelectionUpdateArgs> OnTerrainSelectionUpdate;
-            public void TerrainSelectionUpdate(TerrainSelectionUpdateArgs args)
+            /// <summary>Event handler for terrain grid selection moved events that don't transition the state.</summary>
+            protected event EventHandler<TerrainGridUpdateArgs> OnTerrainGridSelectionUpdate;
+            public void TerrainGridSelectionUpdate(TerrainGridUpdateArgs args)
             {
-                if (OnTerrainSelectionUpdate != null)
+                if (OnTerrainGridSelectionUpdate != null)
                 {
-                    OnTerrainSelectionUpdate.Invoke(null, args);
+                    OnTerrainGridSelectionUpdate.Invoke(null, args);
+                }
+            }
+
+            /// <summary>Event handler for terrain vertex selection moved events that don't transition the state.</summary>
+            protected event EventHandler<TerrainVertexUpdateArgs> OnTerrainVertexSelectionUpdate;
+            public void TerrainVertexSelectionUpdate(TerrainVertexUpdateArgs args)
+            {
+                if (OnTerrainVertexSelectionUpdate != null)
+                {
+                    OnTerrainVertexSelectionUpdate.Invoke(null, args);
                 }
             }
 
@@ -53,7 +68,7 @@ namespace Common
             /// <param name="context">Optional context to pass.</param>
             protected void Transition(GameState next, object context = null)
             {
-                Game.State.Transition(next, context);
+                Accessor.StateMachine.Transition(next, context);
             }
         }
     }

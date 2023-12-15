@@ -22,13 +22,13 @@ namespace Common
         {
             lock (globalSelectionLock)
             {
-                if (selection == globalSelection)
-                    return;
-
+                // NB: If you select the same item twice the Deselect() event will not be fired.
+                //    However, the Select() event will be fired again.
                 var oldSelection = globalSelection;
                 globalSelection = selection;
 
-                if (oldSelection != null)
+                if (oldSelection != null &&
+                    oldSelection != selection)
                 {
                     try
                     {
@@ -48,7 +48,7 @@ namespace Common
                     }
                     catch (Exception e)
                     {
-                        GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", oldSelection.GetType().Name, e);
+                        GameLogger.Warning("Exception during Select. Object = {0}. Ex = {1}.", globalSelection.GetType().Name, e);
                     }
                 }
 

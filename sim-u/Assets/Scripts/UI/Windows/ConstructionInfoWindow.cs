@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
@@ -13,6 +14,7 @@ namespace UI
     /// </summary>
     public class ConstructionInfoWindow : Window
     {
+        private BuildingData _bulidingData;
         private string _title;
         private string _description;
 
@@ -35,6 +37,11 @@ namespace UI
         /// The build button.
         /// </summary>
         public Button BuildButton;
+
+        /// <summary>
+        /// The build button.
+        /// </summary>
+        public Button CancelButton;
 
         /// <summary>
         /// A view on the construction window title text.
@@ -65,7 +72,7 @@ namespace UI
         /// <summary>Gets the UI Buttons on this window.</summary>
         public override List<Button> Buttons
         {
-            get { return new List<Button>() { BuildButton }; }
+            get { return new List<Button>() { BuildButton, CancelButton }; }
         }
 
         /// <summary>
@@ -80,11 +87,15 @@ namespace UI
                 GameLogger.FatalError("ConstructionInfoWindow was passed invalid data. Data = {0}", data == null ? "null" : data.GetType().Name);
             }
 
+            _bulidingData = buildingData;
             Title = buildingData.Name;
             Description = WriteDescription(buildingData);
             ConstructionImage.sprite = buildingData.Icon;
 
-            BuildButton.OnSelect = () => { Game.UI.WindowManager.OpenWindow("ConstructionPlacing", buildingData); };
+            BuildButton.OnSelect = () => { Accessor.UiManager.OpenWindow("ConstructionPlacing", buildingData); };
+            CancelButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent); };
+
+            Accessor.Camera.FreezeCamera();
         }
 
         /// <summary>
@@ -92,7 +103,26 @@ namespace UI
         /// </summary>
         public override void Close()
         {
-            
+            var camera = Camera.main.GetComponent<OrthoPanningCamera>();
+            Accessor.Camera?.UnfreezeCamera();
+        }
+
+        /// <summary>
+        /// Unity update method
+        /// </summary>
+        protected override void Update()
+        {
+            // Make sure the building can be built
+            if (Accessor.Simulation.CanPurchase(_bulidingData.ConstructionCost))
+            {
+                BuildButton.Enable();
+            }
+            else
+            {
+                BuildButton.Disable();
+            }
+
+            base.Update();
         }
 
         /// <summary>
@@ -104,13 +134,33 @@ namespace UI
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Cost:</b> {0:C0}{1}", data.ConstructionCost, Environment.NewLine);
+            string costColor = Accessor.Simulation.CanPurchase(data.ConstructionCost) ? "#323232" : "red";
+            sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Cost:</b> <color={0}>{1:C0}</color>{2}", costColor, data.ConstructionCost, Environment.NewLine);
 
-            if (data.MaintenanceCost != 0)
-                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per year{1}", data.MaintenanceCost, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Building Footprint:</b> {0}x{1}{2}", data.Footprint.GetLength(0), data.Footprint.GetLength(1), Environment.NewLine);
 
-            if (data.Classrooms != 0)
-                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Classrooms:</b> {0}{1}", data.Classrooms, Environment.NewLine);
+            if (data.UtilitiesPerQuarter != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Utilities:</b> {0:C0} per quarter{1}", data.UtilitiesPerQuarter, Environment.NewLine);
+
+            if (data.SmallClassrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Small Classrooms:</b> {0}{1}", data.SmallClassrooms, Environment.NewLine);
+
+            if (data.MediumClassrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Medium Classrooms:</b> {0}{1}", data.MediumClassrooms, Environment.NewLine);
+
+            if (data.LargeClassrooms != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Large Classrooms:</b> {0}{1}", data.LargeClassrooms, Environment.NewLine);
+
+            int classroomCapacity =
+                (data.SmallClassrooms * Accessor.CampusManager.SmallClassroomCapacity) +
+                (data.MediumClassrooms * Accessor.CampusManager.MediumClassroomCapacty) +
+                (data.LargeClassrooms * Accessor.CampusManager.LargeClassroomCapacity);
+
+            if (classroomCapacity != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Student Capacity:</b> {0}{1}", classroomCapacity, Environment.NewLine);
+
+            if (data.Laboratories != 0)
+                sb.AppendFormat(CultureInfo.CurrentCulture, "<b>Laboratories:</b> {0}{1}", data.Laboratories, Environment.NewLine);
 
             sb.AppendLine();
 

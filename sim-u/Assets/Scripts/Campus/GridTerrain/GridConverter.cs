@@ -17,6 +17,36 @@ namespace Campus.GridTerrain
         private float _minTerrainY;
 
         /// <summary>
+        /// Deltas to get the 4 adjacent grids around a grid plus the grid itself
+        /// </summary>
+        public static readonly int[] AdjacentPlusSelfGridDx = new int[] { 0, 0, 1, 0, -1 };
+        public static readonly int[] AdjacentPlusSelfGridDz = new int[] { 0, 1, 0, -1, 0 };
+
+        /// <summary>
+        /// Deltas to get the 4 adjacent grids around a grid
+        /// </summary>
+        public static readonly int[] AdjacentGridDx = new int[] { 0, 1, 0, -1 };
+        public static readonly int[] AdjacentGridDz = new int[] { 1, 0, -1, 0 };
+
+        /// <summary>
+        /// Deltas to get the 4 adjacent vertices around a vertex
+        /// </summary>
+        public static readonly int[] AdjacentVertexDx = new int[] { 0, 1, 0, -1 };
+        public static readonly int[] AdjacentVertexDz = new int[] { 1, 0, -1, 0 };
+
+        /// <summary>
+        /// Deltas to get the 4 vertices around a grid
+        /// </summary>
+        public static readonly int[] GridToVertexDx = new int[] { 1, 1, 0, 0 };
+        public static readonly int[] GridToVertexDz = new int[] { 1, 0, 0, 1 };
+
+        /// <summary>
+        /// Deltas to ge the 4 grids around a vertex
+        /// </summary>
+        public static readonly int[] VertexToGridDx = new int[] { -1, -1, 0, 0 };
+        public static readonly int[] VertexToGridDz = new int[] { -1, 0, -1, 0 };
+
+        /// <summary>
         /// Create an instance of the grid terrain converter.
         /// </summary>
         /// <param name="gridSize">Size of a grid square.</param>
@@ -45,6 +75,18 @@ namespace Campus.GridTerrain
                 Mathf.FloorToInt((world.x - _minTerrainX) / _gridSize + Utils.Epsilon),
                 Mathf.FloorToInt((world.y - _minTerrainY) / _gridStepSize + Utils.Epsilon),
                 Mathf.FloorToInt((world.z - _minTerrainZ) / _gridSize + Utils.Epsilon));
+        }
+
+        /// <summary>
+        /// Convert a world point to the nearest vertex on the grid.
+        /// </summary>
+        /// <param name="world">Point in Unity world space.</param>
+        /// <returns>The coorisponding grid vertex coordinate.</returns>
+        public Point2 WorldToGridVertex(Vector3 world)
+        {
+            return new Point2(
+                Mathf.FloorToInt(((world.x + _halfGridSize) - _minTerrainX) / _gridSize + Utils.Epsilon),
+                Mathf.FloorToInt(((world.z + _halfGridSize) - _minTerrainZ) / _gridSize + Utils.Epsilon));
         }
 
         /// <summary>

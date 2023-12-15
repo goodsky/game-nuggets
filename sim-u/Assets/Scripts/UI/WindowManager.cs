@@ -12,10 +12,11 @@ namespace UI
     /// </summary>
     public class WindowManager : MonoBehaviour
     {
+        private GameAccessor _accessor = new GameAccessor();
         private Dictionary<string, Window> _windows = new Dictionary<string, Window>();
 
         /// <summary>The active window.</summary>
-        private Window _openWindow = null;
+        public Window CurrentOpenWindow { get; private set; }
 
         /// <summary>
         /// Try to load a window from the store.
@@ -36,7 +37,7 @@ namespace UI
         {
             foreach (var window in data.Windows)
             {
-                var windowObject = UIFactory.LoadWindow(window.PrefabName, window.Name, transform, data.Config);
+                var windowObject = UIFactory.LoadWindow(window.PrefabName, window.Name, window.FullScreen, transform, data.Config);
                 _windows[window.Name] = windowObject.GetComponent<Window>();
             }
         }
@@ -49,7 +50,7 @@ namespace UI
         /// <param name="dataName">Name of the data to pass to the window.</param>
         public void OpenWindow(string name, GameDataType type, string dataName)
         {
-            object data = GameDataStore.Get(type, dataName);
+            object data = _accessor.GameData.Get(type, dataName);
             OpenWindow(name, data);
         }
 
@@ -67,6 +68,13 @@ namespace UI
                 return;
             }
 
+            if (window == CurrentOpenWindow)
+            {
+                // If you open the same window again, I assume you want to close it.
+                CloseWindow();
+                return;
+            }
+
             CloseWindow();
 
             var selected = SelectionManager.Selected;
@@ -75,7 +83,7 @@ namespace UI
                 window.SelectionParent = selected;
             }
 
-            _openWindow = window;
+            CurrentOpenWindow = window;
 
             window.Open(data);
             window.gameObject.SetActive(true);
@@ -86,11 +94,11 @@ namespace UI
         /// </summary>
         public void CloseWindow()
         {
-            if (_openWindow != null)
+            if (CurrentOpenWindow != null)
             {
-                _openWindow.Close();
-                _openWindow.gameObject.SetActive(false);
-                _openWindow = null;
+                CurrentOpenWindow.Close();
+                CurrentOpenWindow.gameObject.SetActive(false);
+                CurrentOpenWindow = null;
             }
         }
     }

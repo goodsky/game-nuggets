@@ -25,10 +25,10 @@ namespace UI
         /// <param name="data">not used.</param>
         public override void Open(object data)
         {
-            Game.Campus.Terrain.Selectable.SelectionParent = this;
-            Game.State.StartDoing(GameState.SelectingTerrain);
+            Accessor.CampusManager.SetTerrainSelectionParent(this);
+            Accessor.StateMachine.StartDoing(GameState.SelectingTerrain);
 
-            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(SelectionParent.ToMainMenu()); };
+            StopButton.OnSelect = () => { SelectionManager.UpdateSelection(null); };
         }
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace UI
         /// </summary>
         public override void Close()
         {
-            Game.Campus.Terrain.Selectable.SelectionParent = null;
-            Game.State.StopDoing();
+            Accessor.CampusManager.SetTerrainSelectionParent(null);
+            Accessor.StateMachine.StopDoing();
         }
     }
 }

@@ -1,51 +1,60 @@
 ﻿using Campus.GridTerrain;
 using Common;
 using GameData;
-using System;
-using System.Linq;
+using UI;
 using UnityEngine;
 
 namespace Campus
 {
+    public class PlacingPathContext
+    {
+        public TerrainClickedArgs ClickedArgs { get; set; }
+
+        public PathsWindow Window { get; set; }
+    }
+
     /// <summary>
     /// Game controller that runs during the PlacingPath game state.
     /// </summary>
+    [StateController(HandledState = GameState.PlacingPath)]
     internal class PlacingPathController : GameStateMachine.Controller
     {
         private GridMesh _terrain;
-        private LineCursor _cursors;
+        private PathsWindow _window;
+        private LineCursor _cursor;
 
-        private Point3 _pathStart;
-        private Point3 _pathEnd;
+        private AxisAlignedLine _line;
 
         /// <summary>
         /// Instantiates an instance of the controller.
         /// </summary>
-        /// <param name="terrain">The terrain to place construction on.</param>
-        public PlacingPathController(GridMesh terrain)
+        public PlacingPathController()
         {
-            _terrain = terrain;
-            _cursors = new LineCursor(
-                terrain,
+            _terrain = Accessor.Terrain;
+            _cursor = new LineCursor(
+                _terrain,
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_valid"),
                 ResourceLoader.Load<Material>(ResourceType.Materials, ResourceCategory.Terrain, "cursor_invalid"));
 
-            OnTerrainSelectionUpdate += PlacementUpdate;
+            OnTerrainGridSelectionUpdate += PlacementUpdate;
             OnTerrainClicked += Clicked;
         }
 
         /// <summary>
         /// The state controller is starting.
         /// </summary>
-        /// <param name="context">The construction to place.</param>
         public override void TransitionIn(object context)
         {
-            var args = context as TerrainClickedArgs;
-            if (args == null)
-                GameLogger.FatalError("EditingTerrainController was given incorrect context.");
+            var pathsContext = context as PlacingPathContext;
+            if (pathsContext == null)
+                GameLogger.FatalError("PlacingPathController was given unexpected context! Type = {0}", context?.GetType().Name ?? "null");
 
-            _pathStart = _pathEnd = args.ClickLocation;
-            _cursors.Place(_pathStart, _pathEnd, IsValidTerrainAlongLine());
+            var args = pathsContext.ClickedArgs;
+            _window = pathsContext.Window;
+            _line = new AxisAlignedLine(args.GridSelection);
+
+            Accessor.CampusManager.IsValidForPath(_line, out bool[] validGrids);
+            _cursor.Place(_line, validGrids);
         }
 
         /// <summary>
@@ -53,7 +62,7 @@ namespace Campus
         /// </summary>
         public override void TransitionOut()
         {
-            _cursors.Deactivate();
+            _cursor.Deactivate();
         }
 
         /// <summary>
@@ -63,12 +72,18 @@ namespace Campus
         {
             if (!Input.GetMouseButton(0))
             {
-                if (IsValidTerrainAlongLine().All(b => b))
+                if (Accessor.CampusManager.IsValidForPath(_line, out bool[] _) &&
+                    Accessor.Simulation.Purchase(CostOfPath()))
                 {
-                    Game.Campus.Paths.BuildPath(_pathStart, _pathEnd);
+                    Accessor.CampusManager.ConstructPath(_line);
                 }
 
-                Transition(GameState.SelectingPath);
+                Transition(
+                    GameState.SelectingPath,
+                    new SelectingPathContext
+                    {
+                        Window = _window,
+                    });
                 return;
             }
         }
@@ -78,38 +93,37 @@ namespace Campus
         /// </summary>
         /// <param name="sender">not used.</param>
         /// <param name="args">The terrain selection update args.</param>
-        private void PlacementUpdate(object sender, TerrainSelectionUpdateArgs args)
+        private void PlacementUpdate(object sender, TerrainGridUpdateArgs args)
         {
-            if (args.SelectionLocation != Point3.Null)
+            if (args.GridSelection != Point3.Null)
             {
-                int lengthX = Math.Abs(_pathStart.x - args.SelectionLocation.x);
-                int lengthZ = Math.Abs(_pathStart.z - args.SelectionLocation.z);
-
-                // I'm trying to force people to snap to the grid more often than not
-                if (lengthX > lengthZ)
-                {
-                    _pathEnd = new Point3(args.SelectionLocation.x, args.SelectionLocation.y, _pathStart.z);
-                }
-                else
-                {
-                    _pathEnd = new Point3(_pathStart.x, args.SelectionLocation.y, args.SelectionLocation.z);
-                }
+                _line.UpdateEndPointAlongAxis(args.GridSelection);
             }
             else
             {
-                // snap to the extreme option if moused out of bounds
-                if (_pathEnd.x < _pathStart.x)
-                    _pathEnd = new Point3(0, _pathEnd.y, _pathEnd.z);
-                else if (_pathEnd.x > _pathStart.x)
-                    _pathEnd = new Point3(_terrain.CountX - 1, _pathEnd.y, _pathEnd.z);
-                else if (_pathEnd.y < _pathStart.y)
-                    _pathEnd = new Point3(_pathEnd.x, _pathEnd.y, 0);
-                else if (_pathEnd.y > _pathStart.y)
-                    _pathEnd = new Point3(_pathEnd.x, _pathEnd.y, _terrain.CountZ - 1);
-
+                // Snap to the extreme option if moused out of bounds
+                if (_line.End.x < _line.Start.x)
+                    _line.UpdateEndPointAlongAxis(new Point2(0, _line.End.z));
+                else if (_line.End.x > _line.Start.x)
+                    _line.UpdateEndPointAlongAxis(new Point2(_terrain.CountX - 1, _line.End.z));
+                else if (_line.End.z < _line.Start.z)
+                    _line.UpdateEndPointAlongAxis(new Point2(_line.End.x, 0));
+                else if (_line.End.z > _line.Start.z)
+                    _line.UpdateEndPointAlongAxis(new Point2(_line.End.x, _terrain.CountZ - 1));
             }
 
-            _cursors.Place(_pathStart, _pathEnd, IsValidTerrainAlongLine());
+            int costOfPath = CostOfPath();
+            _window.UpdateInfo(_line.Length, costOfPath);
+
+            Accessor.CampusManager.IsValidForPath(_line, out bool[] validGrids);
+            
+            if (!Accessor.Simulation.CanPurchase(costOfPath))
+            {
+                for (int i = 0; i < validGrids.Length; ++i)
+                    validGrids[i] = false;
+            }
+
+            _cursor.Place(_line, validGrids);
         }
 
         /// <summary>
@@ -122,49 +136,19 @@ namespace Campus
             if (args.Button == MouseButton.Right)
             {
                 // Cancel placing path.
-                Transition(GameState.SelectingPath);
+                Transition(
+                    GameState.SelectingPath,
+                    new SelectingPathContext
+                    {
+                        Window = _window,
+                    });
             }
         }
 
-        /// <summary>
-        /// Get a boolean array representing whether the grids selected are valid for path.
-        /// </summary>
-        /// <returns>A boolean array representing the valid terrain along the line.</returns>
-        private bool[] IsValidTerrainAlongLine()
+        private int CostOfPath()
         {
-            var gridcheck = _terrain.Editor.CheckSmoothAndFree(_pathStart.x, _pathStart.z, _pathEnd.x, _pathEnd.z);
-
-            int dx = 0;
-            int dz = 0;
-
-            if (_pathStart.x == _pathEnd.x && _pathStart.z == _pathEnd.z)
-            {
-                // Case: Placing a single square
-            }
-            else if (_pathStart.x != _pathEnd.x)
-            {
-                // Case: Placing a line along the x-axis
-                dx = _pathStart.x < _pathEnd.x ? 1 : -1;
-            }
-            else
-            {
-                // Case: Placing a line along the z-axis
-                dz = _pathStart.z < _pathEnd.z ? 1 : -1;
-            }
-
-            for (int i = 0; i < gridcheck.Length; ++i)
-            {
-                if (!gridcheck[i])
-                {
-                    int checkx = _pathStart.x + i * dx;
-                    int checkz = _pathStart.z + i * dz;
-
-                    // We can build over existing path
-                    gridcheck[i] = Game.Campus.Paths.IsPath(checkx, checkz);
-                }
-            }
-
-            return gridcheck;
+            int squares = _line.Length;
+            return Accessor.CampusManager.GetCostOfConstruction(CampusGridUse.Path, squares);
         }
     }
 }

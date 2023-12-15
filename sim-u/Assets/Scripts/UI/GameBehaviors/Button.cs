@@ -19,6 +19,9 @@ namespace UI
         /// <summary>The selected/mouse down background image.</summary>
         public Color SelectedColor;
 
+        /// <summary>The disabled background image.</summary>
+        public Color DisabledColor;
+
         /// <summary>(optional) Icon Image.</summary>
         public Image IconImage;
 
@@ -81,6 +84,11 @@ namespace UI
                 {
                     // Grey-out icon when disabled
                     IconImage.color = Color.grey;
+                }
+
+                if (_image != null)
+                {
+                    _image.color = DisabledColor;
                 }
             }
         }

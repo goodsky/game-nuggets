@@ -37,10 +37,13 @@ namespace UI
         public float ScrollSpeed = 3.0f;
 
         private bool _mouseOver;
-        private float _maskWidth;
         private bool _scrollEnabled;
+        private RectTransform _buttonGroupRect;
         private RectTransform _contentRect;
         private EventTrigger _eventTrigger;
+
+        private float _buttonGroupWidth = -1;
+        private float _contentWidth = -1;
 
         /// <summary>
         /// Unity Start method
@@ -50,26 +53,8 @@ namespace UI
             ScrollButtonLeft.GetComponent<Button>().WhileMouseDown = ScrollLeft;
             ScrollButtonRight.GetComponent<Button>().WhileMouseDown = ScrollRight;
 
-            var buttonGroupRect = GetComponent<RectTransform>();
+            _buttonGroupRect = GetComponent<RectTransform>();
             _contentRect = Content.GetComponent<RectTransform>();
-
-            _maskWidth = buttonGroupRect.rect.width;
-            var padding = _maskWidth - _contentRect.rect.width;
-
-            if (padding < 0.0)
-            {
-                _scrollEnabled = true;
-                this.ScrollButtonLeft.SetActive(true);
-                this.ScrollButtonRight.SetActive(true);
-            }
-            else
-            {
-                _scrollEnabled = false;
-                this.ScrollButtonLeft.SetActive(false);
-                this.ScrollButtonRight.SetActive(false);
-
-                _contentRect.anchoredPosition = new Vector2(padding / 2.0f, _contentRect.anchoredPosition.y);
-            }
 
             // Event Trigger used to track mouse in and mouse out
             _eventTrigger = gameObject.AddComponent<EventTrigger>();
@@ -85,6 +70,8 @@ namespace UI
                 pointerExit.callback.AddListener(_ => { _mouseOver = false; });
                 _eventTrigger.triggers.Add(pointerExit);
             }
+
+            CheckContentSizeAndFormat();
         }
 
         /// <summary>
@@ -92,6 +79,8 @@ namespace UI
         /// </summary>
         protected void Update()
         {
+            CheckContentSizeAndFormat();
+
             if (_mouseOver)
             {
                 var wheelScroll = Input.GetAxis("Mouse ScrollWheel");
@@ -120,7 +109,7 @@ namespace UI
             float xPos = _contentRect.anchoredPosition.x;
             float rightEdge = xPos + _contentRect.rect.width;
 
-            if (rightEdge > _maskWidth)
+            if (rightEdge > _buttonGroupWidth)
             {
                 _contentRect.anchoredPosition = new Vector2(xPos - speed, _contentRect.anchoredPosition.y);
 
@@ -134,7 +123,7 @@ namespace UI
             }
             else
             {
-                _contentRect.anchoredPosition = new Vector2(_maskWidth - _contentRect.rect.width, _contentRect.anchoredPosition.y);
+                _contentRect.anchoredPosition = new Vector2(_buttonGroupWidth - _contentRect.rect.width, _contentRect.anchoredPosition.y);
             }
         }
 
@@ -181,6 +170,33 @@ namespace UI
         private void ScrollLeft()
         {
             ScrollLeft(ScrollSpeed);
+        }
+
+        private void CheckContentSizeAndFormat()
+        {
+            if (_buttonGroupWidth != _buttonGroupRect.rect.width ||
+                _contentWidth != -_contentRect.rect.width)
+            {
+                _buttonGroupWidth = _buttonGroupRect.rect.width;
+                _contentWidth = _contentRect.rect.width;
+
+                float padding = _buttonGroupWidth - _contentWidth;
+
+                if (padding < 0.0)
+                {
+                    _scrollEnabled = true;
+                    this.ScrollButtonLeft.SetActive(true);
+                    this.ScrollButtonRight.SetActive(true);
+                }
+                else
+                {
+                    _scrollEnabled = false;
+                    this.ScrollButtonLeft.SetActive(false);
+                    this.ScrollButtonRight.SetActive(false);
+
+                    _contentRect.anchoredPosition = new Vector2(padding / 2.0f, _contentRect.anchoredPosition.y);
+                }
+            }
         }
     }
 }

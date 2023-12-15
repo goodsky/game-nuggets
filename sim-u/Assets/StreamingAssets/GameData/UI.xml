@@ -1,0 +1,170 @@
+<UIData xmlns:x="http://www.w3.org/2001/XMLSchema-instance">
+  
+  <!-- UI Configuration -->
+  <Configuration>
+    <HorizontalMargins>175.0</HorizontalMargins>
+    <ButtonWidth>75.0</ButtonWidth>
+    <ButtonHeight>75.0</ButtonHeight>
+    <MainMenuBackground>DarkestGray</MainMenuBackground>
+    <MainMenuSelected>DarkerGray</MainMenuSelected>
+    <MainMenuAccent>DarkGray</MainMenuAccent>
+    <MainMenuDisabled>Red</MainMenuDisabled>
+    <SubMenuBackground>DarkGray</SubMenuBackground>
+    <SubMenuSelected>Gray</SubMenuSelected>
+    <SubMenuAccent>LightGray</SubMenuAccent>
+    <SubMenuDisabled>Red</SubMenuDisabled>
+    <WindowBackground>LightGray</WindowBackground>
+    <SpeedSelection>DarkGreen</SpeedSelection>
+  </Configuration>
+
+  <!-- The Toolbar buttons that are on the bottom of the screen. -->
+  <ButtonGroups>
+    <!-- Main Toolbar Buttons -->
+    <MainButtonGroup name="MainMenu">
+      <Buttons>
+        <Button name="Faculty">
+          <Tooltip>University Faculty</Tooltip>
+          <IconImage>icon-faculty</IconImage>
+          <OnSelect x:type="OpenSubMenuAction" buttonGroupName="FacultyMenu"/>
+          <OnDeselect x:type="CloseSubMenuAction" />
+        </Button>
+        <Button name="Construction">
+          <Tooltip>Campus Construction</Tooltip>
+          <IconImage>icon-construction</IconImage>
+          <OnSelect x:type="OpenSubMenuAction" buttonGroupName="ConstructionMenu"/>
+          <OnDeselect x:type="CloseSubMenuAction" />
+        </Button>
+        <Button name="Paths">
+          <Tooltip>Campus Paths</Tooltip>
+          <IconImage>icon-path</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="Paths"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="Roads">
+          <Tooltip>Campus Roads</Tooltip>
+          <IconImage>icon-road</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="Roads"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="ParkingLots">
+          <Tooltip>Campus Parking Lots</Tooltip>
+          <IconImage>icon-parking-lot</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="ParkingLots"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="EditTerrain">
+          <Tooltip>Campus Terrain</Tooltip>
+          <IconImage>icon-edit-terrain</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="EditingTerrain"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="Demolish">
+          <Tooltip>Demolish Campus Improvements</Tooltip>
+          <IconImage>icon-bulldozer</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="Demolishing"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="SaveGame">
+          <Tooltip>Save Game</Tooltip>
+          <IconImage>icon-save</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="SaveGame"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="LoadGame">
+          <Tooltip>Load Game</Tooltip>
+          <IconImage>icon-load</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="LoadGame"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+        <Button name="BackToMenu">
+          <Tooltip>Back to Main Menu</Tooltip>
+          <IconImage>icon-back</IconImage>
+          <OnSelect x:type="TransitionGameStateAction" state="MainMenu"/>
+        </Button>
+      </Buttons>
+    </MainButtonGroup>
+
+    <!-- Faculty Sub Menu Buttons -->
+    <SubButtonGroup name="FacultyMenu">
+      <Buttons>
+        <Button name="FacultyHiring">
+          <Tooltip>Hire new Faculty</Tooltip>
+          <IconImage>icon-faculty-hire</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="FacultyHiring" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="FacultyOverview">
+          <Tooltip>Faculty Overview</Tooltip>
+          <IconImage>icon-faculty-manage</IconImage>
+          <OnSelect x:type="OpenWindowAction" windowName="FacultyOverview" />
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+      </Buttons>
+    </SubButtonGroup>
+    
+    <!-- Construction Sub Menu Buttons -->
+    <SubButtonGroup name="ConstructionMenu">
+      <Buttons>
+        <Button name="BuildSmallPortable">
+          <Tooltip>Build Small Portable</Tooltip>
+          <IconImage>icon-building-portable-small</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Small Portable"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildMediumPortable">
+          <Tooltip>Build Small Portable</Tooltip>
+          <IconImage>icon-building-portable-medium</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Medium Portable"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildSmallBrick">
+          <Tooltip>Build Small Brick Classroom</Tooltip>
+          <IconImage>icon-building-brick-small</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Small Brick Classroom"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildMediumBrick">
+          <Tooltip>Build Medium Brick Classroom</Tooltip>
+          <IconImage>icon-building-brick-medium</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Medium Brick Classroom"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildLargeBrick">
+          <Tooltip>Build Large Brick Classroom</Tooltip>
+          <IconImage>icon-building-brick-large</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Large Brick Classroom"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+
+        <Button name="BuildResearchLab">
+          <Tooltip>Build Research Laboratory</Tooltip>
+          <IconImage>icon-building-modern-medium</IconImage>
+          <OnSelect x:type="OpenWindowWithDataAction" windowName="ConstructionInfo" dataType="Building" data="Research Laboratory"/>
+          <OnDeselect x:type="CloseWindowAction" />
+        </Button>
+      </Buttons>
+    </SubButtonGroup>
+  </ButtonGroups>
+    
+  <!-- Windows that display information in the UI -->
+  <Windows>
+    <Window name="AcademicYearPopUp" prefab="AcademicYearPopUpWindow" fullScreen="true" />
+    <Window name="ConstructionInfo" prefab="ConstructionInfoWindow" />
+    <Window name="ConstructionPlacing" prefab="ConstructionPlacingWindow" />
+    <Window name="EditingTerrain" prefab="TerrainEditingWindow" />
+    <Window name="Paths" prefab="PathsWindow" />
+    <Window name="Roads" prefab="RoadsWindow" />
+    <Window name="ParkingLots" prefab="ParkingLotWindow" />
+    <Window name="Demolishing" prefab="DemolishingWindow" />
+    <Window name="SaveGame" prefab="SaveGameWindow" />
+    <Window name="LoadGame" prefab="LoadGameWindow" />
+    <Window name="FacultyOverview" prefab="FacultyWindow" />
+    <Window name="FacultyHiring" prefab="FacultyHiringWindow" />
+  </Windows>
+  
+</UIData>
