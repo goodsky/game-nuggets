@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bf8b5d8clv5i5"]
+[gd_scene load_steps=10 format=3 uid="uid://bo4om7ntgudsq"]
 
 [ext_resource type="Script" path="res://Mob.cs" id="1_7tv1i"]
 [ext_resource type="Texture2D" uid="uid://dltn6tsh7jlko" path="res://art/enemyFlyingAlt_1.png" id="2_moglw"]
