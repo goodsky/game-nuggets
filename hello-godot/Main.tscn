@@ -32,3 +32,6 @@ curve = SubResource("Curve2D_2ginx")
 [node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
 
 [connection signal="Hit" from="Player" to="." method="GameOver"]
+[connection signal="timeout" from="StartTimer" to="." method="OnStartTimerTimeout"]
+[connection signal="timeout" from="ScoreTimer" to="." method="OnScoreTimerTimeout"]
+[connection signal="timeout" from="MobTimer" to="." method="OnMobTimerTimeout"]

@@ -1,5 +1,4 @@
 using Godot;
-using System;
 
 public partial class Main : Node
 {
@@ -8,6 +7,7 @@ public partial class Main : Node
 	private static readonly string StartTimerName = "StartTimer";
 	private static readonly string ScoreTimerName = "ScoreTimer";
 	private static readonly string MobTimerName = "MobTimer";
+	private static readonly string MobSpawnLocationName = "MobPath/MobSpawnLocation";
 
 	[Export]
 	public PackedScene MobScene { get; set; }
@@ -16,6 +16,7 @@ public partial class Main : Node
 
 	public override void _Ready()
 	{
+		NewGame();
 	}
 
 	public override void _Process(double delta)
@@ -48,5 +49,24 @@ public partial class Main : Node
 	private void OnScoreTimerTimeout()
 	{
 		_score++;
+	}
+
+	private void OnMobTimerTimeout()
+	{
+		var mob = MobScene.Instantiate<Mob>();
+
+		var spawnLocation = GetNode<PathFollow2D>(MobSpawnLocationName);
+		spawnLocation.ProgressRatio = GD.Randf();
+
+		var rotation = spawnLocation.Rotation + Mathf.Pi / 2;
+		rotation += (float)GD.RandRange(-Mathf.Pi / 4, Mathf.Pi / 4);
+
+		mob.Position = spawnLocation.Position;
+		mob.Rotation = rotation;
+
+		var velocity = new Vector2((float)GD.RandRange(150.0, 250.0), 0);
+		mob.LinearVelocity = velocity.Rotated(rotation);
+
+		AddChild(mob);
 	}
 }
