@@ -9,6 +9,8 @@ public partial class Main : Node
 	private static readonly string MobTimerName = "MobTimer";
 	private static readonly string MobSpawnLocationName = "MobPath/MobSpawnLocation";
 	private static readonly string HUDName = "HUD";
+	private static readonly string MusicName = "Music";
+	private static readonly string DeathSoundName = "DeathSound";
 
 	[Export]
 	public PackedScene MobScene { get; set; }
@@ -41,12 +43,17 @@ public partial class Main : Node
 		GetNode<Timer>(ScoreTimerName).Stop();
 		GetNode<Timer>(MobTimerName).Stop();
 		GetNode<HUD>(HUDName).ShowGameOver();
+
+		GetNode<AudioStreamPlayer>(MusicName).Stop();
+		GetNode<AudioStreamPlayer>(DeathSoundName).Play();
 	}
 
 	private void OnStartTimerTimeout()
 	{
 		GetNode<Timer>(ScoreTimerName).Start();
 		GetNode<Timer>(MobTimerName).Start();
+
+		GetNode<AudioStreamPlayer>(MusicName).Play();
 	}
 
 	private void OnScoreTimerTimeout()
