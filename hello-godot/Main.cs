@@ -8,36 +8,39 @@ public partial class Main : Node
 	private static readonly string ScoreTimerName = "ScoreTimer";
 	private static readonly string MobTimerName = "MobTimer";
 	private static readonly string MobSpawnLocationName = "MobPath/MobSpawnLocation";
+	private static readonly string HUDName = "HUD";
 
 	[Export]
 	public PackedScene MobScene { get; set; }
 
 	private int _score;
 
-	public override void _Ready()
-	{
-		NewGame();
-	}
+	public override void _Ready() {}
 
-	public override void _Process(double delta)
+	public override void _Process(double delta) {}
+
+	public void NewGame()
 	{
+		_score = 0;
+
+		GetTree().CallGroup("mobs", Node.MethodName.QueueFree);
+
+		var player = GetNode<Player>(PlayerName);
+		var startPosition = GetNode<Marker2D>(StartPositionName);
+		player.Start(startPosition.Position);
+
+		var hud = GetNode<HUD>(HUDName);
+		hud.UpdateScore(_score);
+		hud.ShowMessage("Get Ready!");
+
+		GetNode<Timer>(StartTimerName).Start();
 	}
 
 	public void GameOver()
 	{
 		GetNode<Timer>(ScoreTimerName).Stop();
 		GetNode<Timer>(MobTimerName).Stop();
-	}
-
-	public void NewGame()
-	{
-		_score = 0;
-
-		var player = GetNode<Player>(PlayerName);
-		var startPosition = GetNode<Marker2D>(StartPositionName);
-		player.Start(startPosition.Position);
-
-		GetNode<Timer>(StartTimerName).Start();
+		GetNode<HUD>(HUDName).ShowGameOver();
 	}
 
 	private void OnStartTimerTimeout()
@@ -49,6 +52,7 @@ public partial class Main : Node
 	private void OnScoreTimerTimeout()
 	{
 		_score++;
+		GetNode<HUD>(HUDName).UpdateScore(_score);
 	}
 
 	private void OnMobTimerTimeout()
